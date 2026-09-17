@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLY — Glycemia Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.4.4/luxon.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-luxon/1.3.1/chartjs-adapter-luxon.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --bg:#f3f3ef;--surface:#fff;--surface-alt:#f8f8f5;
+  --border:#e2e2db;--border-lt:#ededea;
+  --text:#1c1c1c;--text2:#5a5a52;--text3:#8a8a80;
+  --axel:#3b82f6;--axel-bg:#eff6ff;
+  --fanny:#e8437f;--fanny-bg:#fdf2f8;
+  --target:#22c55e;--target-bg:rgba(34,197,94,0.08);
+  --high:#f59e0b;--low:#ef4444;
+  --primary:#2b6b4f;--primary-h:#1f5a40;--primary-lt:#e8f5ee;
+  --radius:8px;--radius-lg:12px;
+  --shadow:0 1px 3px rgba(0,0,0,0.06);
+  --max-w:960px;--tr:150ms ease;
+}
+html{font-size:14px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── Layout ─── */
+.header{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.header-in{max-width:var(--max-w);margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.logo-mark{width:30px;height:30px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
+.logo-text{font-size:16px;font-weight:700;letter-spacing:-.02em}
+.logo-sub{font-size:10px;color:var(--text3);font-weight:400;margin-left:2px}
+.hdr-actions{display:flex;gap:6px}
+.btn-ic{width:34px;height:34px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all var(--tr);position:relative}
+.btn-ic:hover{background:var(--surface-alt)}
+.dot{width:7px;height:7px;border-radius:50%;background:#c0392b;position:absolute;top:-2px;right:-2px}
+.dot.ok{background:var(--target)}
+
+/* ── Nav ─── */
+.nav{max-width:var(--max-w);margin:0 auto;display:flex;gap:0;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;padding:0 20px}
+.nav button{padding:10px 16px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all var(--tr);white-space:nowrap;font-family:var(--font)}
+.nav button:hover{color:var(--text2)}
+.nav button.on{color:var(--primary);border-bottom-color:var(--primary)}
+
+/* ── Main ─── */
+main{max-width:var(--max-w);margin:0 auto;padding:20px}
+.view{display:none}.view.on{display:block}
+
+/* ── Buttons ─── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--radius);border:none;cursor:pointer;transition:all var(--tr)}
+.btn-p{background:var(--primary);color:#fff}.btn-p:hover{background:var(--primary-h)}.btn-p:disabled{opacity:.5;cursor:not-allowed}
+.btn-s{background:var(--surface);color:var(--text);border:1px solid var(--border)}.btn-s:hover{background:var(--surface-alt)}
+.btn-ax{background:var(--axel-bg);color:var(--axel);border:1px solid #bfdbfe}
+.btn-fa{background:var(--fanny-bg);color:var(--fanny);border:1px solid #fbcfe8}
+
+/* ── Cards ─── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.card h3{font-size:14px;font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
+.card-meta{font-size:11px;color:var(--text3);margin-bottom:6px}
+
+/* ── Chart Container ─── */
+.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px;position:relative}
+.chart-wrap canvas{max-height:340px}
+
+/* ── Date Nav ─── */
+.date-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.date-nav button{width:32px;height:32px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.date-nav button:hover{background:var(--surface-alt)}
+.date-nav input[type=date]{font-family:var(--font);font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+
+/* ── Timeline ─── */
+.timeline{margin-top:16px}
+.tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-lt);font-size:12.5px}
+.tl-time{width:50px;font-weight:600;color:var(--text2);flex-shrink:0}
+.tl-person{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+.tl-person.ax{background:var(--axel)}.tl-person.fa{background:var(--fanny)}.tl-person.bo{background:var(--primary)}
+.tl-cat{padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600;flex-shrink:0}
+.cat-meal{background:#fef3c7;color:#92400e}.cat-sport{background:#dbeafe;color:#1e40af}
+.cat-test{background:#ede9fe;color:#5b21b6}.cat-note{background:#f3f4f6;color:#374151}
+.cat-period{background:var(--fanny-bg);color:var(--fanny)}
+.tl-desc{flex:1;color:var(--text)}
+
+/* ── Log Form ─── */
+.log-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.form-row input,.form-row textarea,.form-row select{width:100%;padding:9px 12px;font-family:var(--font);font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surface-alt);color:var(--text);outline:none}
+.form-row input:focus,.form-row textarea:focus,.form-row select:focus{border-color:var(--primary)}
+.form-row textarea{resize:vertical;min-height:60px}
+.person-toggle{display:flex;gap:8px;margin-bottom:14px}
+.person-toggle button{flex:1;padding:10px;border-radius:var(--radius);border:2px solid var(--border);background:var(--surface);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all var(--tr)}
+.person-toggle button.sel-ax{border-color:var(--axel);background:var(--axel-bg);color:var(--axel)}
+.person-toggle button.sel-fa{border-color:var(--fanny);background:var(--fanny-bg);color:var(--fanny)}
+.person-toggle button.sel-bo{border-color:var(--primary);background:var(--primary-lt);color:var(--primary)}
+
+/* ── Stats Grid ─── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+.stat-card .label{font-size:10px;font-weight:600;color:var(--text3);margin-bottom:4px}
+.stat-card .value{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.stat-card .sub{font-size:10px;color:var(--text3);margin-top:2px}
+.stat-card.ax .value{color:var(--axel)}.stat-card.fa .value{color:var(--fanny)}
+
+/* ── Test Cards ─── */
+.test-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.test-card h3{font-size:13px;font-weight:600;margin-bottom:4px}
+.test-card .desc{font-size:12px;color:var(--text2);line-height:1.5}
+.test-status{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap}
+.st-pending{background:#f3f4f6;color:#6b7280}.st-active{background:#dbeafe;color:#1d4ed8}.st-done{background:var(--primary-lt);color:var(--primary)}
+
+/* ── AI Summary ─── */
+.ai-box{background:var(--primary-lt);border:1px solid #c5ddd0;border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:18px}
+.ai-box .ai-label{font-size:10px;font-weight:600;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.ai-box p,.ai-box li{font-size:13px;line-height:1.6;color:var(--text)}
+.ai-box ul{padding-left:16px}.ai-box li{margin-bottom:4px}
+.ai-box strong{color:var(--text)}
+
+/* ── Upload Zone ─── */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:32px;text-align:center;cursor:pointer;transition:all var(--tr);margin-bottom:16px}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--primary);background:var(--primary-lt)}
+.upload-zone .icon{font-size:28px;margin-bottom:8px}
+.upload-zone p{font-size:12px;color:var(--text2)}
+.upload-zone input{display:none}
+
+/* ── Baseline ─── */
+.baseline-section{margin-bottom:24px}
+.baseline-section h2{font-size:15px;font-weight:700;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border-lt)}
+.baseline-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px}
+.baseline-table th{text-align:left;padding:6px 10px;background:var(--surface-alt);font-weight:600;color:var(--text2);border-bottom:1px solid var(--border)}
+.baseline-table td{padding:6px 10px;border-bottom:1px solid var(--border-lt)}
+
+/* ── Modal ─── */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-ov.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-lg);padding:24px;max-width:480px;width:100%;box-shadow:0 4px 12px rgba(0,0,0,.08);max-height:90vh;overflow-y:auto}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:4px}.modal .sub{font-size:12px;color:var(--text3);margin-bottom:20px}
+.modal .form-row input{font-size:12px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+
+/* ── Archive ─── */
+.arc-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;cursor:pointer;transition:all var(--tr);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.arc-item:hover{border-color:var(--primary)}
+.arc-item h3{font-size:13px;font-weight:600;margin-bottom:2px}
+.arc-item .arc-date{font-size:11px;color:var(--text3)}
+.arc-del{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px}
+.arc-del:hover{background:#fef2f2;color:#c0392b}
+
+/* ── Empty ─── */
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty .icon{font-size:36px;margin-bottom:12px}
+.empty h3{font-size:15px;color:var(--text2);margin-bottom:6px}
+.empty p{font-size:12px;max-width:360px;margin:0 auto}
+
+/* ── Error ─── */
+.err{background:#fef2f2;border:1px solid #fecaca;color:#c0392b;padding:12px 16px;border-radius:var(--radius);font-size:12px;margin-bottom:14px}
+
+/* ── Loading ─── */
+.spinner{width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Responsive ─── */
+@media(max-width:640px){
+  main{padding:14px}.header-in{padding:10px 14px}.nav{padding:0 14px}
+  .nav button{padding:8px 12px;font-size:11px}.stats-grid{grid-template-columns:1fr}
+  .test-card{flex-direction:column}.chart-wrap canvas{max-height:260px}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-in">
+    <a href="#" class="logo">
+      <div class="logo-mark">G</div>
+      <div><span class="logo-text">GLY</span><span class="logo-sub">Glycemia Tracker</span></div>
+    </a>
+    <div class="hdr-actions">
+      <button class="btn-ic" id="btn-settings" title="Settings">⚙<div class="dot" id="key-dot"></div></button>
+    </div>
+  </div>
+</header>
+
+<nav class="nav" role="tablist">
+  <button class="on" data-v="daily">Daily</button>
+  <button data-v="weekly">Weekly</button>
+  <button data-v="tests">Tests</button>
+  <button data-v="log">Log Entry</button>
+  <button data-v="data">Data Import</button>
+  <button data-v="baseline">Baseline</button>
+  <button data-v="archive">Archive</button>
+</nav>
+
+<main>
+<!-- ═══ DAILY ═══ -->
+<div class="view on" id="v-daily">
+  <div class="date-nav">
+    <button onclick="shiftDay(-1)">‹</button>
+    <input type="date" id="day-pick" onchange="renderDaily()">
+    <button onclick="shiftDay(1)">›</button>
+    <button class="btn btn-s" onclick="document.getElementById('day-pick').valueAsDate=new Date();renderDaily()" style="font-size:11px">Today</button>
+    <button class="btn btn-p" id="btn-ai-daily" onclick="aiDailyInsight()" style="margin-left:auto">🤖 AI Insight</button>
+  </div>
+  <div class="stats-grid" id="daily-stats"></div>
+  <div class="chart-wrap"><canvas id="chart-daily"></canvas></div>
+  <div id="daily-ai"></div>
+  <h3 style="font-size:13px;font-weight:600;margin:16px 0 8px">Timeline</h3>
+  <div id="daily-timeline"></div>
+</div>
+
+<!-- ═══ WEEKLY ═══ -->
+<div class="view" id="v-weekly">
+  <div class="date-nav">
+    <button onclick="shiftWeek(-1)">‹</button>
+    <span id="week-label" style="font-size:13px;font-weight:600"></span>
+    <button onclick="shiftWeek(1)">›</button>
+    <button class="btn btn-p" id="btn-ai-weekly" onclick="aiWeeklyInsight()" style="margin-left:auto">🤖 AI Insight</button>
+  </div>
+  <div class="stats-grid" id="weekly-stats"></div>
+  <div class="chart-wrap"><canvas id="chart-weekly"></canvas></div>
+  <div id="weekly-ai"></div>
+</div>
+
+<!-- ═══ TESTS ═══ -->
+<div class="view" id="v-tests">
+  <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Pre-built test protocols. Assign a date, run the test, then compare A vs F glucose responses.</p>
+  <div id="tests-list"></div>
+</div>
+
+<!-- ═══ LOG ENTRY ═══ -->
+<div class="view" id="v-log">
+  <div class="log-form">
+    <h3 style="margin-bottom:14px">Quick Log</h3>
+    <div class="person-toggle" id="log-person">
+      <button onclick="selPerson('axel',this)">Axel</button>
+      <button onclick="selPerson('fanny',this)">Fanny</button>
+      <button onclick="selPerson('both',this)">Both</button>
+    </div>
+    <div class="form-row">
+      <label>Date & Time</label>
+      <div style="display:flex;gap:8px">
+        <input type="date" id="log-date" style="flex:1">
+        <input type="time" id="log-time" style="flex:1">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Category</label>
+      <select id="log-cat">
+        <option value="meal">🍽️ Meal</option>
+        <option value="sport">🏃 Sport</option>
+        <option value="test">🧪 Test</option>
+        <option value="note">📝 Note</option>
+        <option value="period">🔴 Period (Fanny)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Description</label>
+      <textarea id="log-desc" placeholder="e.g. Porridge Magnus 80g + blueberries + PB. Then coffee black.&#10;List items in order eaten."></textarea>
+    </div>
+    <button class="btn btn-p" onclick="saveLog()">Save entry</button>
+    <div id="log-msg" style="margin-top:10px;font-size:12px"></div>
+  </div>
+  <h3 style="font-size:13px;font-weight:600;margin:24px 0 10px">Recent Entries</h3>
+  <div id="log-recent"></div>
+</div>
+
+<!-- ═══ DATA IMPORT ═══ -->
+<div class="view" id="v-data">
+  <div class="card" style="margin-bottom:20px">
+    <h3>LibreLinkUp Auto-Fetch</h3>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Enter your LibreLinkUp follower credentials in Settings (⚙). The dashboard will fetch glucose data for all connected patients.</p>
+    <button class="btn btn-p" onclick="fetchLibreLinkUp()">Fetch glucose data</button>
+    <div id="llu-status" style="margin-top:10px;font-size:12px"></div>
+  </div>
+
+  <h3 style="font-size:13px;font-weight:600;margin-bottom:12px">Or upload LibreView CSV</h3>
+  <div class="upload-zone" id="upload-axel" onclick="this.querySelector('input').click()">
+    <div class="icon">📁</div>
+    <p><strong style="color:var(--axel)">Axel</strong> — Drop CSV or click to upload</p>
+    <input type="file" accept=".csv" onchange="handleCSV('axel',event)">
+  </div>
+  <div class="upload-zone" id="upload-fanny" onclick="this.querySelector('input').click()">
+    <div class="icon">📁</div>
+    <p><strong style="color:var(--fanny)">Fanny</strong> — Drop CSV or click to upload</p>
+    <input type="file" accept=".csv" onchange="handleCSV('fanny',event)">
+  </div>
+  <div id="upload-status"></div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>Data Status</h3>
+    <div id="data-status" style="font-size:12px;color:var(--text2)"></div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <h3>Export All Data (for Claude catch-up)</h3>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Download a JSON file with all glucose data, logs, and AI analyses. Attach it to a new Claude conversation to pick up where you left off.</p>
+    <button class="btn btn-s" onclick="exportAll()">Download JSON export</button>
+  </div>
+</div>
+
+<!-- ═══ BASELINE ═══ -->
+<div class="view" id="v-baseline">
+  <div class="card">
+    <h3>Profiles</h3>
+    <div class="baseline-table-wrap">
+      <table class="baseline-table">
+        <tr><th></th><th style="color:var(--axel)">Axel</th><th style="color:var(--fanny)">Fanny</th></tr>
+        <tr><td>Born</td><td>1990 (36)</td><td>1987 (39)</td></tr>
+        <tr><td>Sex</td><td>Male</td><td>Female</td></tr>
+        <tr><td>CGM</td><td colspan="2">Freestyle Libre 2 Plus</td></tr>
+        <tr><td>Experiment</td><td colspan="2">14-15 days</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="baseline-section">
+    <h2>Sugar Conventions</h2>
+    <table class="baseline-table">
+      <tr><th>Code</th><th>Meaning</th></tr>
+      <tr><td><strong>FM</strong></td><td>Fait maison (homemade)</td></tr>
+      <tr><td><strong>LS</strong></td><td>Low sugar — peu sucré</td></tr>
+      <tr><td><strong>NS</strong></td><td>No added sugar/honey/maple — may contain whole fruit sugar</td></tr>
+    </table>
+    <p style="font-size:12px;color:var(--text2);margin-top:6px">Savory dishes = 0g added sugar by default (exceptions: pickled cucumber, Asian sauces). Peanut butter = always sugar-free.</p>
+  </div>
+
+  <div class="baseline-section">
+    <h2>Kitchen Defaults</h2>
+    <p style="font-size:12px;color:var(--text2)">Olive oil for all cooking and raw use, even when not mentioned. A "salad" or "cooked zucchini" implicitly contains it.</p>
+  </div>
+
+  <div class="baseline-section">
+    <h2>Magnus Porridge</h2>
+    <p style="font-size:12px;color:var(--text2)">2 parts whole rye : 1 pearl barley : 1 flaxseed : 1 sunflower seeds : 1 pumpkin seeds. Soaked overnight, cooked (weight seeds = weight water, salted). Weight given (e.g. "80g") = dry weight before soaking.</p>
+  </div>
+
+  <div class="baseline-section">
+    <h2>Default Movement (Mon–Fri)</h2>
+    <p style="font-size:12px;color:var(--text2)">15-20min walk at wake-up, every weekday. 15-20min yoga before the walk (since Sept 4): sun salutations → kundalini → arms/chest → tree → single-leg balance → plank → cat-cow → child → twists → butterfly → shoulder stand+fire → plow → back roll → savasana.</p>
+  </div>
+
+  <div class="baseline-section">
+    <h2>Sleep Default</h2>
+    <p style="font-size:12px;color:var(--text2)">Bed 21:00-21:30, lights off 22:00 max 22:30, wake 06:00 weekdays / 07:00-07:30 weekends. No stress reported unless noted.</p>
+  </div>
+
+  <div class="baseline-section">
+    <h2>Food Order Convention</h2>
+    <p style="font-size:12px;color:var(--text2)">Foods always listed in real consumption order — used for food-order analysis (fiber/protein before carbs = better glycemic profile).</p>
+  </div>
+
+  <div class="baseline-section">
+    <h2>Stabilized Reference Norms</h2>
+    <table class="baseline-table">
+      <tr><th>Metric</th><th>Baseline (14-day avg)</th></tr>
+      <tr><td>Sugar/day</td><td>~7.9g</td></tr>
+      <tr><td>Fiber/day</td><td>~38.5g</td></tr>
+      <tr><td>Protein/day</td><td>~53g</td></tr>
+      <tr><td>Movement</td><td>Cycling 2-3x/week + walking/NEAT</td></tr>
+    </table>
+  </div>
+
+  <div class="baseline-section">
+    <h2>Recap Structure (weekly)</h2>
+    <p style="font-size:12px;color:var(--text2)">Protein → Fiber → Disease risk → Glycemia management (total glycemic load + food order) → Activity-movement (+ sarcopenia prevention) → Micronutrients → Antioxidants → Vitality → Blind spots (always present). Each weekly recap includes a multi-week global recap.</p>
+  </div>
+</div>
+
+<!-- ═══ ARCHIVE ═══ -->
+<div class="view" id="v-archive">
+  <div id="archive-out"></div>
+</div>
+</main>
+
+<!-- ═══ SETTINGS MODAL ═══ -->
+<div class="modal-ov" id="modal-settings">
+  <div class="modal">
+    <h2>Settings</h2>
+    <p class="sub">Credentials stored in your browser only.</p>
+    <div class="form-row"><label>OpenAI API Key</label><input type="password" id="s-openai" placeholder="sk-..."></div>
+    <div class="form-row"><label>OpenAI Model</label>
+      <select id="s-model" style="width:100%;padding:9px 12px;font-family:var(--font);font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surface-alt)">
+        <option value="gpt-4o-mini">gpt-4o-mini (fast)</option>
+        <option value="gpt-4o">gpt-4o (best)</option>
+      </select>
+    </div>
+    <div class="form-row"><label>LibreLinkUp Email</label><input type="email" id="s-llu-email" placeholder="your@email.com"></div>
+    <div class="form-row"><label>LibreLinkUp Password</label><input type="password" id="s-llu-pass" placeholder="password"></div>
+    <p style="font-size:10px;color:var(--text3);margin-top:-8px">Sent directly to LibreLinkUp API only. <a href="https://api-eu.libreview.io" target="_blank">EU endpoint</a>.</p>
+    <div class="form-row"><label>Glucose Target Range (mg/dL)</label>
+      <div style="display:flex;gap:8px">
+        <input type="number" id="s-gly-low" placeholder="70" style="flex:1">
+        <input type="number" id="s-gly-high" placeholder="140" style="flex:1">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-s" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-p" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   STATE
+   ================================================================ */
+const S = key => localStorage.getItem('gly_'+key)||'';
+const SS = (key,val) => localStorage.setItem('gly_'+key,val);
+const SJ = key => { try{return JSON.parse(localStorage.getItem('gly_'+key)||'[]')}catch{return[]} };
+const SSJ = (key,val) => localStorage.setItem('gly_'+key,JSON.stringify(val));
+
+function getGlucose(person){ return SJ('glucose_'+person) }
+function setGlucose(person,data){ SSJ('glucose_'+person,data) }
+function getLogs(){ return SJ('logs') }
+function setLogs(data){ SSJ('logs',data) }
+function getArchive(){ return SJ('archive') }
+function setArchive(data){ SSJ('archive',data) }
+function getTargetLow(){ return parseInt(S('gly_low'))||70 }
+function getTargetHigh(){ return parseInt(S('gly_high'))||140 }
+
+const PROFILES = {
+  axel: { name:'Axel', born:1990, age:36, sex:'Male', color:'#3b82f6', short:'A' },
+  fanny: { name:'Fanny', born:1987, age:39, sex:'Female', color:'#e8437f', short:'F' }
+};
+
+/* ================================================================
+   NAV
+   ================================================================ */
+document.querySelectorAll('.nav button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.nav button').forEach(t=>t.classList.remove('on'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+    b.classList.add('on');
+    document.getElementById('v-'+b.dataset.v).classList.add('on');
+    if(b.dataset.v==='daily') renderDaily();
+    if(b.dataset.v==='weekly') renderWeekly();
+    if(b.dataset.v==='tests') renderTests();
+    if(b.dataset.v==='log') renderRecentLogs();
+    if(b.dataset.v==='data') renderDataStatus();
+    if(b.dataset.v==='archive') renderArchive();
+  };
+});
+
+/* ================================================================
+   SETTINGS
+   ================================================================ */
+document.getElementById('btn-settings').onclick=()=>{
+  document.getElementById('s-openai').value=S('openai');
+  document.getElementById('s-model').value=S('model')||'gpt-4o-mini';
+  document.getElementById('s-llu-email').value=S('llu_email');
+  document.getElementById('s-llu-pass').value=S('llu_pass');
+  document.getElementById('s-gly-low').value=S('gly_low')||'70';
+  document.getElementById('s-gly-high').value=S('gly_high')||'140';
+  document.getElementById('modal-settings').classList.add('open');
+};
+function closeModal(){ document.getElementById('modal-settings').classList.remove('open') }
+document.getElementById('modal-settings').onclick=e=>{ if(e.target===e.currentTarget)closeModal() };
+function saveSettings(){
+  SS('openai',document.getElementById('s-openai').value.trim());
+  SS('model',document.getElementById('s-model').value);
+  SS('llu_email',document.getElementById('s-llu-email').value.trim());
+  SS('llu_pass',document.getElementById('s-llu-pass').value.trim());
+  SS('gly_low',document.getElementById('s-gly-low').value.trim());
+  SS('gly_high',document.getElementById('s-gly-high').value.trim());
+  updateDot(); closeModal();
+}
+function updateDot(){ document.getElementById('key-dot').className='dot'+(S('openai')?' ok':'') }
+
+/* ================================================================
+   LIBRE CSV PARSER
+   ================================================================ */
+function parseLibreCSV(text){
+  const lines=text.split('\n');
+  const readings=[];
+  // Find header row — LibreView CSVs have metadata rows before the actual data
+  let headerIdx=-1;
+  for(let i=0;i<Math.min(lines.length,10);i++){
+    const low=lines[i].toLowerCase();
+    if(low.includes('device timestamp')||low.includes('horodatage')||low.includes('gerätezeitstempel')){
+      headerIdx=i; break;
+    }
+  }
+  if(headerIdx===-1){
+    // Try simpler: look for first line with many commas
+    for(let i=0;i<Math.min(lines.length,10);i++){
+      if((lines[i].match(/,/g)||[]).length>=5){headerIdx=i;break}
+    }
+  }
+  if(headerIdx===-1) return readings;
+
+  const headers=lines[headerIdx].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''));
+  // Find relevant columns
+  const tsCol=headers.findIndex(h=>h.includes('timestamp')||h.includes('horodatage')||h.includes('zeitstempel'));
+  const typeCol=headers.findIndex(h=>h.includes('record type')||h.includes('type d'));
+  const histCol=headers.findIndex(h=>h.includes('historic glucose')||h.includes('historique')||h.includes('glukosewert'));
+  const scanCol=headers.findIndex(h=>h.includes('scan glucose')||h.includes('numérisation'));
+
+  for(let i=headerIdx+1;i<lines.length;i++){
+    const cols=lines[i].split(',').map(c=>c.trim().replace(/"/g,''));
+    if(cols.length<=Math.max(tsCol,histCol,scanCol)) continue;
+
+    const ts=cols[tsCol];
+    if(!ts) continue;
+
+    // Get glucose value: prefer historic, fall back to scan
+    let val=parseFloat(cols[histCol]);
+    if(isNaN(val)&&scanCol>=0) val=parseFloat(cols[scanCol]);
+    if(isNaN(val)) continue;
+
+    // Parse timestamp — LibreView uses various formats
+    let dt=luxon.DateTime.fromFormat(ts,'dd-MM-yyyy HH:mm');
+    if(!dt.isValid) dt=luxon.DateTime.fromFormat(ts,'MM-dd-yyyy HH:mm');
+    if(!dt.isValid) dt=luxon.DateTime.fromFormat(ts,'yyyy-MM-dd HH:mm');
+    if(!dt.isValid) dt=luxon.DateTime.fromFormat(ts,'dd/MM/yyyy HH:mm');
+    if(!dt.isValid) dt=luxon.DateTime.fromFormat(ts,'MM/dd/yyyy HH:mm');
+    if(!dt.isValid) dt=luxon.DateTime.fromISO(ts);
+    if(!dt.isValid) continue;
+
+    readings.push({ t:dt.toISO(), v:val });
+  }
+  return readings.sort((a,b)=>a.t.localeCompare(b.t));
+}
+
+function handleCSV(person,event){
+  const file=event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const readings=parseLibreCSV(e.target.result);
+    if(readings.length===0){
+      document.getElementById('upload-status').innerHTML='<div class="err">Could not parse any glucose readings from this file. Make sure it\'s a LibreView export CSV.</div>';
+      return;
+    }
+    // Merge with existing
+    const existing=getGlucose(person);
+    const merged=[...existing,...readings];
+    // Deduplicate by timestamp
+    const seen=new Set();
+    const unique=merged.filter(r=>{if(seen.has(r.t))return false;seen.add(r.t);return true});
+    unique.sort((a,b)=>a.t.localeCompare(b.t));
+    setGlucose(person,unique);
+    document.getElementById('upload-status').innerHTML=`<div class="ai-box"><div class="ai-label">✓ Imported</div><p>${readings.length} readings for ${PROFILES[person].name}. Total: ${unique.length} readings.</p></div>`;
+    renderDataStatus();
+  };
+  reader.readAsText(file);
+}
+
+// Drag and drop
+['upload-axel','upload-fanny'].forEach(id=>{
+  const el=document.getElementById(id);
+  const person=id.includes('axel')?'axel':'fanny';
+  el.ondragover=e=>{e.preventDefault();el.classList.add('drag')};
+  el.ondragleave=()=>el.classList.remove('drag');
+  el.ondrop=e=>{e.preventDefault();el.classList.remove('drag');
+    const file=e.dataTransfer.files[0];
+    if(file) handleCSV(person,{target:{files:[file]}});
+  };
+});
+
+/* ================================================================
+   LIBRELINKUP API
+   ================================================================ */
+async function fetchLibreLinkUp(){
+  const status=document.getElementById('llu-status');
+  const email=S('llu_email'), pass=S('llu_pass');
+  if(!email||!pass){status.innerHTML='<div class="err">Set LibreLinkUp credentials in Settings first.</div>';return}
+
+  status.innerHTML='<div class="spinner"></div><span style="font-size:12px;color:var(--text3)">Connecting to LibreLinkUp...</span>';
+
+  try{
+    // Login
+    const loginRes=await fetch('https://api-eu.libreview.io/llu/auth/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','product':'llu.android','version':'4.7.0'},
+      body:JSON.stringify({email,password:pass})
+    });
+    const loginData=await loginRes.json();
+
+    let token,apiBase='https://api-eu.libreview.io';
+    if(loginData.data?.redirect){
+      // Regional redirect
+      const region=loginData.data.region;
+      apiBase=`https://api-${region}.libreview.io`;
+      const r2=await fetch(`${apiBase}/llu/auth/login`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','product':'llu.android','version':'4.7.0'},
+        body:JSON.stringify({email,password:pass})
+      });
+      const d2=await r2.json();
+      token=d2.data?.authTicket?.token;
+    } else {
+      token=loginData.data?.authTicket?.token;
+    }
+    if(!token) throw new Error('Login failed — check credentials.');
+
+    // Get connections
+    const connRes=await fetch(`${apiBase}/llu/connections`,{
+      headers:{'Authorization':'Bearer '+token,'product':'llu.android','version':'4.7.0'}
+    });
+    const connData=await connRes.json();
+    const patients=connData.data||[];
+
+    if(patients.length===0){status.innerHTML='<div class="err">No connected patients found. Make sure Axel and Fanny share their Libre data via LibreLinkUp.</div>';return}
+
+    let total=0;
+    for(const p of patients){
+      const graphRes=await fetch(`${apiBase}/llu/connections/${p.patientId}/graph`,{
+        headers:{'Authorization':'Bearer '+token,'product':'llu.android','version':'4.7.0'}
+      });
+      const graphData=await graphRes.json();
+      const measurements=graphData.data?.graphData||[];
+
+      const readings=measurements.map(m=>({
+        t:luxon.DateTime.fromISO(m.Timestamp||m.FactoryTimestamp).toISO(),
+        v:m.ValueInMgPerDl||m.Value
+      })).filter(r=>r.t&&!isNaN(r.v));
+
+      // Match patient to person by name
+      const name=(p.firstName||'').toLowerCase();
+      let person=null;
+      if(name.includes('axel')||name.includes('a')) person='axel';
+      if(name.includes('fanny')||name.includes('f')) person='fanny';
+      if(!person) person=patients.indexOf(p)===0?'axel':'fanny';
+
+      const existing=getGlucose(person);
+      const merged=[...existing,...readings];
+      const seen=new Set();
+      const unique=merged.filter(r=>{if(seen.has(r.t))return false;seen.add(r.t);return true});
+      unique.sort((a,b)=>a.t.localeCompare(b.t));
+      setGlucose(person,unique);
+      total+=readings.length;
+    }
+
+    status.innerHTML=`<div class="ai-box"><div class="ai-label">✓ Success</div><p>Fetched ${total} readings from ${patients.length} patient(s).</p></div>`;
+    renderDataStatus();
+
+  }catch(err){
+    status.innerHTML=`<div class="err">${esc(err.message)}<br><br>If you see a CORS error: LibreLinkUp blocks direct browser requests. Use CSV upload as fallback, or we can set up a Cloudflare Worker proxy.</div>`;
+  }
+}
+
+/* ================================================================
+   CHARTS
+   ================================================================ */
+let chartDaily=null, chartWeekly=null;
+
+function renderDaily(){
+  const pick=document.getElementById('day-pick');
+  if(!pick.value) pick.valueAsDate=new Date();
+  const day=pick.value;
+  const dayStart=luxon.DateTime.fromISO(day).startOf('day');
+  const dayEnd=dayStart.endOf('day');
+
+  const axData=getGlucose('axel').filter(r=>r.t>=dayStart.toISO()&&r.t<=dayEnd.toISO());
+  const faData=getGlucose('fanny').filter(r=>r.t>=dayStart.toISO()&&r.t<=dayEnd.toISO());
+  const logs=getLogs().filter(l=>l.date===day).sort((a,b)=>a.time.localeCompare(b.time));
+
+  // Stats
+  const statsEl=document.getElementById('daily-stats');
+  const axVals=axData.map(r=>r.v), faVals=faData.map(r=>r.v);
+  const lo=getTargetLow(), hi=getTargetHigh();
+  const tir=vals=>vals.length?Math.round(vals.filter(v=>v>=lo&&v<=hi).length/vals.length*100):'-';
+  const avg=vals=>vals.length?Math.round(vals.reduce((s,v)=>s+v,0)/vals.length):'-';
+  const peak=vals=>vals.length?Math.max(...vals):'-';
+  statsEl.innerHTML=`
+    <div class="stat-card ax"><div class="label">Axel avg</div><div class="value">${avg(axVals)}</div><div class="sub">mg/dL · TIR ${tir(axVals)}%</div></div>
+    <div class="stat-card fa"><div class="label">Fanny avg</div><div class="value">${avg(faVals)}</div><div class="sub">mg/dL · TIR ${tir(faVals)}%</div></div>
+    <div class="stat-card ax"><div class="label">Axel peak</div><div class="value">${peak(axVals)}</div><div class="sub">mg/dL</div></div>
+    <div class="stat-card fa"><div class="label">Fanny peak</div><div class="value">${peak(faVals)}</div><div class="sub">mg/dL</div></div>`;
+
+  // Chart
+  if(chartDaily) chartDaily.destroy();
+  const ctx=document.getElementById('chart-daily').getContext('2d');
+
+  // Meal/sport markers
+  const mealAnnotations=logs.filter(l=>l.cat==='meal'||l.cat==='sport'||l.cat==='test').map(l=>({
+    x:luxon.DateTime.fromISO(day+'T'+l.time).toJSDate(),
+    label:l.cat==='meal'?'🍽️':l.cat==='sport'?'🏃':'🧪',
+    desc:l.desc
+  }));
+
+  chartDaily=new Chart(ctx,{
+    type:'line',
+    data:{
+      datasets:[
+        {
+          label:'Target Zone',
+          data:[{x:dayStart.toJSDate(),y:hi},{x:dayEnd.toJSDate(),y:hi}],
+          borderColor:'transparent',backgroundColor:'rgba(34,197,94,0.07)',
+          fill:{target:{value:lo},above:'rgba(34,197,94,0.07)'},
+          pointRadius:0,tension:0
+        },
+        {
+          label:'Axel',
+          data:axData.map(r=>({x:new Date(r.t),y:r.v})),
+          borderColor:PROFILES.axel.color,backgroundColor:PROFILES.axel.color+'20',
+          borderWidth:2,pointRadius:0,pointHitRadius:8,tension:.3,fill:false
+        },
+        {
+          label:'Fanny',
+          data:faData.map(r=>({x:new Date(r.t),y:r.v})),
+          borderColor:PROFILES.fanny.color,backgroundColor:PROFILES.fanny.color+'20',
+          borderWidth:2,pointRadius:0,pointHitRadius:8,tension:.3,fill:false
+        },
+        {
+          label:'Events',
+          data:mealAnnotations.map(m=>({x:m.x,y:hi+5})),
+          pointStyle:mealAnnotations.map(m=>m.label==='🍽️'?'triangle':m.label==='🏃'?'rect':'star'),
+          pointRadius:8,pointBackgroundColor:'#6b7280',
+          showLine:false,borderWidth:0
+        }
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{type:'time',time:{unit:'hour',displayFormats:{hour:'HH:mm'}},
+          min:dayStart.toJSDate(),max:dayEnd.toJSDate(),
+          grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10}}},
+        y:{min:50,max:220,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},callback:v=>v+' mg/dL'}}
+      },
+      plugins:{
+        legend:{display:true,labels:{usePointStyle:true,pointStyle:'line',font:{size:11},filter:i=>i.text!=='Target Zone'&&i.text!=='Events'}},
+        tooltip:{
+          callbacks:{
+            label:ctx=>{
+              if(ctx.dataset.label==='Events'){
+                const m=mealAnnotations[ctx.dataIndex];
+                return m?m.desc:'';
+              }
+              return ctx.dataset.label+': '+ctx.parsed.y+' mg/dL';
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Timeline
+  const tlEl=document.getElementById('daily-timeline');
+  if(logs.length===0){
+    tlEl.innerHTML='<div class="empty"><p>No logs for this day. Go to Log Entry to add meals, sport, or notes.</p></div>';
+  } else {
+    tlEl.innerHTML=logs.map(l=>{
+      const pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';
+      const pLetter=l.person==='both'?'AB':l.person==='axel'?'A':'F';
+      return`<div class="tl-item">
+        <div class="tl-time">${l.time}</div>
+        <div class="tl-person ${pCls}">${pLetter}</div>
+        <span class="tl-cat cat-${l.cat}">${catLabel(l.cat)}</span>
+        <div class="tl-desc">${esc(l.desc)}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function renderWeekly(){
+  const label=document.getElementById('week-label');
+  if(!window._weekStart) window._weekStart=luxon.DateTime.now().startOf('week');
+  const ws=window._weekStart, we=ws.plus({days:6});
+  label.textContent=ws.toFormat('LLL d')+' – '+we.toFormat('LLL d, yyyy');
+
+  const days=[];
+  for(let i=0;i<7;i++) days.push(ws.plus({days:i}));
+
+  // Compute daily averages
+  const axAvgs=[],faAvgs=[],labels=[];
+  days.forEach(d=>{
+    const ds=d.startOf('day').toISO(), de=d.endOf('day').toISO();
+    const ax=getGlucose('axel').filter(r=>r.t>=ds&&r.t<=de).map(r=>r.v);
+    const fa=getGlucose('fanny').filter(r=>r.t>=ds&&r.t<=de).map(r=>r.v);
+    labels.push(d.toFormat('ccc d'));
+    axAvgs.push(ax.length?Math.round(ax.reduce((s,v)=>s+v,0)/ax.length):null);
+    faAvgs.push(fa.length?Math.round(fa.reduce((s,v)=>s+v,0)/fa.length):null);
+  });
+
+  // Weekly stats
+  const allAx=getGlucose('axel').filter(r=>r.t>=ws.toISO()&&r.t<=we.endOf('day').toISO()).map(r=>r.v);
+  const allFa=getGlucose('fanny').filter(r=>r.t>=ws.toISO()&&r.t<=we.endOf('day').toISO()).map(r=>r.v);
+  const lo=getTargetLow(),hi=getTargetHigh();
+  const tir=vals=>vals.length?Math.round(vals.filter(v=>v>=lo&&v<=hi).length/vals.length*100):'-';
+  const avg=vals=>vals.length?Math.round(vals.reduce((s,v)=>s+v,0)/vals.length):'-';
+  const sd=vals=>{if(vals.length<2)return'-';const m=vals.reduce((s,v)=>s+v,0)/vals.length;return Math.round(Math.sqrt(vals.reduce((s,v)=>s+(v-m)**2,0)/vals.length))};
+
+  document.getElementById('weekly-stats').innerHTML=`
+    <div class="stat-card ax"><div class="label">Axel weekly avg</div><div class="value">${avg(allAx)}</div><div class="sub">TIR ${tir(allAx)}% · SD ${sd(allAx)}</div></div>
+    <div class="stat-card fa"><div class="label">Fanny weekly avg</div><div class="value">${avg(allFa)}</div><div class="sub">TIR ${tir(allFa)}% · SD ${sd(allFa)}</div></div>`;
+
+  if(chartWeekly) chartWeekly.destroy();
+  const ctx=document.getElementById('chart-weekly').getContext('2d');
+  chartWeekly=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Axel avg',data:axAvgs,backgroundColor:PROFILES.axel.color+'90',borderRadius:4},
+        {label:'Fanny avg',data:faAvgs,backgroundColor:PROFILES.fanny.color+'90',borderRadius:4}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{y:{min:60,max:180,ticks:{font:{size:10},callback:v=>v},grid:{color:'rgba(0,0,0,.04)'}},x:{ticks:{font:{size:10}}}},
+      plugins:{legend:{labels:{font:{size:11}}}}
+    }
+  });
+}
+
+function shiftDay(d){const p=document.getElementById('day-pick');const dt=luxon.DateTime.fromISO(p.value).plus({days:d});p.value=dt.toISODate();renderDaily()}
+function shiftWeek(d){window._weekStart=(window._weekStart||luxon.DateTime.now().startOf('week')).plus({weeks:d});renderWeekly()}
+
+/* ================================================================
+   TESTS
+   ================================================================ */
+const TESTS=[
+  {id:'alcohol_type',name:'Alcohol type: beer vs vodka',desc:'Same person, different days. Compare glucose response to beer vs vodka (same alcohol content if possible).'},
+  {id:'alcohol_timing',name:'Alcohol timing: alone vs after meal',desc:'Same drink — once on empty stomach, once after a full meal. Compare spike.'},
+  {id:'bread_type',name:'Levain vs regular bread',desc:'Same quantity of sourdough (levain) vs regular white bread. Measure glucose response over 2h.'},
+  {id:'coffee_timing',name:'Coffee: alone vs after meal',desc:'Black coffee on empty stomach vs after a meal. Compare glucose impact.'},
+  {id:'biscuit_timing',name:'Biscuit: breakfast vs after meal',desc:'Same biscuit eaten as breakfast (alone) vs eaten after a proper meal. Compare spike height and duration.'},
+  {id:'carb_order',name:'Carbs first vs carbs last',desc:'Same meal, different order. Once starting with carbs, once ending with carbs (veggies/protein first). Compare glucose curve.'},
+  {id:'carb_free',name:'Carb-free meal vs carby meal',desc:'A meal with minimal carbs vs the same meal with a carb portion. Compare response.'},
+  {id:'sport_type',name:'Sport type comparison',desc:'Compare glucose response to different activities: yoga, run, cycle, rowing, walk. Same time of day if possible.'},
+  {id:'sport_timing',name:'Sport timing: before breakfast vs after meal',desc:'Same exercise — once fasted (before breakfast), once after a meal. Compare glucose response.'},
+  {id:'ingredient_timing',name:'Same ingredient, different time of day',desc:'Same food eaten in the morning vs afternoon vs evening. Compare glucose response across times.'},
+];
+
+function renderTests(){
+  const tests=SJ('tests_meta');
+  document.getElementById('tests-list').innerHTML=TESTS.map(t=>{
+    const meta=tests.find(m=>m.id===t.id)||{};
+    const status=meta.status||'pending';
+    const stCls=status==='done'?'st-done':status==='active'?'st-active':'st-pending';
+    const stLabel=status==='done'?'✓ Done':status==='active'?'● Active':'Pending';
+    return`<div class="test-card">
+      <div style="flex:1">
+        <h3>${esc(t.name)}</h3>
+        <div class="desc">${esc(t.desc)}</div>
+        ${meta.date?`<div style="font-size:11px;color:var(--text3);margin-top:6px">Date: ${meta.date}</div>`:''}
+        ${meta.notes?`<div style="font-size:11px;color:var(--text2);margin-top:4px">Notes: ${esc(meta.notes)}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        <span class="test-status ${stCls}">${stLabel}</span>
+        <button class="btn btn-s" style="font-size:10px" onclick="editTest('${t.id}')">Edit</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function editTest(id){
+  const tests=SJ('tests_meta');
+  const existing=tests.find(m=>m.id===id)||{id};
+  const date=prompt('Date for this test (YYYY-MM-DD):',existing.date||luxon.DateTime.now().toISODate());
+  if(date===null) return;
+  const status=prompt('Status (pending / active / done):',existing.status||'active');
+  if(status===null) return;
+  const notes=prompt('Notes (optional):',existing.notes||'');
+
+  const updated=tests.filter(m=>m.id!==id);
+  updated.push({id,date,status,notes});
+  SSJ('tests_meta',updated);
+  renderTests();
+}
+
+/* ================================================================
+   LOG ENTRY
+   ================================================================ */
+let logPerson='both';
+function selPerson(p,btn){
+  logPerson=p;
+  document.querySelectorAll('#log-person button').forEach(b=>b.className='');
+  btn.className=p==='axel'?'sel-ax':p==='fanny'?'sel-fa':'sel-bo';
+}
+
+function saveLog(){
+  const date=document.getElementById('log-date').value;
+  const time=document.getElementById('log-time').value;
+  const cat=document.getElementById('log-cat').value;
+  const desc=document.getElementById('log-desc').value.trim();
+  if(!date||!time||!desc){document.getElementById('log-msg').innerHTML='<span style="color:#c0392b">Fill all fields.</span>';return}
+
+  const logs=getLogs();
+  logs.push({id:Date.now(),person:logPerson,date,time,cat,desc});
+  setLogs(logs);
+
+  document.getElementById('log-desc').value='';
+  document.getElementById('log-msg').innerHTML='<span style="color:var(--primary)">✓ Saved</span>';
+  setTimeout(()=>document.getElementById('log-msg').innerHTML='',2000);
+  renderRecentLogs();
+}
+
+function renderRecentLogs(){
+  const logs=getLogs().sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,20);
+  const el=document.getElementById('log-recent');
+  if(!logs.length){el.innerHTML='<div class="empty"><p>No entries yet.</p></div>';return}
+  el.innerHTML=logs.map(l=>{
+    const pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';
+    const pLetter=l.person==='both'?'AB':l.person==='axel'?'A':'F';
+    return`<div class="tl-item">
+      <div class="tl-time" style="width:100px">${l.date}<br>${l.time}</div>
+      <div class="tl-person ${pCls}">${pLetter}</div>
+      <span class="tl-cat cat-${l.cat}">${catLabel(l.cat)}</span>
+      <div class="tl-desc">${esc(l.desc)}</div>
+      <button class="arc-del" onclick="deleteLog(${l.id})" title="Delete">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function deleteLog(id){const logs=getLogs().filter(l=>l.id!==id);setLogs(logs);renderRecentLogs()}
+function catLabel(c){return{meal:'🍽️ Meal',sport:'🏃 Sport',test:'🧪 Test',note:'📝 Note',period:'🔴 Period'}[c]||c}
+
+/* ================================================================
+   DATA STATUS
+   ================================================================ */
+function renderDataStatus(){
+  const ax=getGlucose('axel'), fa=getGlucose('fanny');
+  const el=document.getElementById('data-status');
+  const range=(data)=>{
+    if(!data.length) return 'No data';
+    const first=luxon.DateTime.fromISO(data[0].t).toFormat('LLL d HH:mm');
+    const last=luxon.DateTime.fromISO(data[data.length-1].t).toFormat('LLL d HH:mm');
+    return`${data.length} readings · ${first} → ${last}`;
+  };
+  el.innerHTML=`
+    <p style="margin-bottom:6px"><strong style="color:var(--axel)">Axel:</strong> ${range(ax)}</p>
+    <p><strong style="color:var(--fanny)">Fanny:</strong> ${range(fa)}</p>`;
+}
+
+/* ================================================================
+   AI ANALYSIS
+   ================================================================ */
+async function callAI(sys,usr){
+  const key=S('openai');
+  if(!key) throw new Error('OpenAI API key not set. Click ⚙ to add it.');
+  const res=await fetch('https://api.openai.com/v1/chat/completions',{
+    method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+    body:JSON.stringify({model:S('model')||'gpt-4o-mini',temperature:.3,max_tokens:3000,
+      messages:[{role:'system',content:sys},{role:'user',content:usr}]})
+  });
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||'API error '+res.status)}
+  const d=await res.json();
+  let c=d.choices?.[0]?.message?.content||'';
+  return c.replace(/^```(?:html)?\s*\n?/i,'').replace(/\n?```\s*$/i,'');
+}
+
+const AI_CONTEXT=`Profiles: Axel (male, 36, born 1990) and Fanny (female, 39, born 1987). Both wearing Freestyle Libre 2 Plus CGM for a 14-15 day experiment.
+Baseline: sugar ~7.9g/day, fiber ~38.5g/day, protein ~53g/day. Default movement: yoga+walk mornings weekdays, cycling 2-3x/week.
+Kitchen: olive oil default, no added sugar in savory, PB always sugar-free. Magnus porridge = rye/barley/flax/sunflower/pumpkin seeds.
+Sleep: bed 21-21:30, lights off 22:00, wake 06:00 weekdays.
+Food order in logs = real consumption order (fiber/protein before carbs = better glycemic profile).
+Sugar codes: FM=homemade, LS=low sugar, NS=no added sugar.
+Consider hormonal differences (Fanny: female, menstrual cycle can affect insulin sensitivity). Consider age differences in metabolic response.
+Target range: ${getTargetLow()}-${getTargetHigh()} mg/dL.`;
+
+async function aiDailyInsight(){
+  const el=document.getElementById('daily-ai');
+  const day=document.getElementById('day-pick').value;
+  el.innerHTML='<div style="text-align:center;padding:20px"><div class="spinner"></div><span style="font-size:12px;color:var(--text3)">Analyzing...</span></div>';
+
+  try{
+    const dayStart=luxon.DateTime.fromISO(day).startOf('day').toISO();
+    const dayEnd=luxon.DateTime.fromISO(day).endOf('day').toISO();
+    const ax=getGlucose('axel').filter(r=>r.t>=dayStart&&r.t<=dayEnd);
+    const fa=getGlucose('fanny').filter(r=>r.t>=dayStart&&r.t<=dayEnd);
+    const logs=getLogs().filter(l=>l.date===day).sort((a,b)=>a.time.localeCompare(b.time));
+
+    const dataStr=`Date: ${day}
+Axel glucose (${ax.length} readings): avg=${ax.length?Math.round(ax.reduce((s,r)=>s+r.v,0)/ax.length):'-'}, peak=${ax.length?Math.max(...ax.map(r=>r.v)):'-'}, low=${ax.length?Math.min(...ax.map(r=>r.v)):'-'}
+Fanny glucose (${fa.length} readings): avg=${fa.length?Math.round(fa.reduce((s,r)=>s+r.v,0)/fa.length):'-'}, peak=${fa.length?Math.max(...fa.map(r=>r.v)):'-'}, low=${fa.length?Math.min(...fa.map(r=>r.v)):'-'}
+
+Hourly patterns:
+${summarizeHourly(ax,'Axel')}
+${summarizeHourly(fa,'Fanny')}
+
+Logs:
+${logs.map(l=>`${l.time} [${l.person}] ${l.cat}: ${l.desc}`).join('\n')||'No logs.'}`;
+
+    const sys=`${AI_CONTEXT}
+You are a glycemia analyst. Provide a concise daily insight in HTML. Use these CSS classes: ai-box, ai-label.
+Structure:
+- Key observations (what happened today — spikes, stable periods, differences between A and F)
+- Correlations with meals/sport/events from the logs (be specific: "the spike to 165 at 13:00 for Axel likely correlates with the pasta at 12:30")
+- What went well (stable periods, good food order, effective exercise timing)
+- What to watch (high spikes, missing meals, patterns to test)
+- Axel vs Fanny comparison (how they responded differently to the same meals/activities, considering sex/age)
+Be specific with numbers. Be direct and actionable. No vague statements.`;
+
+    const html=await callAI(sys,dataStr);
+    el.innerHTML=html;
+  }catch(err){el.innerHTML=`<div class="err">${esc(err.message)}</div>`}
+}
+
+async function aiWeeklyInsight(){
+  const el=document.getElementById('weekly-ai');
+  el.innerHTML='<div style="text-align:center;padding:20px"><div class="spinner"></div><span style="font-size:12px;color:var(--text3)">Analyzing week...</span></div>';
+
+  try{
+    const ws=window._weekStart||luxon.DateTime.now().startOf('week');
+    const we=ws.plus({days:6}).endOf('day');
+    const ax=getGlucose('axel').filter(r=>r.t>=ws.toISO()&&r.t<=we.toISO());
+    const fa=getGlucose('fanny').filter(r=>r.t>=ws.toISO()&&r.t<=we.toISO());
+    const logs=getLogs().filter(l=>l.date>=ws.toISODate()&&l.date<=we.toISODate()).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+
+    const lo=getTargetLow(),hi=getTargetHigh();
+    const dataStr=`Week: ${ws.toISODate()} to ${we.toISODate()}
+Axel: ${ax.length} readings, avg=${ax.length?Math.round(ax.reduce((s,r)=>s+r.v,0)/ax.length):'-'}, TIR=${ax.length?Math.round(ax.filter(r=>r.v>=lo&&r.v<=hi).length/ax.length*100):'-'}%
+Fanny: ${fa.length} readings, avg=${fa.length?Math.round(fa.reduce((s,r)=>s+r.v,0)/fa.length):'-'}, TIR=${fa.length?Math.round(fa.filter(r=>r.v>=lo&&r.v<=hi).length/fa.length*100):'-'}%
+
+Logs this week:
+${logs.map(l=>`${l.date} ${l.time} [${l.person}] ${l.cat}: ${l.desc}`).join('\n')||'No logs.'}`;
+
+    const sys=`${AI_CONTEXT}
+You are a glycemia analyst giving a weekly summary. HTML format with ai-box/ai-label classes.
+Structure:
+- Week overview (overall glycemic control for each person)
+- Best days and why (correlate with logs)
+- Worst days and why
+- Patterns spotted (recurring triggers, foods that consistently spike, exercises that help)
+- Axel vs Fanny differences (sex/age/hormonal considerations)
+- Recommendations for next week (specific, actionable: "try eating X before Y", "test morning exercise on spike-prone days")
+Be direct, specific with numbers, and actionable.`;
+
+    const html=await callAI(sys,dataStr);
+    el.innerHTML=html;
+  }catch(err){el.innerHTML=`<div class="err">${esc(err.message)}</div>`}
+}
+
+function summarizeHourly(data,name){
+  if(!data.length) return name+': no data';
+  const hours={};
+  data.forEach(r=>{const h=luxon.DateTime.fromISO(r.t).hour;if(!hours[h])hours[h]=[];hours[h].push(r.v)});
+  return name+': '+Object.entries(hours).sort((a,b)=>a[0]-b[0]).map(([h,vals])=>{
+    const avg=Math.round(vals.reduce((s,v)=>s+v,0)/vals.length);
+    return`${h}h:${avg}`;
+  }).join(', ');
+}
+
+/* ================================================================
+   ARCHIVE
+   ================================================================ */
+function saveToArchive(title,html){
+  const arc=getArchive();
+  arc.unshift({id:Date.now(),title,date:new Date().toISOString(),html});
+  setArchive(arc);
+}
+
+function renderArchive(){
+  const arc=getArchive();
+  const el=document.getElementById('archive-out');
+  if(!arc.length){el.innerHTML='<div class="empty"><div class="icon">📂</div><h3>Archive empty</h3><p>AI insights will appear here when you save them.</p></div>';return}
+  el.innerHTML=arc.map(a=>{
+    const d=new Date(a.date);
+    return`<div class="arc-item" onclick="viewArcItem(${a.id})">
+      <div style="flex:1"><h3>${esc(a.title)}</h3><div class="arc-date">${d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div></div>
+      <button class="arc-del" onclick="event.stopPropagation();delArc(${a.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function viewArcItem(id){
+  const item=getArchive().find(a=>a.id===id);
+  if(!item) return;
+  document.getElementById('archive-out').innerHTML=`
+    <button class="btn btn-s" onclick="renderArchive()" style="margin-bottom:16px">← Back</button>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">${new Date(item.date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</div>
+    <h2 style="font-size:16px;font-weight:700;margin-bottom:16px">${esc(item.title)}</h2>
+    ${item.html}`;
+}
+
+function delArc(id){if(!confirm('Delete?'))return;setArchive(getArchive().filter(a=>a.id!==id));renderArchive()}
+
+/* ================================================================
+   EXPORT
+   ================================================================ */
+function exportAll(){
+  const data={
+    exported:new Date().toISOString(),
+    profiles:PROFILES,
+    glucose:{axel:getGlucose('axel'),fanny:getGlucose('fanny')},
+    logs:getLogs(),
+    tests:SJ('tests_meta'),
+    archive:getArchive(),
+    settings:{targetLow:getTargetLow(),targetHigh:getTargetHigh()}
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`gly-export-${luxon.DateTime.now().toISODate()}.json`;
+  a.click();URL.revokeObjectURL(url);
+}
+
+/* ================================================================
+   UTILS
+   ================================================================ */
+function esc(s){const e=document.createElement('span');e.textContent=s;return e.innerHTML}
+
+/* ================================================================
+   INIT
+   ================================================================ */
+updateDot();
+document.getElementById('day-pick').valueAsDate=new Date();
+const now=new Date();
+document.getElementById('log-date').value=luxon.DateTime.now().toISODate();
+document.getElementById('log-time').value=luxon.DateTime.now().toFormat('HH:mm');
+renderDaily();
+</script>
+</body>
+</html>
