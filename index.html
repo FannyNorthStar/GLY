@@ -261,6 +261,7 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
     </div>
     <div class="form-row">
       <label>Description</label>
+      <div id="fav-buttons"></div>
       <textarea id="log-desc" placeholder="e.g. Porridge Magnus 80g + blueberries + PB. Then coffee black.&#10;List items in order eaten."></textarea>
     </div>
     <button class="btn btn-p" onclick="saveLog()">Save entry</button>
@@ -319,56 +320,17 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
     </div>
   </div>
 
-  <div class="baseline-section">
-    <h2>Sugar Conventions</h2>
-    <table class="baseline-table">
-      <tr><th>Code</th><th>Meaning</th></tr>
-      <tr><td><strong>FM</strong></td><td>Fait maison (homemade)</td></tr>
-      <tr><td><strong>LS</strong></td><td>Low sugar — peu sucré</td></tr>
-      <tr><td><strong>NS</strong></td><td>No added sugar/honey/maple — may contain whole fruit sugar</td></tr>
-    </table>
-    <p style="font-size:12px;color:var(--text2);margin-top:6px">Savory dishes = 0g added sugar by default (exceptions: pickled cucumber, Asian sauces). Peanut butter = always sugar-free.</p>
-  </div>
+  <div id="baseline-sections"></div>
 
-  <div class="baseline-section">
-    <h2>Kitchen Defaults</h2>
-    <p style="font-size:12px;color:var(--text2)">Olive oil for all cooking and raw use, even when not mentioned. A "salad" or "cooked zucchini" implicitly contains it.</p>
-  </div>
-
-  <div class="baseline-section">
-    <h2>Magnus Porridge</h2>
-    <p style="font-size:12px;color:var(--text2)">2 parts whole rye : 1 pearl barley : 1 flaxseed : 1 sunflower seeds : 1 pumpkin seeds. Soaked overnight, cooked (weight seeds = weight water, salted). Weight given (e.g. "80g") = dry weight before soaking.</p>
-  </div>
-
-  <div class="baseline-section">
-    <h2>Default Movement (Mon–Fri)</h2>
-    <p style="font-size:12px;color:var(--text2)">15-20min walk at wake-up, every weekday. 15-20min yoga before the walk (since Sept 4): sun salutations → kundalini → arms/chest → tree → single-leg balance → plank → cat-cow → child → twists → butterfly → shoulder stand+fire → plow → back roll → savasana.</p>
-  </div>
-
-  <div class="baseline-section">
-    <h2>Sleep Default</h2>
-    <p style="font-size:12px;color:var(--text2)">Bed 21:00-21:30, lights off 22:00 max 22:30, wake 06:00 weekdays / 07:00-07:30 weekends. No stress reported unless noted.</p>
-  </div>
-
-  <div class="baseline-section">
-    <h2>Food Order Convention</h2>
-    <p style="font-size:12px;color:var(--text2)">Foods always listed in real consumption order — used for food-order analysis (fiber/protein before carbs = better glycemic profile).</p>
-  </div>
-
-  <div class="baseline-section">
-    <h2>Stabilized Reference Norms</h2>
-    <table class="baseline-table">
-      <tr><th>Metric</th><th>Baseline (14-day avg)</th></tr>
-      <tr><td>Sugar/day</td><td>~7.9g</td></tr>
-      <tr><td>Fiber/day</td><td>~38.5g</td></tr>
-      <tr><td>Protein/day</td><td>~53g</td></tr>
-      <tr><td>Movement</td><td>Cycling 2-3x/week + walking/NEAT</td></tr>
-    </table>
-  </div>
-
-  <div class="baseline-section">
-    <h2>Recap Structure (weekly)</h2>
-    <p style="font-size:12px;color:var(--text2)">Protein → Fiber → Disease risk → Glycemia management (total glycemic load + food order) → Activity-movement (+ sarcopenia prevention) → Micronutrients → Antioxidants → Vitality → Blind spots (always present). Each weekly recap includes a multi-week global recap.</p>
+  <div class="card" style="margin-top:16px">
+    <h3>Favorite Meals (quick-log shortcuts)</h3>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Add meals you eat often. They'll appear as one-tap buttons in the Log Entry tab.</p>
+    <div id="fav-meals-list"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <input type="text" id="fav-name" placeholder="Label (e.g. Magnus breakfast)" style="flex:1;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
+      <input type="text" id="fav-desc" placeholder="Full description" style="flex:2;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
+      <button class="btn btn-p" onclick="addFavMeal()" style="white-space:nowrap">Add</button>
+    </div>
   </div>
 </div>
 
@@ -441,8 +403,9 @@ document.querySelectorAll('.nav button').forEach(b=>{
     if(b.dataset.v==='daily') renderDaily();
     if(b.dataset.v==='weekly') renderWeekly();
     if(b.dataset.v==='tests') renderTests();
-    if(b.dataset.v==='log') renderRecentLogs();
+    if(b.dataset.v==='log'){ renderRecentLogs(); renderFavButtons(); }
     if(b.dataset.v==='data') renderDataStatus();
+    if(b.dataset.v==='baseline') renderBaseline();
     if(b.dataset.v==='archive') renderArchive();
   };
 });
@@ -949,14 +912,130 @@ async function callAI(sys,usr){
   return c.replace(/^```(?:html)?\s*\n?/i,'').replace(/\n?```\s*$/i,'');
 }
 
-const AI_CONTEXT=`Profiles: Axel (male, 36, born 1990) and Fanny (female, 39, born 1987). Both wearing Freestyle Libre 2 Plus CGM for a 14-15 day experiment.
-Baseline: sugar ~7.9g/day, fiber ~38.5g/day, protein ~53g/day. Default movement: yoga+walk mornings weekdays, cycling 2-3x/week.
-Kitchen: olive oil default, no added sugar in savory, PB always sugar-free. Magnus porridge = rye/barley/flax/sunflower/pumpkin seeds.
-Sleep: bed 21-21:30, lights off 22:00, wake 06:00 weekdays.
-Food order in logs = real consumption order (fiber/protein before carbs = better glycemic profile).
-Sugar codes: FM=homemade, LS=low sugar, NS=no added sugar.
+const AI_CONTEXT_STATIC=`Profiles: Axel (male, 36, born 1990) and Fanny (female, 39, born 1987). Both wearing Freestyle Libre 2 Plus CGM for a 14-15 day experiment.
 Consider hormonal differences (Fanny: female, menstrual cycle can affect insulin sensitivity). Consider age differences in metabolic response.
 Target range: ${getTargetLow()}-${getTargetHigh()} mg/dL.`;
+
+function getAIContext(){
+  const bl=getBaseline();
+  const sections=bl.map(s=>`${s.title}: ${s.content}`).join('\n');
+  const favs=getFavMeals();
+  const favStr=favs.length?'\nFavorite meals (shortcuts the user uses): '+favs.map(f=>`${f.name} = ${f.desc}`).join('; '):'';
+  return AI_CONTEXT_STATIC+'\n'+sections+favStr;
+}
+
+/* ================================================================
+   EDITABLE BASELINE
+   ================================================================ */
+const DEFAULT_BASELINE=[
+  {id:'sugar_codes',title:'Sugar Conventions',content:'FM=Fait maison (homemade). LS=Low sugar. NS=No added sugar/honey/maple (may contain whole fruit sugar). Savory dishes = 0g added sugar by default (exceptions: pickled cucumber, Asian sauces). Peanut butter = always sugar-free.'},
+  {id:'kitchen',title:'Kitchen Defaults',content:'Olive oil for all cooking and raw use, even when not mentioned. A "salad" or "cooked zucchini" implicitly contains it.'},
+  {id:'porridge',title:'Magnus Porridge',content:'2 parts whole rye : 1 pearl barley : 1 flaxseed : 1 sunflower seeds : 1 pumpkin seeds. Soaked overnight, cooked (weight seeds = weight water, salted). Weight given (e.g. "80g") = dry weight before soaking.'},
+  {id:'movement',title:'Default Movement (Mon–Fri)',content:'15-20min walk at wake-up, every weekday. 15-20min yoga before the walk (since Sept 4): sun salutations → kundalini → arms/chest → tree → single-leg balance → plank → cat-cow → child → twists → butterfly → shoulder stand+fire → plow → back roll → savasana.'},
+  {id:'sleep',title:'Sleep Default',content:'Bed 21:00-21:30, lights off 22:00 max 22:30, wake 06:00 weekdays / 07:00-07:30 weekends. No stress reported unless noted.'},
+  {id:'food_order',title:'Food Order Convention',content:'Foods always listed in real consumption order — used for food-order analysis (fiber/protein before carbs = better glycemic profile).'},
+  {id:'norms',title:'Stabilized Reference Norms',content:'Sugar ~7.9g/day, Fiber ~38.5g/day, Protein ~53g/day. Movement: cycling 2-3x/week + walking/NEAT.'},
+  {id:'recap',title:'Recap Structure (weekly)',content:'Protein → Fiber → Disease risk → Glycemia management (total glycemic load + food order) → Activity-movement (+ sarcopenia prevention) → Micronutrients → Antioxidants → Vitality → Blind spots (always present). Each weekly recap includes a multi-week global recap.'}
+];
+
+function getBaseline(){
+  const stored=SJ('baseline');
+  return stored.length?stored:DEFAULT_BASELINE;
+}
+function setBaseline(data){ SSJ('baseline',data) }
+
+function getFavMeals(){ return SJ('fav_meals') }
+function setFavMeals(data){ SSJ('fav_meals',data) }
+
+function renderBaseline(){
+  const bl=getBaseline();
+  const el=document.getElementById('baseline-sections');
+  el.innerHTML=bl.map(s=>`
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <h3 style="font-size:13px">${esc(s.title)}</h3>
+        <button class="btn btn-s" style="font-size:10px;padding:4px 10px;flex-shrink:0" onclick="editBaseline('${s.id}')">Edit</button>
+      </div>
+      <p style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.6">${esc(s.content)}</p>
+    </div>
+  `).join('')+`
+    <button class="btn btn-s" onclick="addBaselineSection()" style="margin-top:8px">+ Add section</button>
+  `;
+  renderFavMeals();
+}
+
+function editBaseline(id){
+  const bl=getBaseline();
+  const s=bl.find(x=>x.id===id);
+  if(!s) return;
+  const title=prompt('Section title:',s.title);
+  if(title===null) return;
+  const content=prompt('Content (the AI reads this as context for every analysis):',s.content);
+  if(content===null) return;
+  s.title=title;
+  s.content=content;
+  setBaseline(bl);
+  renderBaseline();
+}
+
+function addBaselineSection(){
+  const title=prompt('New section title:');
+  if(!title) return;
+  const content=prompt('Content:');
+  if(!content) return;
+  const bl=getBaseline();
+  bl.push({id:'custom_'+Date.now(),title,content});
+  setBaseline(bl);
+  renderBaseline();
+}
+
+function addFavMeal(){
+  const name=document.getElementById('fav-name').value.trim();
+  const desc=document.getElementById('fav-desc').value.trim();
+  if(!name||!desc) return;
+  const favs=getFavMeals();
+  favs.push({id:Date.now(),name,desc});
+  setFavMeals(favs);
+  document.getElementById('fav-name').value='';
+  document.getElementById('fav-desc').value='';
+  renderFavMeals();
+  renderFavButtons();
+}
+
+function deleteFavMeal(id){
+  setFavMeals(getFavMeals().filter(f=>f.id!==id));
+  renderFavMeals();
+  renderFavButtons();
+}
+
+function renderFavMeals(){
+  const favs=getFavMeals();
+  const el=document.getElementById('fav-meals-list');
+  if(!favs.length){el.innerHTML='<p style="font-size:12px;color:var(--text3);margin-bottom:8px">No favorites yet. Add meals you eat often.</p>';return}
+  el.innerHTML=favs.map(f=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-lt);font-size:12px">
+      <strong style="min-width:120px">${esc(f.name)}</strong>
+      <span style="flex:1;color:var(--text2)">${esc(f.desc)}</span>
+      <button class="arc-del" onclick="deleteFavMeal(${f.id})" style="flex-shrink:0">✕</button>
+    </div>
+  `).join('');
+}
+
+function renderFavButtons(){
+  const container=document.getElementById('fav-buttons');
+  if(!container) return;
+  const favs=getFavMeals();
+  if(!favs.length){container.innerHTML='';return}
+  container.innerHTML='<label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px">Quick favorites</label>'+
+    favs.map(f=>`<button class="btn btn-s" style="font-size:11px;margin:0 4px 6px 0" onclick="useFav(${f.id})">${esc(f.name)}</button>`).join('');
+}
+
+function useFav(id){
+  const f=getFavMeals().find(x=>x.id===id);
+  if(!f) return;
+  document.getElementById('log-desc').value=f.desc;
+  document.getElementById('log-cat').value='meal';
+}
 
 async function aiDailyInsight(){
   const el=document.getElementById('daily-ai');
@@ -981,7 +1060,7 @@ ${summarizeHourly(fa,'Fanny')}
 Logs:
 ${logs.map(l=>`${l.time} [${l.person}] ${l.cat}: ${l.desc}`).join('\n')||'No logs.'}`;
 
-    const sys=`${AI_CONTEXT}
+    const sys=`${getAIContext()}
 You are a glycemia analyst. Provide a concise daily insight in HTML. Use these CSS classes: ai-box, ai-label.
 Structure:
 - Key observations (what happened today — spikes, stable periods, differences between A and F)
@@ -1015,7 +1094,7 @@ Fanny: ${fa.length} readings, avg=${fa.length?Math.round(fa.reduce((s,r)=>s+r.v,
 Logs this week:
 ${logs.map(l=>`${l.date} ${l.time} [${l.person}] ${l.cat}: ${l.desc}`).join('\n')||'No logs.'}`;
 
-    const sys=`${AI_CONTEXT}
+    const sys=`${getAIContext()}
 You are a glycemia analyst giving a weekly summary. HTML format with ai-box/ai-label classes.
 Structure:
 - Week overview (overall glycemic control for each person)
@@ -1082,6 +1161,8 @@ function exportAll(){
   const data={
     exported:new Date().toISOString(),
     profiles:PROFILES,
+    baseline:getBaseline(),
+    favoriteMeals:getFavMeals(),
     glucose:{axel:getGlucose('axel'),fanny:getGlucose('fanny')},
     logs:getLogs(),
     tests:SJ('tests_meta'),
