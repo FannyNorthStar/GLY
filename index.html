@@ -365,7 +365,7 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
     </div>
     <div class="form-row"><label>LibreLinkUp Email</label><input type="email" id="s-llu-email" placeholder="your@email.com"></div>
     <div class="form-row"><label>LibreLinkUp Password</label><input type="password" id="s-llu-pass" placeholder="password"></div>
-    <p style="font-size:10px;color:var(--text3);margin-top:-8px">Sent directly to LibreLinkUp API only. <a href="https://api-eu.libreview.io" target="_blank">EU endpoint</a>.</p>
+    <p style="font-size:10px;color:var(--text3);margin-top:-8px">Sent via secure proxy to LibreLinkUp API only.</p>
     <div class="form-row"><label>Glucose Target Range (mg/dL)</label>
       <div style="display:flex;gap:8px">
         <input type="number" id="s-gly-low" placeholder="70" style="flex:1">
@@ -452,7 +452,6 @@ function updateDot(){ document.getElementById('key-dot').className='dot'+(S('ope
 function parseLibreCSV(text){
   const lines=text.split('\n');
   const readings=[];
-  // Find header row — LibreView CSVs have metadata rows before the actual data
   let headerIdx=-1;
   for(let i=0;i<Math.min(lines.length,10);i++){
     const low=lines[i].toLowerCase();
@@ -461,7 +460,6 @@ function parseLibreCSV(text){
     }
   }
   if(headerIdx===-1){
-    // Try simpler: look for first line with many commas
     for(let i=0;i<Math.min(lines.length,10);i++){
       if((lines[i].match(/,/g)||[]).length>=5){headerIdx=i;break}
     }
@@ -469,7 +467,6 @@ function parseLibreCSV(text){
   if(headerIdx===-1) return readings;
 
   const headers=lines[headerIdx].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''));
-  // Find relevant columns
   const tsCol=headers.findIndex(h=>h.includes('timestamp')||h.includes('horodatage')||h.includes('zeitstempel'));
   const typeCol=headers.findIndex(h=>h.includes('record type')||h.includes('type d'));
   const histCol=headers.findIndex(h=>h.includes('historic glucose')||h.includes('historique')||h.includes('glukosewert'));
@@ -478,16 +475,11 @@ function parseLibreCSV(text){
   for(let i=headerIdx+1;i<lines.length;i++){
     const cols=lines[i].split(',').map(c=>c.trim().replace(/"/g,''));
     if(cols.length<=Math.max(tsCol,histCol,scanCol)) continue;
-
     const ts=cols[tsCol];
     if(!ts) continue;
-
-    // Get glucose value: prefer historic, fall back to scan
     let val=parseFloat(cols[histCol]);
     if(isNaN(val)&&scanCol>=0) val=parseFloat(cols[scanCol]);
     if(isNaN(val)) continue;
-
-    // Parse timestamp — LibreView uses various formats
     let dt=luxon.DateTime.fromFormat(ts,'dd-MM-yyyy HH:mm');
     if(!dt.isValid) dt=luxon.DateTime.fromFormat(ts,'MM-dd-yyyy HH:mm');
     if(!dt.isValid) dt=luxon.DateTime.fromFormat(ts,'yyyy-MM-dd HH:mm');
@@ -495,7 +487,6 @@ function parseLibreCSV(text){
     if(!dt.isValid) dt=luxon.DateTime.fromFormat(ts,'MM/dd/yyyy HH:mm');
     if(!dt.isValid) dt=luxon.DateTime.fromISO(ts);
     if(!dt.isValid) continue;
-
     readings.push({ t:dt.toISO(), v:val });
   }
   return readings.sort((a,b)=>a.t.localeCompare(b.t));
@@ -511,10 +502,8 @@ function handleCSV(person,event){
       document.getElementById('upload-status').innerHTML='<div class="err">Could not parse any glucose readings from this file. Make sure it\'s a LibreView export CSV.</div>';
       return;
     }
-    // Merge with existing
     const existing=getGlucose(person);
     const merged=[...existing,...readings];
-    // Deduplicate by timestamp
     const seen=new Set();
     const unique=merged.filter(r=>{if(seen.has(r.t))return false;seen.add(r.t);return true});
     unique.sort((a,b)=>a.t.localeCompare(b.t));
@@ -525,7 +514,6 @@ function handleCSV(person,event){
   reader.readAsText(file);
 }
 
-// Drag and drop
 ['upload-axel','upload-fanny'].forEach(id=>{
   const el=document.getElementById(id);
   const person=id.includes('axel')?'axel':'fanny';
@@ -538,7 +526,7 @@ function handleCSV(person,event){
 });
 
 /* ================================================================
-   LIBRELINKUP API
+   LIBRELINKUP API (via Cloudflare Worker proxy)
    ================================================================ */
 async function fetchLibreLinkUp(){
   const status=document.getElementById('llu-status');
@@ -547,23 +535,24 @@ async function fetchLibreLinkUp(){
 
   status.innerHTML='<div class="spinner"></div><span style="font-size:12px;color:var(--text3)">Connecting to LibreLinkUp...</span>';
 
+  const PROXY='https://gly-proxy.fanny-broissand.workers.dev';
+
   try{
-    // Login
-    const loginRes=await fetch('https://api-eu.libreview.io/llu/auth/login',{
+    // Login via proxy
+    const loginRes=await fetch(PROXY+'/llu/auth/login',{
       method:'POST',
-      headers:{'Content-Type':'application/json','product':'llu.android','version':'4.7.0'},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({email,password:pass})
     });
     const loginData=await loginRes.json();
 
-    let token,apiBase='https://api-eu.libreview.io';
+    let token, apiBase=PROXY;
     if(loginData.data?.redirect){
-      // Regional redirect
       const region=loginData.data.region;
-      apiBase=`https://api-${region}.libreview.io`;
-      const r2=await fetch(`${apiBase}/llu/auth/login`,{
+      apiBase=PROXY;
+      const r2=await fetch(PROXY+'/llu/auth/login?region='+region,{
         method:'POST',
-        headers:{'Content-Type':'application/json','product':'llu.android','version':'4.7.0'},
+        headers:{'Content-Type':'application/json'},
         body:JSON.stringify({email,password:pass})
       });
       const d2=await r2.json();
@@ -573,9 +562,9 @@ async function fetchLibreLinkUp(){
     }
     if(!token) throw new Error('Login failed — check credentials.');
 
-    // Get connections
-    const connRes=await fetch(`${apiBase}/llu/connections`,{
-      headers:{'Authorization':'Bearer '+token,'product':'llu.android','version':'4.7.0'}
+    // Get connections via proxy
+    const connRes=await fetch(PROXY+'/llu/connections',{
+      headers:{'Authorization':'Bearer '+token}
     });
     const connData=await connRes.json();
     const patients=connData.data||[];
@@ -584,8 +573,8 @@ async function fetchLibreLinkUp(){
 
     let total=0;
     for(const p of patients){
-      const graphRes=await fetch(`${apiBase}/llu/connections/${p.patientId}/graph`,{
-        headers:{'Authorization':'Bearer '+token,'product':'llu.android','version':'4.7.0'}
+      const graphRes=await fetch(PROXY+'/llu/connections/'+p.patientId+'/graph',{
+        headers:{'Authorization':'Bearer '+token}
       });
       const graphData=await graphRes.json();
       const measurements=graphData.data?.graphData||[];
@@ -595,11 +584,10 @@ async function fetchLibreLinkUp(){
         v:m.ValueInMgPerDl||m.Value
       })).filter(r=>r.t&&!isNaN(r.v));
 
-      // Match patient to person by name
       const name=(p.firstName||'').toLowerCase();
       let person=null;
-      if(name.includes('axel')||name.includes('a')) person='axel';
-      if(name.includes('fanny')||name.includes('f')) person='fanny';
+      if(name.includes('axel')) person='axel';
+      if(name.includes('fanny')) person='fanny';
       if(!person) person=patients.indexOf(p)===0?'axel':'fanny';
 
       const existing=getGlucose(person);
@@ -615,7 +603,7 @@ async function fetchLibreLinkUp(){
     renderDataStatus();
 
   }catch(err){
-    status.innerHTML=`<div class="err">${esc(err.message)}<br><br>If you see a CORS error: LibreLinkUp blocks direct browser requests. Use CSV upload as fallback, or we can set up a Cloudflare Worker proxy.</div>`;
+    status.innerHTML=`<div class="err">${esc(err.message)}</div>`;
   }
 }
 
@@ -635,7 +623,6 @@ function renderDaily(){
   const faData=getGlucose('fanny').filter(r=>r.t>=dayStart.toISO()&&r.t<=dayEnd.toISO());
   const logs=getLogs().filter(l=>l.date===day).sort((a,b)=>a.time.localeCompare(b.time));
 
-  // Stats
   const statsEl=document.getElementById('daily-stats');
   const axVals=axData.map(r=>r.v), faVals=faData.map(r=>r.v);
   const lo=getTargetLow(), hi=getTargetHigh();
@@ -648,11 +635,9 @@ function renderDaily(){
     <div class="stat-card ax"><div class="label">Axel peak</div><div class="value">${peak(axVals)}</div><div class="sub">mg/dL</div></div>
     <div class="stat-card fa"><div class="label">Fanny peak</div><div class="value">${peak(faVals)}</div><div class="sub">mg/dL</div></div>`;
 
-  // Chart
   if(chartDaily) chartDaily.destroy();
   const ctx=document.getElementById('chart-daily').getContext('2d');
 
-  // Meal/sport markers
   const mealAnnotations=logs.filter(l=>l.cat==='meal'||l.cat==='sport'||l.cat==='test').map(l=>({
     x:luxon.DateTime.fromISO(day+'T'+l.time).toJSDate(),
     label:l.cat==='meal'?'🍽️':l.cat==='sport'?'🏃':'🧪',
@@ -717,7 +702,6 @@ function renderDaily(){
     }
   });
 
-  // Timeline
   const tlEl=document.getElementById('daily-timeline');
   if(logs.length===0){
     tlEl.innerHTML='<div class="empty"><p>No logs for this day. Go to Log Entry to add meals, sport, or notes.</p></div>';
@@ -745,7 +729,6 @@ function renderWeekly(){
   const days=[];
   for(let i=0;i<7;i++) days.push(ws.plus({days:i}));
 
-  // Compute daily averages
   const axAvgs=[],faAvgs=[],labels=[];
   days.forEach(d=>{
     const ds=d.startOf('day').toISO(), de=d.endOf('day').toISO();
@@ -756,7 +739,6 @@ function renderWeekly(){
     faAvgs.push(fa.length?Math.round(fa.reduce((s,v)=>s+v,0)/fa.length):null);
   });
 
-  // Weekly stats
   const allAx=getGlucose('axel').filter(r=>r.t>=ws.toISO()&&r.t<=we.endOf('day').toISO()).map(r=>r.v);
   const allFa=getGlucose('fanny').filter(r=>r.t>=ws.toISO()&&r.t<=we.endOf('day').toISO()).map(r=>r.v);
   const lo=getTargetLow(),hi=getTargetHigh();
@@ -836,7 +818,6 @@ function editTest(id){
   const status=prompt('Status (pending / active / done):',existing.status||'active');
   if(status===null) return;
   const notes=prompt('Notes (optional):',existing.notes||'');
-
   const updated=tests.filter(m=>m.id!==id);
   updated.push({id,date,status,notes});
   SSJ('tests_meta',updated);
@@ -859,7 +840,6 @@ async function discoverPatterns(){
   el.innerHTML='<div style="text-align:center;padding:16px"><div class="spinner"></div><span style="font-size:12px;color:var(--text3)">Scanning all logs and glucose data for natural experiments...</span></div>';
 
   try{
-    // Build a comprehensive data summary for the AI
     const allDays=[...new Set(logs.map(l=>l.date))].sort();
     const dayData=allDays.map(day=>{
       const dayLogs=logs.filter(l=>l.date===day);
@@ -868,7 +848,6 @@ async function discoverPatterns(){
       const axG=getGlucose('axel').filter(r=>r.t>=ds&&r.t<=de);
       const faG=getGlucose('fanny').filter(r=>r.t>=ds&&r.t<=de);
 
-      // Compute post-event glucose windows (1h after each meal/sport)
       const events=dayLogs.filter(l=>l.cat==='meal'||l.cat==='sport').map(l=>{
         const eventTime=luxon.DateTime.fromISO(day+'T'+l.time);
         const windowEnd=eventTime.plus({minutes:90}).toISO();
@@ -894,43 +873,37 @@ You are a pattern-discovery analyst for a glycemia experiment. You receive times
 Your job: find NATURAL EXPERIMENTS — unplanned comparisons the data already contains. These are pairs or groups of events that can be compared because one variable changed while others stayed similar.
 
 Look for ALL of these pattern types:
-1. SAME FOOD, DIFFERENT TIME — same or very similar food eaten at different hours across days (e.g. croissant at 11am vs 5pm)
-2. SAME FOOD, DIFFERENT ORDER — same items but eaten in different sequence (protein first vs carbs first)
+1. SAME FOOD, DIFFERENT TIME — same or very similar food eaten at different hours across days
+2. SAME FOOD, DIFFERENT ORDER — same items but eaten in different sequence
 3. SAME FOOD, DIFFERENT CONTEXT — same food eaten alone vs after other food, or with/without sport nearby
 4. SAME SPORT, DIFFERENT TIME — same activity at different times of day
 5. SPORT BEFORE vs AFTER MEAL — days where exercise happened pre-meal vs post-meal
-6. SAME MEAL, DIFFERENT DAY — identical meals on different days (stress, sleep, or cycle differences?)
+6. SAME MEAL, DIFFERENT DAY — identical meals on different days
 7. AXEL vs FANNY SAME MEAL — when both ate the same thing, how did their responses differ?
-8. WITH vs WITHOUT — something present one day and absent another (coffee, alcohol, dessert, snack)
-9. ANY OTHER comparison you notice that could yield an insight
+8. WITH vs WITHOUT — something present one day and absent another
+9. ANY OTHER comparison you notice
 
 Output HTML with these CSS classes: ai-box, ai-label, card.
 
 Structure:
 <div class="ai-box"><div class="ai-label">🔍 Natural Experiments Found</div>
-<p>[Brief intro: how many patterns found, data quality note]</p></div>
+<p>[Brief intro]</p></div>
 
-Then for each discovered pattern:
+Then for each pattern:
 <div class="card">
-  <h3>🧪 [Pattern name — e.g. "Coffee timing: morning vs afternoon"]</h3>
+  <h3>🧪 [Pattern name]</h3>
   <div class="card-meta">[What's being compared, which dates]</div>
   <p style="font-size:13px;line-height:1.6;margin-top:8px">
-    <strong>Observation A:</strong> [Day X — what happened + glucose response with numbers]<br>
-    <strong>Observation B:</strong> [Day Y — what happened + glucose response with numbers]<br>
-    <strong>Difference:</strong> [Specific: "peak was 35 mg/dL higher when eaten alone" not vague "there was a difference"]<br>
-    <strong>Possible explanation:</strong> [Why — fiber buffering, exercise effect, circadian rhythm, etc.]<br>
-    <strong>Confidence:</strong> [Low/Medium/High — based on how similar the conditions were and data quality]<br>
-    <strong>Suggestion:</strong> [What deliberate test would confirm this — "try repeating X on purpose to verify"]
+    <strong>Observation A:</strong> [description + numbers]<br>
+    <strong>Observation B:</strong> [description + numbers]<br>
+    <strong>Difference:</strong> [specific numbers]<br>
+    <strong>Possible explanation:</strong> [why]<br>
+    <strong>Confidence:</strong> [Low/Medium/High]<br>
+    <strong>Suggestion:</strong> [what test to run]
   </p>
 </div>
 
-Rules:
-- Be SPECIFIC with numbers: "peak 158 vs 112" not "higher spike"
-- Only report patterns where glucose data exists for both events
-- Rank by confidence (most reliable comparisons first)
-- If data is sparse, say so — don't force patterns that aren't there
-- Flag when a comparison is weak (different meal sizes, different stress, etc.)
-- Include an "Ideas for deliberate tests" section at the end: based on patterns seen, what tests should they run next?`;
+Be SPECIFIC with numbers. Only report patterns where glucose data exists. Rank by confidence.`;
 
     const html=await callAI(sys,`Full event log with post-event glucose data:\n\n${dayData}`);
     el.innerHTML=html+`<button class="btn btn-s" onclick="saveToArchive('Pattern Discovery — '+luxon.DateTime.now().toISODate(),document.getElementById('discover-output').innerHTML);this.innerHTML='✓ Saved';this.disabled=true" style="margin-top:12px">📌 Save to archive</button>`;
@@ -955,7 +928,6 @@ function saveLog(){
   const desc=document.getElementById('log-desc').value.trim();
   if(!date||!time||!desc){document.getElementById('log-msg').innerHTML='<span style="color:#c0392b">Fill all fields.</span>';return}
 
-  // Auto-detect test matches
   const descLow=desc.toLowerCase();
   const matchedTests=TESTS.filter(t=>t.keywords.some(k=>descLow.includes(k.toLowerCase())));
   const testIds=matchedTests.map(t=>t.id);
@@ -1181,11 +1153,11 @@ ${logs.map(l=>`${l.time} [${l.person}] ${l.cat}: ${l.desc}`).join('\n')||'No log
 You are a glycemia analyst. Provide a concise daily insight in HTML. Use these CSS classes: ai-box, ai-label.
 Structure:
 - Key observations (what happened today — spikes, stable periods, differences between A and F)
-- Correlations with meals/sport/events from the logs (be specific: "the spike to 165 at 13:00 for Axel likely correlates with the pasta at 12:30")
-- What went well (stable periods, good food order, effective exercise timing)
-- What to watch (high spikes, missing meals, patterns to test)
-- Axel vs Fanny comparison (how they responded differently to the same meals/activities, considering sex/age)
-Be specific with numbers. Be direct and actionable. No vague statements.`;
+- Correlations with meals/sport/events from the logs
+- What went well
+- What to watch
+- Axel vs Fanny comparison
+Be specific with numbers. Be direct and actionable.`;
 
     const html=await callAI(sys,dataStr);
     el.innerHTML=html;
@@ -1214,12 +1186,12 @@ ${logs.map(l=>`${l.date} ${l.time} [${l.person}] ${l.cat}: ${l.desc}`).join('\n'
     const sys=`${getAIContext()}
 You are a glycemia analyst giving a weekly summary. HTML format with ai-box/ai-label classes.
 Structure:
-- Week overview (overall glycemic control for each person)
-- Best days and why (correlate with logs)
+- Week overview
+- Best days and why
 - Worst days and why
-- Patterns spotted (recurring triggers, foods that consistently spike, exercises that help)
-- Axel vs Fanny differences (sex/age/hormonal considerations)
-- Recommendations for next week (specific, actionable: "try eating X before Y", "test morning exercise on spike-prone days")
+- Patterns spotted
+- Axel vs Fanny differences
+- Recommendations for next week
 Be direct, specific with numbers, and actionable.`;
 
     const html=await callAI(sys,dataStr);
