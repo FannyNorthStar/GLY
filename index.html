@@ -240,13 +240,8 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 </div>
 
 <div class="view" id="v-data">
-  <div class="card" style="margin-bottom:20px">
-    <h3>LibreLinkUp Auto-Fetch</h3>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Enter your LibreLinkUp follower credentials in Settings (⚙). The dashboard will fetch glucose data for all connected patients.</p>
-    <button class="btn btn-p" onclick="fetchLibreLinkUp()">Fetch glucose data</button>
-    <div id="llu-status" style="margin-top:10px;font-size:12px"></div>
-  </div>
-  <h3 style="font-size:13px;font-weight:600;margin-bottom:12px">Or upload LibreView CSV</h3>
+  <h3 style="font-size:13px;font-weight:600;margin-bottom:12px">Upload LibreView CSV</h3>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Export from <a href="https://www.libreview.io" target="_blank">libreview.io</a> → upload here. Do this every 2-3 days to keep data fresh.</p>
   <div class="upload-zone" id="upload-axel" onclick="this.querySelector('input').click()">
     <div class="icon">📁</div>
     <p><strong style="color:var(--axel)">Axel</strong> — Drop CSV or click to upload</p>
