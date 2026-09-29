@@ -1,604 +1,604 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GLY — Glycemia Tracker</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.4.4/luxon.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-luxon/1.3.1/chartjs-adapter-luxon.umd.min.js"></script>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-  --bg:#f3f3ef;--surface:#fff;--surface-alt:#f8f8f5;
-  --border:#e2e2db;--border-lt:#ededea;
-  --text:#1c1c1c;--text2:#5a5a52;--text3:#8a8a80;
-  --axel:#3b82f6;--axel-bg:#eff6ff;
-  --fanny:#e8437f;--fanny-bg:#fdf2f8;
-  --target:#22c55e;--target-bg:rgba(34,197,94,0.08);
-  --high:#f59e0b;--low:#ef4444;
-  --primary:#2b6b4f;--primary-h:#1f5a40;--primary-lt:#e8f5ee;
-  --radius:8px;--radius-lg:12px;
-  --shadow:0 1px 3px rgba(0,0,0,0.06);
-  --max-w:960px;--tr:150ms ease;
+!DOCTYPE html
+html lang=en
+head
+meta charset=UTF-8
+meta name=viewport content=width=device-width, initial-scale=1.0
+titleGLY — Glycemia Trackertitle
+link rel=icon href=dataimagesvg+xml,svg xmlns='httpwww.w3.org2000svg' viewBox='0 0 100 100'text y='.9em' font-size='90'📈textsvg
+link rel=preconnect href=httpsfonts.googleapis.com
+link rel=preconnect href=httpsfonts.gstatic.com crossorigin
+link href=httpsfonts.googleapis.comcss2family=Interwght@400;500;600;700&display=swap rel=stylesheet
+script src=httpscdnjs.cloudflare.comajaxlibsluxon3.4.4luxon.min.jsscript
+script src=httpscdnjs.cloudflare.comajaxlibsChart.js4.4.1chart.umd.min.jsscript
+script src=httpscdnjs.cloudflare.comajaxlibschartjs-adapter-luxon1.3.1chartjs-adapter-luxon.umd.min.jsscript
+style
+,before,after{box-sizingborder-box;margin0;padding0}
+root{
+  --font'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --bg#f3f3ef;--surface#fff;--surface-alt#f8f8f5;
+  --border#e2e2db;--border-lt#ededea;
+  --text#1c1c1c;--text2#5a5a52;--text3#8a8a80;
+  --axel#3b82f6;--axel-bg#eff6ff;
+  --fanny#e8437f;--fanny-bg#fdf2f8;
+  --target#22c55e;--target-bgrgba(34,197,94,0.08);
+  --high#f59e0b;--low#ef4444;
+  --primary#2b6b4f;--primary-h#1f5a40;--primary-lt#e8f5ee;
+  --radius8px;--radius-lg12px;
+  --shadow0 1px 3px rgba(0,0,0,0.06);
+  --max-w960px;--tr150ms ease;
 }
-html{font-size:14px}
-body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
-.header{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
-.header-in{max-width:var(--max-w);margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
-.logo-mark{width:30px;height:30px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
-.logo-text{font-size:16px;font-weight:700;letter-spacing:-.02em}
-.logo-sub{font-size:10px;color:var(--text3);font-weight:400;margin-left:2px}
-.hdr-actions{display:flex;gap:6px;align-items:center}
-.sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc;margin-right:4px;transition:background .3s}
-.sync-dot.ok{background:var(--target)}.sync-dot.err{background:#ef4444}.sync-dot.working{background:#f59e0b}
-.btn-ic{width:34px;height:34px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all var(--tr);position:relative}
-.btn-ic:hover{background:var(--surface-alt)}
-.dot{width:7px;height:7px;border-radius:50%;background:#c0392b;position:absolute;top:-2px;right:-2px}
-.dot.ok{background:var(--target)}
-.nav{max-width:var(--max-w);margin:0 auto;display:flex;gap:0;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;padding:0 20px}
-.nav button{padding:10px 16px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all var(--tr);white-space:nowrap;font-family:var(--font)}
-.nav button:hover{color:var(--text2)}
-.nav button.on{color:var(--primary);border-bottom-color:var(--primary)}
-main{max-width:var(--max-w);margin:0 auto;padding:20px}
-.view{display:none}.view.on{display:block}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--radius);border:none;cursor:pointer;transition:all var(--tr)}
-.btn-p{background:var(--primary);color:#fff}.btn-p:hover{background:var(--primary-h)}.btn-p:disabled{opacity:.5;cursor:not-allowed}
-.btn-s{background:var(--surface);color:var(--text);border:1px solid var(--border)}.btn-s:hover{background:var(--surface-alt)}
-.btn-ax{background:var(--axel-bg);color:var(--axel);border:1px solid #bfdbfe}
-.btn-fa{background:var(--fanny-bg);color:var(--fanny);border:1px solid #fbcfe8}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-.card h3{font-size:14px;font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
-.card-meta{font-size:11px;color:var(--text3);margin-bottom:6px}
-.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px;position:relative}
-.chart-wrap canvas{max-height:340px}
-.date-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.date-nav button{width:32px;height:32px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
-.date-nav button:hover{background:var(--surface-alt)}
-.date-nav input[type=date]{font-family:var(--font);font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
-.tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-lt);font-size:12.5px}
-.tl-time{width:50px;font-weight:600;color:var(--text2);flex-shrink:0}
-.tl-dur{font-size:10px;font-weight:400;color:var(--text3)}
-.tl-person{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
-.tl-person.ax{background:var(--axel)}.tl-person.fa{background:var(--fanny)}.tl-person.bo{background:var(--primary)}
-.tl-cat{padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600;flex-shrink:0}
-.cat-meal{background:#fef3c7;color:#92400e}.cat-sport{background:#dbeafe;color:#1e40af}
-.cat-test{background:#ede9fe;color:#5b21b6}.cat-note{background:#f3f4f6;color:#374151}
-.cat-period{background:var(--fanny-bg);color:var(--fanny)}
-.tl-desc{flex:1;color:var(--text)}
-.log-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
-.form-row{margin-bottom:14px}
-.form-row label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px}
-.form-row input,.form-row textarea,.form-row select{width:100%;padding:9px 12px;font-family:var(--font);font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surface-alt);color:var(--text);outline:none}
-.form-row input:focus,.form-row textarea:focus,.form-row select:focus{border-color:var(--primary)}
-.form-row textarea{resize:vertical;min-height:60px}
-.person-toggle{display:flex;gap:8px;margin-bottom:14px}
-.person-toggle button{flex:1;padding:10px;border-radius:var(--radius);border:2px solid var(--border);background:var(--surface);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all var(--tr)}
-.person-toggle button.sel-ax{border-color:var(--axel);background:var(--axel-bg);color:var(--axel)}
-.person-toggle button.sel-fa{border-color:var(--fanny);background:var(--fanny-bg);color:var(--fanny)}
-.person-toggle button.sel-bo{border-color:var(--primary);background:var(--primary-lt);color:var(--primary)}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
-.stat-card .label{font-size:10px;font-weight:600;color:var(--text3);margin-bottom:4px}
-.stat-card .value{font-size:22px;font-weight:700;letter-spacing:-.02em}
-.stat-card .sub{font-size:10px;color:var(--text3);margin-top:2px}
-.stat-card.ax .value{color:var(--axel)}.stat-card.fa .value{color:var(--fanny)}
-.test-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
-.test-card h3{font-size:13px;font-weight:600;margin-bottom:4px}
-.test-card .desc{font-size:12px;color:var(--text2);line-height:1.5}
-.test-status{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap}
-.st-pending{background:#f3f4f6;color:#6b7280}.st-active{background:#dbeafe;color:#1d4ed8}.st-done{background:var(--primary-lt);color:var(--primary)}
-.ai-box{background:var(--primary-lt);border:1px solid #c5ddd0;border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:18px}
-.ai-box .ai-label{font-size:10px;font-weight:600;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;gap:5px}
-.ai-box p,.ai-box li{font-size:13px;line-height:1.6;color:var(--text)}
-.ai-box ul{padding-left:16px}.ai-box li{margin-bottom:4px}
-.ai-box strong{color:var(--text)}
-.upload-zone{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:32px;text-align:center;cursor:pointer;transition:all var(--tr);margin-bottom:16px}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--primary);background:var(--primary-lt)}
-.upload-zone .icon{font-size:28px;margin-bottom:8px}
-.upload-zone p{font-size:12px;color:var(--text2)}
-.upload-zone input{display:none}
-.baseline-section{margin-bottom:24px}
-.baseline-section h2{font-size:15px;font-weight:700;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border-lt)}
-.baseline-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px}
-.baseline-table th{text-align:left;padding:6px 10px;background:var(--surface-alt);font-weight:600;color:var(--text2);border-bottom:1px solid var(--border)}
-.baseline-table td{padding:6px 10px;border-bottom:1px solid var(--border-lt)}
-.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-ov.open{display:flex}
-.modal{background:var(--surface);border-radius:var(--radius-lg);padding:24px;max-width:480px;width:100%;box-shadow:0 4px 12px rgba(0,0,0,.08);max-height:90vh;overflow-y:auto}
-.modal h2{font-size:16px;font-weight:700;margin-bottom:4px}.modal .sub{font-size:12px;color:var(--text3);margin-bottom:20px}
-.modal .form-row input{font-size:12px}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
-.arc-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;cursor:pointer;transition:all var(--tr);display:flex;align-items:center;justify-content:space-between;gap:12px}
-.arc-item:hover{border-color:var(--primary)}
-.arc-item h3{font-size:13px;font-weight:600;margin-bottom:2px}
-.arc-item .arc-date{font-size:11px;color:var(--text3)}
-.arc-del{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px}
-.arc-del:hover{background:#fef2f2;color:#c0392b}
-.empty{text-align:center;padding:48px 20px;color:var(--text3)}
-.empty .icon{font-size:36px;margin-bottom:12px}
-.empty h3{font-size:15px;color:var(--text2);margin-bottom:6px}
-.empty p{font-size:12px;max-width:360px;margin:0 auto}
-.err{background:#fef2f2;border:1px solid #fecaca;color:#c0392b;padding:12px 16px;border-radius:var(--radius);font-size:12px;margin-bottom:14px}
-.spinner{width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media(max-width:640px){
-  main{padding:14px}.header-in{padding:10px 14px}.nav{padding:0 14px}
-  .nav button{padding:8px 12px;font-size:11px}.stats-grid{grid-template-columns:1fr}
-  .test-card{flex-direction:column}.chart-wrap canvas{max-height:260px}
+html{font-size14px}
+body{font-familyvar(--font);backgroundvar(--bg);colorvar(--text);line-height1.6;min-height100vh;-webkit-font-smoothingantialiased}
+.header{backgroundvar(--surface);border-bottom1px solid var(--border);positionsticky;top0;z-index100}
+.header-in{max-widthvar(--max-w);margin0 auto;padding12px 20px;displayflex;align-itemscenter;justify-contentspace-between;gap12px}
+.logo{displayflex;align-itemscenter;gap10px;text-decorationnone;colorvar(--text)}
+.logo-mark{width30px;height30px;backgroundvar(--primary);border-radius8px;displayflex;align-itemscenter;justify-contentcenter;color#fff;font-size14px;font-weight700}
+.logo-text{font-size16px;font-weight700;letter-spacing-.02em}
+.logo-sub{font-size10px;colorvar(--text3);font-weight400;margin-left2px}
+.hdr-actions{displayflex;gap6px;align-itemscenter}
+.sync-dot{width8px;height8px;border-radius50%;background#ccc;margin-right4px;transitionbackground .3s}
+.sync-dot.ok{backgroundvar(--target)}.sync-dot.err{background#ef4444}.sync-dot.working{background#f59e0b}
+.btn-ic{width34px;height34px;border-radiusvar(--radius);border1px solid var(--border);backgroundvar(--surface);colorvar(--text2);cursorpointer;displayflex;align-itemscenter;justify-contentcenter;font-size15px;transitionall var(--tr);positionrelative}
+.btn-ichover{backgroundvar(--surface-alt)}
+.dot{width7px;height7px;border-radius50%;background#c0392b;positionabsolute;top-2px;right-2px}
+.dot.ok{backgroundvar(--target)}
+.nav{max-widthvar(--max-w);margin0 auto;displayflex;gap0;backgroundvar(--surface);border-bottom1px solid var(--border);overflow-xauto;padding0 20px}
+.nav button{padding10px 16px;font-size12px;font-weight500;colorvar(--text3);cursorpointer;bordernone;backgroundnone;border-bottom2px solid transparent;transitionall var(--tr);white-spacenowrap;font-familyvar(--font)}
+.nav buttonhover{colorvar(--text2)}
+.nav button.on{colorvar(--primary);border-bottom-colorvar(--primary)}
+main{max-widthvar(--max-w);margin0 auto;padding20px}
+.view{displaynone}.view.on{displayblock}
+.btn{displayinline-flex;align-itemscenter;gap7px;padding9px 18px;font-familyvar(--font);font-size12px;font-weight600;border-radiusvar(--radius);bordernone;cursorpointer;transitionall var(--tr)}
+.btn-p{backgroundvar(--primary);color#fff}.btn-phover{backgroundvar(--primary-h)}.btn-pdisabled{opacity.5;cursornot-allowed}
+.btn-s{backgroundvar(--surface);colorvar(--text);border1px solid var(--border)}.btn-shover{backgroundvar(--surface-alt)}
+.btn-ax{backgroundvar(--axel-bg);colorvar(--axel);border1px solid #bfdbfe}
+.btn-fa{backgroundvar(--fanny-bg);colorvar(--fanny);border1px solid #fbcfe8}
+.card{backgroundvar(--surface);border1px solid var(--border);border-radiusvar(--radius-lg);padding20px;margin-bottom14px;box-shadow0 1px 2px rgba(0,0,0,.03)}
+.card h3{font-size14px;font-weight600;margin-bottom8px;letter-spacing-.01em}
+.card-meta{font-size11px;colorvar(--text3);margin-bottom6px}
+.chart-wrap{backgroundvar(--surface);border1px solid var(--border);border-radiusvar(--radius-lg);padding16px;margin-bottom16px;positionrelative}
+.chart-wrap canvas{max-height340px}
+.date-nav{displayflex;align-itemscenter;gap12px;margin-bottom16px;flex-wrapwrap}
+.date-nav button{width32px;height32px;border-radiusvar(--radius);border1px solid var(--border);backgroundvar(--surface);cursorpointer;font-size14px;displayflex;align-itemscenter;justify-contentcenter}
+.date-nav buttonhover{backgroundvar(--surface-alt)}
+.date-nav input[type=date]{font-familyvar(--font);font-size13px;padding6px 10px;border1px solid var(--border);border-radiusvar(--radius);backgroundvar(--surface)}
+.tl-item{displayflex;gap12px;padding10px 0;border-bottom1px solid var(--border-lt);font-size12.5px}
+.tl-time{width50px;font-weight600;colorvar(--text2);flex-shrink0}
+.tl-dur{font-size10px;font-weight400;colorvar(--text3)}
+.tl-person{width20px;height20px;border-radius50%;displayflex;align-itemscenter;justify-contentcenter;font-size9px;font-weight700;color#fff;flex-shrink0}
+.tl-person.ax{backgroundvar(--axel)}.tl-person.fa{backgroundvar(--fanny)}.tl-person.bo{backgroundvar(--primary)}
+.tl-cat{padding2px 7px;border-radius3px;font-size10px;font-weight600;flex-shrink0}
+.cat-meal{background#fef3c7;color#92400e}.cat-sport{background#dbeafe;color#1e40af}
+.cat-test{background#ede9fe;color#5b21b6}.cat-note{background#f3f4f6;color#374151}
+.cat-period{backgroundvar(--fanny-bg);colorvar(--fanny)}
+.tl-desc{flex1;colorvar(--text)}
+.log-form{backgroundvar(--surface);border1px solid var(--border);border-radiusvar(--radius-lg);padding20px}
+.form-row{margin-bottom14px}
+.form-row label{displayblock;font-size11px;font-weight600;colorvar(--text2);margin-bottom5px}
+.form-row input,.form-row textarea,.form-row select{width100%;padding9px 12px;font-familyvar(--font);font-size13px;border1px solid var(--border);border-radius6px;backgroundvar(--surface-alt);colorvar(--text);outlinenone}
+.form-row inputfocus,.form-row textareafocus,.form-row selectfocus{border-colorvar(--primary)}
+.form-row textarea{resizevertical;min-height60px}
+.person-toggle{displayflex;gap8px;margin-bottom14px}
+.person-toggle button{flex1;padding10px;border-radiusvar(--radius);border2px solid var(--border);backgroundvar(--surface);font-familyvar(--font);font-size12px;font-weight600;cursorpointer;transitionall var(--tr)}
+.person-toggle button.sel-ax{border-colorvar(--axel);backgroundvar(--axel-bg);colorvar(--axel)}
+.person-toggle button.sel-fa{border-colorvar(--fanny);backgroundvar(--fanny-bg);colorvar(--fanny)}
+.person-toggle button.sel-bo{border-colorvar(--primary);backgroundvar(--primary-lt);colorvar(--primary)}
+.stats-grid{displaygrid;grid-template-columns1fr 1fr;gap12px;margin-bottom20px}
+.stat-card{backgroundvar(--surface);border1px solid var(--border);border-radiusvar(--radius);padding14px;text-aligncenter}
+.stat-card .label{font-size10px;font-weight600;colorvar(--text3);margin-bottom4px}
+.stat-card .value{font-size22px;font-weight700;letter-spacing-.02em}
+.stat-card .sub{font-size10px;colorvar(--text3);margin-top2px}
+.stat-card.ax .value{colorvar(--axel)}.stat-card.fa .value{colorvar(--fanny)}
+.test-card{backgroundvar(--surface);border1px solid var(--border);border-radiusvar(--radius-lg);padding18px;margin-bottom12px;displayflex;align-itemsflex-start;justify-contentspace-between;gap14px}
+.test-card h3{font-size13px;font-weight600;margin-bottom4px}
+.test-card .desc{font-size12px;colorvar(--text2);line-height1.5}
+.test-status{padding4px 10px;border-radius20px;font-size10px;font-weight600;white-spacenowrap}
+.st-pending{background#f3f4f6;color#6b7280}.st-active{background#dbeafe;color#1d4ed8}.st-done{backgroundvar(--primary-lt);colorvar(--primary)}
+.ai-box{backgroundvar(--primary-lt);border1px solid #c5ddd0;border-radiusvar(--radius-lg);padding18px 20px;margin-bottom18px}
+.ai-box .ai-label{font-size10px;font-weight600;colorvar(--primary);margin-bottom8px;displayflex;align-itemscenter;gap5px}
+.ai-box p,.ai-box li{font-size13px;line-height1.6;colorvar(--text)}
+.ai-box ul{padding-left16px}.ai-box li{margin-bottom4px}
+.ai-box strong{colorvar(--text)}
+.upload-zone{border2px dashed var(--border);border-radiusvar(--radius-lg);padding32px;text-aligncenter;cursorpointer;transitionall var(--tr);margin-bottom16px}
+.upload-zonehover,.upload-zone.drag{border-colorvar(--primary);backgroundvar(--primary-lt)}
+.upload-zone .icon{font-size28px;margin-bottom8px}
+.upload-zone p{font-size12px;colorvar(--text2)}
+.upload-zone input{displaynone}
+.baseline-section{margin-bottom24px}
+.baseline-section h2{font-size15px;font-weight700;margin-bottom12px;padding-bottom6px;border-bottom1px solid var(--border-lt)}
+.baseline-table{width100%;border-collapsecollapse;font-size12px;margin-bottom12px}
+.baseline-table th{text-alignleft;padding6px 10px;backgroundvar(--surface-alt);font-weight600;colorvar(--text2);border-bottom1px solid var(--border)}
+.baseline-table td{padding6px 10px;border-bottom1px solid var(--border-lt)}
+.modal-ov{positionfixed;inset0;backgroundrgba(0,0,0,.35);z-index200;displaynone;align-itemscenter;justify-contentcenter;padding20px}
+.modal-ov.open{displayflex}
+.modal{backgroundvar(--surface);border-radiusvar(--radius-lg);padding24px;max-width480px;width100%;box-shadow0 4px 12px rgba(0,0,0,.08);max-height90vh;overflow-yauto}
+.modal h2{font-size16px;font-weight700;margin-bottom4px}.modal .sub{font-size12px;colorvar(--text3);margin-bottom20px}
+.modal .form-row input{font-size12px}
+.modal-actions{displayflex;gap8px;justify-contentflex-end;margin-top20px}
+.arc-item{backgroundvar(--surface);border1px solid var(--border);border-radiusvar(--radius-lg);padding16px;margin-bottom10px;cursorpointer;transitionall var(--tr);displayflex;align-itemscenter;justify-contentspace-between;gap12px}
+.arc-itemhover{border-colorvar(--primary)}
+.arc-item h3{font-size13px;font-weight600;margin-bottom2px}
+.arc-item .arc-date{font-size11px;colorvar(--text3)}
+.arc-del{width28px;height28px;border-radius6px;border1px solid var(--border);backgroundvar(--surface);colorvar(--text3);cursorpointer;displayflex;align-itemscenter;justify-contentcenter;font-size12px}
+.arc-delhover{background#fef2f2;color#c0392b}
+.empty{text-aligncenter;padding48px 20px;colorvar(--text3)}
+.empty .icon{font-size36px;margin-bottom12px}
+.empty h3{font-size15px;colorvar(--text2);margin-bottom6px}
+.empty p{font-size12px;max-width360px;margin0 auto}
+.err{background#fef2f2;border1px solid #fecaca;color#c0392b;padding12px 16px;border-radiusvar(--radius);font-size12px;margin-bottom14px}
+.spinner{width24px;height24px;border3px solid var(--border);border-top-colorvar(--primary);border-radius50%;animationspin .7s linear infinite;margin0 auto 12px}
+@keyframes spin{to{transformrotate(360deg)}}
+@media(max-width640px){
+  main{padding14px}.header-in{padding10px 14px}.nav{padding0 14px}
+  .nav button{padding8px 12px;font-size11px}.stats-grid{grid-template-columns1fr}
+  .test-card{flex-directioncolumn}.chart-wrap canvas{max-height260px}
 }
-</style>
-</head>
-<body>
+style
+head
+body
 
-<header class="header">
-  <div class="header-in">
-    <a href="#" class="logo">
-      <div class="logo-mark">G</div>
-      <div><span class="logo-text">GLY</span><span class="logo-sub">Glycemia Tracker</span></div>
-    </a>
-    <div class="hdr-actions">
-      <div class="sync-dot" id="sync-dot" title="Sync status"></div>
-      <button class="btn-ic" id="btn-settings" title="Settings">⚙<div class="dot" id="key-dot"></div></button>
-    </div>
-  </div>
-</header>
+header class=header
+  div class=header-in
+    a href=# class=logo
+      div class=logo-markGdiv
+      divspan class=logo-textGLYspanspan class=logo-subGlycemia Trackerspandiv
+    a
+    div class=hdr-actions
+      div class=sync-dot id=sync-dot title=Sync statusdiv
+      button class=btn-ic id=btn-settings title=Settings⚙div class=dot id=key-dotdivbutton
+    div
+  div
+header
 
-<nav class="nav" role="tablist">
-  <button class="on" data-v="daily">Daily</button>
-  <button data-v="weekly">Weekly</button>
-  <button data-v="tests">Tests</button>
-  <button data-v="log">Log Entry</button>
-  <button data-v="data">Data Import</button>
-  <button data-v="baseline">Baseline</button>
-  <button data-v="archive">Archive</button>
-</nav>
+nav class=nav role=tablist
+  button class=on data-v=dailyDailybutton
+  button data-v=weeklyWeeklybutton
+  button data-v=testsTestsbutton
+  button data-v=logLog Entrybutton
+  button data-v=dataData Importbutton
+  button data-v=baselineBaselinebutton
+  button data-v=archiveArchivebutton
+nav
 
-<main>
-<div class="view on" id="v-daily">
-  <div class="date-nav">
-    <button onclick="shiftDay(-1)">‹</button>
-    <input type="date" id="day-pick" onchange="renderDaily()">
-    <button onclick="shiftDay(1)">›</button>
-    <button class="btn btn-s" onclick="document.getElementById('day-pick').valueAsDate=new Date();renderDaily()" style="font-size:11px">Today</button>
-    <button class="btn btn-p" id="btn-ai-daily" onclick="aiDailyInsight()" style="margin-left:auto;font-size:11px;background:#2b6b4f;color:#fff;padding:8px 14px;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0">▶ Analyser</button>
-  </div>
-  <div class="stats-grid" id="daily-stats"></div>
-  <div class="chart-wrap"><canvas id="chart-daily"></canvas></div>
-  <div id="daily-ai"></div>
-  <h3 style="font-size:13px;font-weight:600;margin:16px 0 8px">Timeline</h3>
-  <div id="daily-timeline"></div>
-</div>
+main
+div class=view on id=v-daily
+  div class=date-nav
+    button onclick=shiftDay(-1)‹button
+    input type=date id=day-pick onchange=renderDaily()
+    button onclick=shiftDay(1)›button
+    button class=btn btn-s onclick=document.getElementById('day-pick').valueAsDate=new Date();renderDaily() style=font-size11pxTodaybutton
+    button class=btn btn-p id=btn-ai-daily onclick=aiDailyInsight() style=margin-leftauto;font-size11px;background#2b6b4f;color#fff;padding8px 14px;bordernone;border-radius8px;cursorpointer;white-spacenowrap;flex-shrink0▶ Analyserbutton
+  div
+  div class=stats-grid id=daily-statsdiv
+  div class=chart-wrapcanvas id=chart-dailycanvasdiv
+  div id=daily-aidiv
+  h3 style=font-size13px;font-weight600;margin16px 0 8pxTimelineh3
+  div id=daily-timelinediv
+div
 
-<div class="view" id="v-weekly">
-  <div class="date-nav">
-    <button onclick="shiftWeek(-1)">‹</button>
-    <span id="week-label" style="font-size:13px;font-weight:600"></span>
-    <button onclick="shiftWeek(1)">›</button>
-    <button class="btn btn-p" id="btn-ai-weekly" onclick="aiWeeklyInsight()" style="margin-left:auto;font-size:11px;background:#2b6b4f;color:#fff;padding:8px 14px;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0">▶ Analyser</button>
-  </div>
-  <div class="stats-grid" id="weekly-stats"></div>
-  <div class="chart-wrap"><canvas id="chart-weekly"></canvas></div>
-  <div id="weekly-ai"></div>
-</div>
+div class=view id=v-weekly
+  div class=date-nav
+    button onclick=shiftWeek(-1)‹button
+    span id=week-label style=font-size13px;font-weight600span
+    button onclick=shiftWeek(1)›button
+    button class=btn btn-p id=btn-ai-weekly onclick=aiWeeklyInsight() style=margin-leftauto;font-size11px;background#2b6b4f;color#fff;padding8px 14px;bordernone;border-radius8px;cursorpointer;white-spacenowrap;flex-shrink0▶ Analyserbutton
+  div
+  div class=stats-grid id=weekly-statsdiv
+  div class=chart-wrapcanvas id=chart-weeklycanvasdiv
+  div id=weekly-aidiv
+div
 
-<div class="view" id="v-tests">
-  <div class="card" style="margin-bottom:20px;border-color:#c5ddd0;background:var(--primary-lt)">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-      <div>
-        <h3 style="font-size:14px">🔍 Discover Natural Experiments</h3>
-        <p style="font-size:12px;color:var(--text2);margin-top:4px">AI scans all your logs and glucose data to find unplanned comparisons.</p>
-      </div>
-      <button class="btn btn-p" onclick="discoverPatterns()" id="btn-discover" style="white-space:nowrap;flex-shrink:0">Scan patterns</button>
-    </div>
-    <div id="discover-output" style="margin-top:12px"></div>
-  </div>
-  <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">Planned Tests</h3>
-  <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Pre-built protocols. Assign a date, run the test, then compare responses.</p>
-  <div id="tests-list"></div>
-</div>
+div class=view id=v-tests
+  div class=card style=margin-bottom20px;border-color#c5ddd0;backgroundvar(--primary-lt)
+    div style=displayflex;align-itemsflex-start;justify-contentspace-between;gap12px
+      div
+        h3 style=font-size14px🔍 Discover Natural Experimentsh3
+        p style=font-size12px;colorvar(--text2);margin-top4pxAI scans all your logs and glucose data to find unplanned comparisons.p
+      div
+      button class=btn btn-p onclick=discoverPatterns() id=btn-discover style=white-spacenowrap;flex-shrink0Scan patternsbutton
+    div
+    div id=discover-output style=margin-top12pxdiv
+  div
+  h3 style=font-size14px;font-weight600;margin-bottom12pxPlanned Testsh3
+  p style=font-size12px;colorvar(--text2);margin-bottom16pxPre-built protocols. Assign a date, run the test, then compare responses.p
+  div id=tests-listdiv
+div
 
-<div class="view" id="v-log">
-  <div class="log-form">
-    <h3 style="margin-bottom:14px">Quick Log</h3>
-    <div class="person-toggle" id="log-person">
-      <button onclick="selPerson('axel',this)">Axel</button>
-      <button onclick="selPerson('fanny',this)">Fanny</button>
-      <button onclick="selPerson('both',this)">Both</button>
-    </div>
-    <div class="form-row">
-      <label>Date & Time</label>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="date" id="log-date" style="flex:1.2">
-        <input type="time" id="log-time" style="flex:1" title="Start time">
-        <button type="button" class="btn btn-s" onclick="document.getElementById('log-time').value=luxon.DateTime.now().toFormat('HH:mm')" style="padding:5px 10px;font-size:10px;flex-shrink:0">Now</button>
-        <select id="log-duration" style="flex:0.8;padding:9px 8px;font-family:var(--font);font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--surface-alt)">
-          <option value="">Duration</option>
-          <option value="5">5 min</option>
-          <option value="10">10 min</option>
-          <option value="15">15 min</option>
-          <option value="20">20 min</option>
-          <option value="30">30 min</option>
-          <option value="45">45 min</option>
-          <option value="60">1h</option>
-          <option value="75">1h15</option>
-          <option value="90">1h30</option>
-          <option value="120">2h</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <label>Category</label>
-      <select id="log-cat">
-        <option value="meal">🍽️ Meal</option>
-        <option value="sport">🏃 Sport</option>
-        <option value="note">📝 Note</option>
-        <option value="period">🔴 Period (Fanny)</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <label>Description</label>
-      <div id="fav-buttons"></div>
-      <textarea id="log-desc" placeholder="e.g. Porridge Magnus 80g + blueberries + PB. Then coffee black.&#10;List items in order eaten."></textarea>
-    </div>
-    <button class="btn btn-p" onclick="saveLog()">Save entry</button>
-    <div id="log-msg" style="margin-top:10px;font-size:12px"></div>
-  </div>
-  <h3 style="font-size:13px;font-weight:600;margin:24px 0 10px">Recent Entries</h3>
-  <div id="log-recent"></div>
-</div>
+div class=view id=v-log
+  div class=log-form
+    h3 style=margin-bottom14pxQuick Logh3
+    div class=person-toggle id=log-person
+      button onclick=selPerson('axel',this)Axelbutton
+      button onclick=selPerson('fanny',this)Fannybutton
+      button onclick=selPerson('both',this)Bothbutton
+    div
+    div class=form-row
+      labelDate & Timelabel
+      div style=displayflex;gap8px;align-itemscenter
+        input type=date id=log-date style=flex1.2
+        input type=time id=log-time style=flex1 title=Start time
+        button type=button class=btn btn-s onclick=document.getElementById('log-time').value=luxon.DateTime.now().toFormat('HHmm') style=padding5px 10px;font-size10px;flex-shrink0Nowbutton
+        select id=log-duration style=flex0.8;padding9px 8px;font-familyvar(--font);font-size12px;border1px solid var(--border);border-radius6px;backgroundvar(--surface-alt)
+          option value=Durationoption
+          option value=55 minoption
+          option value=1010 minoption
+          option value=1515 minoption
+          option value=2020 minoption
+          option value=3030 minoption
+          option value=4545 minoption
+          option value=601hoption
+          option value=751h15option
+          option value=901h30option
+          option value=1202hoption
+        select
+      div
+    div
+    div class=form-row
+      labelCategorylabel
+      select id=log-cat
+        option value=meal🍽️ Mealoption
+        option value=sport🏃 Sportoption
+        option value=note📝 Noteoption
+        option value=period🔴 Period (Fanny)option
+      select
+    div
+    div class=form-row
+      labelDescriptionlabel
+      div id=fav-buttonsdiv
+      textarea id=log-desc placeholder=e.g. Porridge Magnus 80g + blueberries + PB. Then coffee black.&#10;List items in order eaten.textarea
+    div
+    button class=btn btn-p onclick=saveLog()Save entrybutton
+    div id=log-msg style=margin-top10px;font-size12pxdiv
+  div
+  h3 style=font-size13px;font-weight600;margin24px 0 10pxRecent Entriesh3
+  div id=log-recentdiv
+div
 
-<div class="view" id="v-data">
-  <h3 style="font-size:13px;font-weight:600;margin-bottom:12px">Upload LibreView CSV</h3>
-  <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Export from <a href="https://www.libreview.io" target="_blank">libreview.io</a> → upload here. Do this every 2-3 days to keep data fresh.</p>
-  <div class="upload-zone" id="upload-axel" onclick="this.querySelector('input').click()">
-    <div class="icon">📁</div>
-    <p><strong style="color:var(--axel)">Axel</strong> — Drop CSV or click to upload</p>
-    <input type="file" accept=".csv" onchange="handleCSV('axel',event)">
-  </div>
-  <div class="upload-zone" id="upload-fanny" onclick="this.querySelector('input').click()">
-    <div class="icon">📁</div>
-    <p><strong style="color:var(--fanny)">Fanny</strong> — Drop CSV or click to upload</p>
-    <input type="file" accept=".csv" onchange="handleCSV('fanny',event)">
-  </div>
-  <div id="upload-status"></div>
-  <div class="card" style="margin-top:20px">
-    <h3>Data Status</h3>
-    <div id="data-status" style="font-size:12px;color:var(--text2)"></div>
-  </div>
-  <div class="card" style="margin-top:12px">
-    <h3>Export All Data (for Claude catch-up)</h3>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Download a JSON file with all glucose data, logs, and AI analyses.</p>
-    <button class="btn btn-s" onclick="exportAll()">Download JSON export</button>
-  </div>
-</div>
+div class=view id=v-data
+  h3 style=font-size13px;font-weight600;margin-bottom12pxUpload LibreView CSVh3
+  p style=font-size12px;colorvar(--text2);margin-bottom16pxExport from a href=httpswww.libreview.io target=_blanklibreview.ioa → upload here. Do this every 2-3 days to keep data fresh.p
+  div class=upload-zone id=upload-axel onclick=this.querySelector('input').click()
+    div class=icon📁div
+    pstrong style=colorvar(--axel)Axelstrong — Drop CSV or click to uploadp
+    input type=file accept=.csv onchange=handleCSV('axel',event)
+  div
+  div class=upload-zone id=upload-fanny onclick=this.querySelector('input').click()
+    div class=icon📁div
+    pstrong style=colorvar(--fanny)Fannystrong — Drop CSV or click to uploadp
+    input type=file accept=.csv onchange=handleCSV('fanny',event)
+  div
+  div id=upload-statusdiv
+  div class=card style=margin-top20px
+    h3Data Statush3
+    div id=data-status style=font-size12px;colorvar(--text2)div
+  div
+  div class=card style=margin-top12px
+    h3Export All Data (for Claude catch-up)h3
+    p style=font-size12px;colorvar(--text2);margin-bottom10pxDownload a JSON file with all glucose data, logs, and AI analyses.p
+    button class=btn btn-s onclick=exportAll()Download JSON exportbutton
+  div
+div
 
-<div class="view" id="v-baseline">
-  <div class="card">
-    <h3>Profiles</h3>
-    <div class="baseline-table-wrap">
-      <table class="baseline-table">
-        <tr><th></th><th style="color:var(--axel)">Axel</th><th style="color:var(--fanny)">Fanny</th></tr>
-        <tr><td>Born</td><td>1990 (36)</td><td>1987 (39)</td></tr>
-        <tr><td>Sex</td><td>Male</td><td>Female</td></tr>
-        <tr><td>CGM</td><td colspan="2">Freestyle Libre 2 Plus</td></tr>
-        <tr><td>Experiment</td><td colspan="2">14-15 days</td></tr>
-      </table>
-    </div>
-  </div>
-  <div id="baseline-sections"></div>
-  <div class="card" style="margin-top:16px">
-    <h3>Quick Favorites (meals & activities)</h3>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Add meals or activities you do often. They'll appear as one-tap buttons in the Log Entry tab.</p>
-    <div id="fav-meals-list"></div>
-    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-      <select id="fav-cat" style="padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);background:var(--surface-alt)">
-        <option value="meal">🍽️ Meal</option><option value="sport">🏃 Sport</option><option value="note">📝 Note</option>
-      </select>
-      <input type="text" id="fav-name" placeholder="Label (e.g. Potager)" style="flex:1;min-width:120px;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
-      <input type="text" id="fav-desc" placeholder="Full description" style="flex:2;min-width:180px;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
-      <button class="btn btn-p" onclick="addFavMeal()" style="white-space:nowrap">Add</button>
-    </div>
-  </div>
-</div>
+div class=view id=v-baseline
+  div class=card
+    h3Profilesh3
+    div class=baseline-table-wrap
+      table class=baseline-table
+        trththth style=colorvar(--axel)Axelthth style=colorvar(--fanny)Fannythtr
+        trtdBorntdtd1990 (36)tdtd1987 (39)tdtr
+        trtdSextdtdMaletdtdFemaletdtr
+        trtdCGMtdtd colspan=2Freestyle Libre 2 Plustdtr
+        trtdExperimenttdtd colspan=214-15 daystdtr
+      table
+    div
+  div
+  div id=baseline-sectionsdiv
+  div class=card style=margin-top16px
+    h3Quick Favorites (meals & activities)h3
+    p style=font-size12px;colorvar(--text2);margin-bottom12pxAdd meals or activities you do often. They'll appear as one-tap buttons in the Log Entry tab.p
+    div id=fav-meals-listdiv
+    div style=displayflex;gap8px;margin-top12px;flex-wrapwrap
+      select id=fav-cat style=padding8px 10px;font-size12px;border1px solid var(--border);border-radius6px;font-familyvar(--font);backgroundvar(--surface-alt)
+        option value=meal🍽️ Mealoptionoption value=sport🏃 Sportoptionoption value=note📝 Noteoption
+      select
+      input type=text id=fav-name placeholder=Label (e.g. Potager) style=flex1;min-width120px;padding8px 10px;font-size12px;border1px solid var(--border);border-radius6px;font-familyvar(--font)
+      input type=text id=fav-desc placeholder=Full description style=flex2;min-width180px;padding8px 10px;font-size12px;border1px solid var(--border);border-radius6px;font-familyvar(--font)
+      button class=btn btn-p onclick=addFavMeal() style=white-spacenowrapAddbutton
+    div
+  div
+div
 
-<div class="view" id="v-archive">
-  <div id="archive-out"></div>
-</div>
-</main>
+div class=view id=v-archive
+  div id=archive-outdiv
+div
+main
 
-<!-- SETTINGS MODAL -->
-<div class="modal-ov" id="modal-settings">
-  <div class="modal">
-    <h2>Settings</h2>
-    <p class="sub">Credentials stored in your browser only.</p>
-    <div class="form-row"><label>OpenAI API Key</label><input type="password" id="s-openai" placeholder="sk-..."></div>
-    <div class="form-row"><label>OpenAI Model</label>
-      <select id="s-model" style="width:100%;padding:9px 12px;font-family:var(--font);font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surface-alt)">
-        <option value="gpt-4o-mini">gpt-4o-mini (fast)</option>
-        <option value="gpt-4o">gpt-4o (best)</option>
-      </select>
-    </div>
-    <div class="form-row"><label>LibreLinkUp Email</label><input type="email" id="s-llu-email" placeholder="your@email.com"></div>
-    <div class="form-row"><label>LibreLinkUp Password</label><input type="password" id="s-llu-pass" placeholder="password"></div>
-    <p style="font-size:10px;color:var(--text3);margin-top:-8px">Sent via secure proxy to LibreLinkUp API only.</p>
-    <div class="form-row"><label>Sync PIN (same on all devices)</label><input type="text" id="s-sync-pin" placeholder="e.g. fanny2026 (min 4 chars)"></div>
-    <p style="font-size:10px;color:var(--text3);margin-top:-8px">Use the same PIN on phone + PC to keep data in sync.</p>
-    <div class="form-row"><label>Glucose Target Range (mg/dL)</label>
-      <div style="display:flex;gap:8px">
-        <input type="number" id="s-gly-low" placeholder="70" style="flex:1">
-        <input type="number" id="s-gly-high" placeholder="140" style="flex:1">
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-s" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-p" onclick="saveSettings()">Save</button>
-    </div>
-  </div>
-</div>
+!-- SETTINGS MODAL --
+div class=modal-ov id=modal-settings
+  div class=modal
+    h2Settingsh2
+    p class=subCredentials stored in your browser only.p
+    div class=form-rowlabelOpenAI API Keylabelinput type=password id=s-openai placeholder=sk-...div
+    div class=form-rowlabelOpenAI Modellabel
+      select id=s-model style=width100%;padding9px 12px;font-familyvar(--font);font-size13px;border1px solid var(--border);border-radius6px;backgroundvar(--surface-alt)
+        option value=gpt-4o-minigpt-4o-mini (fast)option
+        option value=gpt-4ogpt-4o (best)option
+      select
+    div
+    div class=form-rowlabelLibreLinkUp Emaillabelinput type=email id=s-llu-email placeholder=your@email.comdiv
+    div class=form-rowlabelLibreLinkUp Passwordlabelinput type=password id=s-llu-pass placeholder=passworddiv
+    p style=font-size10px;colorvar(--text3);margin-top-8pxSent via secure proxy to LibreLinkUp API only.p
+    div class=form-rowlabelSync PIN (same on all devices)labelinput type=text id=s-sync-pin placeholder=e.g. fanny2026 (min 4 chars)div
+    p style=font-size10px;colorvar(--text3);margin-top-8pxUse the same PIN on phone + PC to keep data in sync.p
+    div class=form-rowlabelGlucose Target Range (mgdL)label
+      div style=displayflex;gap8px
+        input type=number id=s-gly-low placeholder=70 style=flex1
+        input type=number id=s-gly-high placeholder=140 style=flex1
+      div
+    div
+    div class=modal-actions
+      button class=btn btn-s onclick=closeModal()Cancelbutton
+      button class=btn btn-p onclick=saveSettings()Savebutton
+    div
+  div
+div
 
-<script>
-/* ================================================================
+script
+ ================================================================
    STATE
-   ================================================================ */
-const S=key=>localStorage.getItem('gly_'+key)||'';
-const SS=(key,val)=>localStorage.setItem('gly_'+key,val);
-const SJ=key=>{try{return JSON.parse(localStorage.getItem('gly_'+key)||'[]')}catch{return[]}};
-const SSJ=(key,val)=>localStorage.setItem('gly_'+key,JSON.stringify(val));
+   ================================================================ 
+const S=key=localStorage.getItem('gly_'+key)'';
+const SS=(key,val)=localStorage.setItem('gly_'+key,val);
+const SJ=key={try{return JSON.parse(localStorage.getItem('gly_'+key)'[]')}catch{return[]}};
+const SSJ=(key,val)=localStorage.setItem('gly_'+key,JSON.stringify(val));
 function getGlucose(p){return SJ('glucose_'+p)}
 function setGlucose(p,d){SSJ('glucose_'+p,d)}
 function getLogs(){return SJ('logs')}
 function setLogs(d){SSJ('logs',d)}
 function getArchive(){return SJ('archive')}
 function setArchive(d){SSJ('archive',d)}
-function getTargetLow(){return parseInt(S('gly_low'))||70}
-function getTargetHigh(){return parseInt(S('gly_high'))||140}
-const PROFILES={axel:{name:'Axel',born:1990,age:36,sex:'Male',color:'#3b82f6',short:'A'},fanny:{name:'Fanny',born:1987,age:39,sex:'Female',color:'#e8437f',short:'F'}};
-const PROXY='https://gly-proxy.fanny-broissand.workers.dev';
+function getTargetLow(){return parseInt(S('gly_low'))70}
+function getTargetHigh(){return parseInt(S('gly_high'))140}
+const PROFILES={axel{name'Axel',born1990,age36,sex'Male',color'#3b82f6',short'A'},fanny{name'Fanny',born1987,age39,sex'Female',color'#e8437f',short'F'}};
+const PROXY='httpsgly-proxy.fanny-broissand.workers.dev';
 
-/* ================================================================
+ ================================================================
    CLOUD SYNC — pull every 60s for phone→desktop
-   ================================================================ */
-function setSyncDot(state){const d=document.getElementById('sync-dot');d.className='sync-dot'+(state?' '+state:'');d.title=state==='ok'?'Synced':state==='err'?'Sync error':state==='working'?'Syncing...':'No sync PIN'}
-async function syncPush(){const pin=S('sync_pin');if(!pin||pin.length<4){setSyncDot('');return}setSyncDot('working');try{const res=await fetch(PROXY+'/sync/push',{method:'POST',headers:{'Content-Type':'application/json','X-Sync-Pin':pin},body:JSON.stringify({data:JSON.stringify({ts:new Date().toISOString(),glucose_axel:getGlucose('axel'),glucose_fanny:getGlucose('fanny'),logs:getLogs(),archive:getArchive(),tests_meta:SJ('tests_meta'),baseline:getBaseline(),fav_meals:getFavMeals(),settings:{gly_low:S('gly_low'),gly_high:S('gly_high')}})})});if(res.ok)setSyncDot('ok');else setSyncDot('err')}catch(e){console.warn('Sync push failed:',e);setSyncDot('err')}}
-async function syncPull(){const pin=S('sync_pin');if(!pin||pin.length<4){setSyncDot('');return}setSyncDot('working');try{const res=await fetch(PROXY+'/sync/pull',{headers:{'X-Sync-Pin':pin}});const d=await res.json();if(!d.data&&!d.glucose_axel){setSyncDot('ok');return}const raw=typeof d.data==='string'?d.data:JSON.stringify(d);const data=JSON.parse(raw);['axel','fanny'].forEach(p=>{const remote=data['glucose_'+p]||[];const local=getGlucose(p);const merged=[...local,...remote];const seen=new Set();const unique=merged.filter(r=>{if(seen.has(r.t))return false;seen.add(r.t);return true});unique.sort((a,b)=>a.t.localeCompare(b.t));setGlucose(p,unique)});const remoteLogs=data.logs||[];const localLogs=getLogs();const logIds=new Set(localLogs.map(l=>l.id));remoteLogs.forEach(l=>{if(!logIds.has(l.id))localLogs.push(l)});setLogs(localLogs);if(data.archive?.length)setArchive(data.archive);if(data.tests_meta?.length)SSJ('tests_meta',data.tests_meta);if(data.baseline?.length)setBaseline(data.baseline);if(data.fav_meals?.length)setFavMeals(data.fav_meals);if(data.settings){if(data.settings.gly_low)SS('gly_low',data.settings.gly_low);if(data.settings.gly_high)SS('gly_high',data.settings.gly_high)}setSyncDot('ok')}catch(e){console.warn('Sync pull failed:',e);setSyncDot('err')}}
+   ================================================================ 
+function setSyncDot(state){const d=document.getElementById('sync-dot');d.className='sync-dot'+(state' '+state'');d.title=state==='ok''Synced'state==='err''Sync error'state==='working''Syncing...''No sync PIN'}
+async function syncPush(){const pin=S('sync_pin');if(!pinpin.length4){setSyncDot('');return}setSyncDot('working');try{const res=await fetch(PROXY+'syncpush',{method'POST',headers{'Content-Type''applicationjson','X-Sync-Pin'pin},bodyJSON.stringify({dataJSON.stringify({tsnew Date().toISOString(),glucose_axelgetGlucose('axel'),glucose_fannygetGlucose('fanny'),logsgetLogs(),archivegetArchive(),tests_metaSJ('tests_meta'),baselinegetBaseline(),fav_mealsgetFavMeals(),settings{gly_lowS('gly_low'),gly_highS('gly_high')}})})});if(res.ok)setSyncDot('ok');else setSyncDot('err')}catch(e){console.warn('Sync push failed',e);setSyncDot('err')}}
+async function syncPull(){const pin=S('sync_pin');if(!pinpin.length4){setSyncDot('');return}setSyncDot('working');try{const res=await fetch(PROXY+'syncpull',{headers{'X-Sync-Pin'pin}});const d=await res.json();if(!d.data&&!d.glucose_axel){setSyncDot('ok');return}const raw=typeof d.data==='string'd.dataJSON.stringify(d);const data=JSON.parse(raw);['axel','fanny'].forEach(p={const remote=data['glucose_'+p][];const local=getGlucose(p);const merged=[...local,...remote];const seen=new Set();const unique=merged.filter(r={if(seen.has(r.t))return false;seen.add(r.t);return true});unique.sort((a,b)=a.t.localeCompare(b.t));setGlucose(p,unique)});const remoteLogs=data.logs[];const localLogs=getLogs();const logIds=new Set(localLogs.map(l=l.id));remoteLogs.forEach(l={if(!logIds.has(l.id))localLogs.push(l)});setLogs(localLogs);if(data.archive.length)setArchive(data.archive);if(data.tests_meta.length)SSJ('tests_meta',data.tests_meta);if(data.baseline.length)setBaseline(data.baseline);if(data.fav_meals.length)setFavMeals(data.fav_meals);if(data.settings){if(data.settings.gly_low)SS('gly_low',data.settings.gly_low);if(data.settings.gly_high)SS('gly_high',data.settings.gly_high)}setSyncDot('ok')}catch(e){console.warn('Sync pull failed',e);setSyncDot('err')}}
 let _syncTimer=null;function schedulePush(){clearTimeout(_syncTimer);_syncTimer=setTimeout(syncPush,2000)}
 
-/* ================================================================
+ ================================================================
    NAV
-   ================================================================ */
-document.querySelectorAll('.nav button').forEach(b=>{b.onclick=()=>{document.querySelectorAll('.nav button').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));b.classList.add('on');document.getElementById('v-'+b.dataset.v).classList.add('on');if(b.dataset.v==='daily')renderDaily();if(b.dataset.v==='weekly')renderWeekly();if(b.dataset.v==='tests')renderTests();if(b.dataset.v==='log'){renderRecentLogs();renderFavButtons()}if(b.dataset.v==='data')renderDataStatus();if(b.dataset.v==='baseline')renderBaseline();if(b.dataset.v==='archive')renderArchive()}});
+   ================================================================ 
+document.querySelectorAll('.nav button').forEach(b={b.onclick=()={document.querySelectorAll('.nav button').forEach(t=t.classList.remove('on'));document.querySelectorAll('.view').forEach(v=v.classList.remove('on'));b.classList.add('on');document.getElementById('v-'+b.dataset.v).classList.add('on');if(b.dataset.v==='daily')renderDaily();if(b.dataset.v==='weekly')renderWeekly();if(b.dataset.v==='tests')renderTests();if(b.dataset.v==='log'){renderRecentLogs();renderFavButtons()}if(b.dataset.v==='data')renderDataStatus();if(b.dataset.v==='baseline')renderBaseline();if(b.dataset.v==='archive')renderArchive()}});
 
-/* ================================================================
+ ================================================================
    SETTINGS
-   ================================================================ */
-document.getElementById('btn-settings').onclick=()=>{document.getElementById('s-openai').value=S('openai');document.getElementById('s-model').value=S('model')||'gpt-4o-mini';document.getElementById('s-llu-email').value=S('llu_email');document.getElementById('s-llu-pass').value=S('llu_pass');document.getElementById('s-sync-pin').value=S('sync_pin');document.getElementById('s-gly-low').value=S('gly_low')||'70';document.getElementById('s-gly-high').value=S('gly_high')||'140';document.getElementById('modal-settings').classList.add('open')};
+   ================================================================ 
+document.getElementById('btn-settings').onclick=()={document.getElementById('s-openai').value=S('openai');document.getElementById('s-model').value=S('model')'gpt-4o-mini';document.getElementById('s-llu-email').value=S('llu_email');document.getElementById('s-llu-pass').value=S('llu_pass');document.getElementById('s-sync-pin').value=S('sync_pin');document.getElementById('s-gly-low').value=S('gly_low')'70';document.getElementById('s-gly-high').value=S('gly_high')'140';document.getElementById('modal-settings').classList.add('open')};
 function closeModal(){document.getElementById('modal-settings').classList.remove('open')}
-document.getElementById('modal-settings').onclick=e=>{if(e.target===e.currentTarget)closeModal()};
+document.getElementById('modal-settings').onclick=e={if(e.target===e.currentTarget)closeModal()};
 function saveSettings(){SS('openai',document.getElementById('s-openai').value.trim());SS('model',document.getElementById('s-model').value);SS('llu_email',document.getElementById('s-llu-email').value.trim());SS('llu_pass',document.getElementById('s-llu-pass').value.trim());SS('sync_pin',document.getElementById('s-sync-pin').value.trim());SS('gly_low',document.getElementById('s-gly-low').value.trim());SS('gly_high',document.getElementById('s-gly-high').value.trim());updateDot();closeModal();schedulePush()}
-function updateDot(){document.getElementById('key-dot').className='dot'+(S('openai')?' ok':'')}
+function updateDot(){document.getElementById('key-dot').className='dot'+(S('openai')' ok''')}
 
-/* ================================================================
+ ================================================================
    LIBRE CSV PARSER
-   ================================================================ */
-function parseLibreCSV(text){const lines=text.split('\n');const readings=[];let headerIdx=-1;for(let i=0;i<Math.min(lines.length,10);i++){const low=lines[i].toLowerCase();if(low.includes('device timestamp')||low.includes('horodatage')||low.includes('gerätezeitstempel')){headerIdx=i;break}}if(headerIdx===-1){for(let i=0;i<Math.min(lines.length,10);i++){if((lines[i].match(/,/g)||[]).length>=5){headerIdx=i;break}}}if(headerIdx===-1)return readings;const headers=lines[headerIdx].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''));const tsCol=headers.findIndex(h=>h.includes('timestamp')||h.includes('horodatage')||h.includes('zeitstempel'));const histCol=headers.findIndex(h=>h.includes('historic glucose')||h.includes('historique')||h.includes('glukosewert'));const scanCol=headers.findIndex(h=>h.includes('scan glucose')||h.includes('numérisation'));for(let i=headerIdx+1;i<lines.length;i++){const cols=lines[i].split(',').map(c=>c.trim().replace(/"/g,''));if(cols.length<=Math.max(tsCol,histCol,scanCol))continue;const ts=cols[tsCol];if(!ts)continue;let val=parseFloat(cols[histCol]);if(isNaN(val)&&scanCol>=0)val=parseFloat(cols[scanCol]);if(isNaN(val))continue;let dt=luxon.DateTime.fromFormat(ts,'dd-MM-yyyy HH:mm');if(!dt.isValid)dt=luxon.DateTime.fromFormat(ts,'MM-dd-yyyy HH:mm');if(!dt.isValid)dt=luxon.DateTime.fromFormat(ts,'yyyy-MM-dd HH:mm');if(!dt.isValid)dt=luxon.DateTime.fromFormat(ts,'dd/MM/yyyy HH:mm');if(!dt.isValid)dt=luxon.DateTime.fromFormat(ts,'MM/dd/yyyy HH:mm');if(!dt.isValid)dt=luxon.DateTime.fromISO(ts);if(!dt.isValid)continue;readings.push({t:dt.toISO(),v:val})}return readings.sort((a,b)=>a.t.localeCompare(b.t))}
-function handleCSV(person,event){const file=event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{const readings=parseLibreCSV(e.target.result);if(!readings.length){document.getElementById('upload-status').innerHTML='<div class="err">Could not parse readings.</div>';return}const existing=getGlucose(person);const merged=[...existing,...readings];const seen=new Set();const unique=merged.filter(r=>{if(seen.has(r.t))return false;seen.add(r.t);return true});unique.sort((a,b)=>a.t.localeCompare(b.t));setGlucose(person,unique);document.getElementById('upload-status').innerHTML=`<div class="ai-box"><div class="ai-label">✓ Imported</div><p>${readings.length} readings for ${PROFILES[person].name}. Total: ${unique.length}.</p></div>`;renderDataStatus();schedulePush()};reader.readAsText(file)}
-['upload-axel','upload-fanny'].forEach(id=>{const el=document.getElementById(id);const person=id.includes('axel')?'axel':'fanny';el.ondragover=e=>{e.preventDefault();el.classList.add('drag')};el.ondragleave=()=>el.classList.remove('drag');el.ondrop=e=>{e.preventDefault();el.classList.remove('drag');const file=e.dataTransfer.files[0];if(file)handleCSV(person,{target:{files:[file]}})}});
+   ================================================================ 
+function parseLibreCSV(text){const lines=text.split('n');const readings=[];let headerIdx=-1;for(let i=0;iMath.min(lines.length,10);i++){const low=lines[i].toLowerCase();if(low.includes('device timestamp')low.includes('horodatage')low.includes('gerätezeitstempel')){headerIdx=i;break}}if(headerIdx===-1){for(let i=0;iMath.min(lines.length,10);i++){if((lines[i].match(,g)[]).length=5){headerIdx=i;break}}}if(headerIdx===-1)return readings;const headers=lines[headerIdx].split(',').map(h=h.trim().toLowerCase().replace(g,''));const tsCol=headers.findIndex(h=h.includes('timestamp')h.includes('horodatage')h.includes('zeitstempel'));const histCol=headers.findIndex(h=h.includes('historic glucose')h.includes('historique')h.includes('glukosewert'));const scanCol=headers.findIndex(h=h.includes('scan glucose')h.includes('numérisation'));for(let i=headerIdx+1;ilines.length;i++){const cols=lines[i].split(',').map(c=c.trim().replace(g,''));if(cols.length=Math.max(tsCol,histCol,scanCol))continue;const ts=cols[tsCol];if(!ts)continue;let val=parseFloat(cols[histCol]);if(isNaN(val)&&scanCol=0)val=parseFloat(cols[scanCol]);if(isNaN(val))continue;let dt=luxon.DateTime.fromFormat(ts,'dd-MM-yyyy HHmm');if(!dt.isValid)dt=luxon.DateTime.fromFormat(ts,'MM-dd-yyyy HHmm');if(!dt.isValid)dt=luxon.DateTime.fromFormat(ts,'yyyy-MM-dd HHmm');if(!dt.isValid)dt=luxon.DateTime.fromFormat(ts,'ddMMyyyy HHmm');if(!dt.isValid)dt=luxon.DateTime.fromFormat(ts,'MMddyyyy HHmm');if(!dt.isValid)dt=luxon.DateTime.fromISO(ts);if(!dt.isValid)continue;readings.push({tdt.toISO(),vval})}return readings.sort((a,b)=a.t.localeCompare(b.t))}
+function handleCSV(person,event){const file=event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=e={const readings=parseLibreCSV(e.target.result);if(!readings.length){document.getElementById('upload-status').innerHTML='div class=errCould not parse readings.div';return}const existing=getGlucose(person);const merged=[...existing,...readings];const seen=new Set();const unique=merged.filter(r={if(seen.has(r.t))return false;seen.add(r.t);return true});unique.sort((a,b)=a.t.localeCompare(b.t));setGlucose(person,unique);document.getElementById('upload-status').innerHTML=`div class=ai-boxdiv class=ai-label✓ Importeddivp${readings.length} readings for ${PROFILES[person].name}. Total ${unique.length}.pdiv`;renderDataStatus();schedulePush()};reader.readAsText(file)}
+['upload-axel','upload-fanny'].forEach(id={const el=document.getElementById(id);const person=id.includes('axel')'axel''fanny';el.ondragover=e={e.preventDefault();el.classList.add('drag')};el.ondragleave=()=el.classList.remove('drag');el.ondrop=e={e.preventDefault();el.classList.remove('drag');const file=e.dataTransfer.files[0];if(file)handleCSV(person,{target{files[file]}})}});
 
-/* ================================================================
+ ================================================================
    LIBRELINKUP API (via proxy)
-   ================================================================ */
-async function fetchLibreLinkUp(){const status=document.getElementById('llu-status');const email=S('llu_email'),pass=S('llu_pass');if(!email||!pass){status.innerHTML='<div class="err">Set LibreLinkUp credentials in Settings first.</div>';return}status.innerHTML='<div class="spinner"></div><span style="font-size:12px;color:var(--text3)">Connecting to LibreLinkUp...</span>';try{const loginRes=await fetch(PROXY+'/llu/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});const loginData=await loginRes.json();let token;if(loginData.data?.redirect){const region=loginData.data.region;const r2=await fetch(PROXY+'/llu/auth/login?region='+region,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});const d2=await r2.json();token=d2.data?.authTicket?.token}else{token=loginData.data?.authTicket?.token}if(!token)throw new Error('Login failed — check credentials.');const connRes=await fetch(PROXY+'/llu/connections',{headers:{'Authorization':'Bearer '+token}});const connData=await connRes.json();const patients=connData.data||[];if(!patients.length){status.innerHTML='<div class="err">No connected patients found.</div>';return}let total=0;for(const p of patients){const graphRes=await fetch(PROXY+'/llu/connections/'+p.patientId+'/graph',{headers:{'Authorization':'Bearer '+token}});const graphData=await graphRes.json();const measurements=graphData.data?.graphData||[];const readings=measurements.map(m=>({t:luxon.DateTime.fromISO(m.Timestamp||m.FactoryTimestamp).toISO(),v:m.ValueInMgPerDl||m.Value})).filter(r=>r.t&&!isNaN(r.v));const name=(p.firstName||'').toLowerCase();let person=null;if(name.includes('axel'))person='axel';if(name.includes('fanny'))person='fanny';if(!person)person=patients.indexOf(p)===0?'axel':'fanny';const existing=getGlucose(person);const merged=[...existing,...readings];const seen=new Set();const unique=merged.filter(r=>{if(seen.has(r.t))return false;seen.add(r.t);return true});unique.sort((a,b)=>a.t.localeCompare(b.t));setGlucose(person,unique);total+=readings.length}status.innerHTML=`<div class="ai-box"><div class="ai-label">✓ Success</div><p>Fetched ${total} readings from ${patients.length} patient(s).</p></div>`;renderDataStatus();schedulePush()}catch(err){status.innerHTML=`<div class="err">${esc(err.message)}</div>`}}
+   ================================================================ 
+async function fetchLibreLinkUp(){const status=document.getElementById('llu-status');const email=S('llu_email'),pass=S('llu_pass');if(!email!pass){status.innerHTML='div class=errSet LibreLinkUp credentials in Settings first.div';return}status.innerHTML='div class=spinnerdivspan style=font-size12px;colorvar(--text3)Connecting to LibreLinkUp...span';try{const loginRes=await fetch(PROXY+'lluauthlogin',{method'POST',headers{'Content-Type''applicationjson'},bodyJSON.stringify({email,passwordpass})});const loginData=await loginRes.json();let token;if(loginData.data.redirect){const region=loginData.data.region;const r2=await fetch(PROXY+'lluauthloginregion='+region,{method'POST',headers{'Content-Type''applicationjson'},bodyJSON.stringify({email,passwordpass})});const d2=await r2.json();token=d2.data.authTicket.token}else{token=loginData.data.authTicket.token}if(!token)throw new Error('Login failed — check credentials.');const connRes=await fetch(PROXY+'lluconnections',{headers{'Authorization''Bearer '+token}});const connData=await connRes.json();const patients=connData.data[];if(!patients.length){status.innerHTML='div class=errNo connected patients found.div';return}let total=0;for(const p of patients){const graphRes=await fetch(PROXY+'lluconnections'+p.patientId+'graph',{headers{'Authorization''Bearer '+token}});const graphData=await graphRes.json();const measurements=graphData.data.graphData[];const readings=measurements.map(m=({tluxon.DateTime.fromISO(m.Timestampm.FactoryTimestamp).toISO(),vm.ValueInMgPerDlm.Value})).filter(r=r.t&&!isNaN(r.v));const name=(p.firstName'').toLowerCase();let person=null;if(name.includes('axel'))person='axel';if(name.includes('fanny'))person='fanny';if(!person)person=patients.indexOf(p)===0'axel''fanny';const existing=getGlucose(person);const merged=[...existing,...readings];const seen=new Set();const unique=merged.filter(r={if(seen.has(r.t))return false;seen.add(r.t);return true});unique.sort((a,b)=a.t.localeCompare(b.t));setGlucose(person,unique);total+=readings.length}status.innerHTML=`div class=ai-boxdiv class=ai-label✓ SuccessdivpFetched ${total} readings from ${patients.length} patient(s).pdiv`;renderDataStatus();schedulePush()}catch(err){status.innerHTML=`div class=err${esc(err.message)}div`}}
 
-/* ================================================================
+ ================================================================
    CHARTS
-   ================================================================ */
+   ================================================================ 
 let chartDaily=null,chartWeekly=null;
 
-function fmtDuration(start,end){if(!start||!end)return'';const[sh,sm]=start.split(':').map(Number);const[eh,em]=end.split(':').map(Number);let mins=(eh*60+em)-(sh*60+sm);if(mins<=0)return'';if(mins<60)return mins+'min';const h=Math.floor(mins/60);const m=mins%60;return m?h+'h'+String(m).padStart(2,'0'):h+'h'}
-function addMinutes(timeStr,mins){const[h,m]=timeStr.split(':').map(Number);const t=h*60+m+mins;return String(Math.floor(t/60)%24).padStart(2,'0')+':'+String(t%60).padStart(2,'0')}
+function fmtDuration(start,end){if(!start!end)return'';const[sh,sm]=start.split('').map(Number);const[eh,em]=end.split('').map(Number);let mins=(eh60+em)-(sh60+sm);if(mins=0)return'';if(mins60)return mins+'min';const h=Math.floor(mins60);const m=mins%60;return mh+'h'+String(m).padStart(2,'0')h+'h'}
+function addMinutes(timeStr,mins){const[h,m]=timeStr.split('').map(Number);const t=h60+m+mins;return String(Math.floor(t60)%24).padStart(2,'0')+''+String(t%60).padStart(2,'0')}
 
-function personColor(p){return p==='axel'?'#3b82f6':p==='fanny'?'#e8437f':'#8b5cf6'}
-function eventIcon(emoji,color,sz=26){const c=document.createElement('canvas');c.width=sz;c.height=sz;const x=c.getContext('2d');x.beginPath();x.arc(sz/2,sz/2,sz/2-1,0,Math.PI*2);x.fillStyle=color+'25';x.fill();x.strokeStyle=color;x.lineWidth=2;x.stroke();x.font=`${sz-10}px serif`;x.textAlign='center';x.textBaseline='middle';x.fillStyle='#000';x.fillText(emoji,sz/2,sz/2+1);const img=new Image();img.src=c.toDataURL();return img}
+function personColor(p){return p==='axel''#3b82f6'p==='fanny''#e8437f''#8b5cf6'}
+function eventIcon(emoji,color,sz=26){const c=document.createElement('canvas');c.width=sz;c.height=sz;const x=c.getContext('2d');x.beginPath();x.arc(sz2,sz2,sz2-1,0,Math.PI2);x.fillStyle=color+'25';x.fill();x.strokeStyle=color;x.lineWidth=2;x.stroke();x.font=`${sz-10}px serif`;x.textAlign='center';x.textBaseline='middle';x.fillStyle='#000';x.fillText(emoji,sz2,sz2+1);const img=new Image();img.src=c.toDataURL();return img}
 
 function renderDaily(){
   const pick=document.getElementById('day-pick');if(!pick.value)pick.valueAsDate=new Date();const day=pick.value;
   const dayStart=luxon.DateTime.fromISO(day).startOf('day'),dayEnd=dayStart.endOf('day');
-  const axData=getGlucose('axel').filter(r=>r.t>=dayStart.toISO()&&r.t<=dayEnd.toISO());
-  const faData=getGlucose('fanny').filter(r=>r.t>=dayStart.toISO()&&r.t<=dayEnd.toISO());
-  const logs=getLogs().filter(l=>l.date===day).sort((a,b)=>a.time.localeCompare(b.time));
-  const axVals=axData.map(r=>r.v),faVals=faData.map(r=>r.v);const lo=getTargetLow(),hi=getTargetHigh();
-  const tir=v=>v.length?Math.round(v.filter(x=>x>=lo&&x<=hi).length/v.length*100):'-';
-  const avg=v=>v.length?Math.round(v.reduce((s,x)=>s+x,0)/v.length):'-';
-  const peak=v=>v.length?Math.max(...v):'-';
-  document.getElementById('daily-stats').innerHTML=`<div class="stat-card ax"><div class="label">Axel avg</div><div class="value">${avg(axVals)}</div><div class="sub">mg/dL · TIR ${tir(axVals)}%</div></div><div class="stat-card fa"><div class="label">Fanny avg</div><div class="value">${avg(faVals)}</div><div class="sub">mg/dL · TIR ${tir(faVals)}%</div></div><div class="stat-card ax"><div class="label">Axel peak</div><div class="value">${peak(axVals)}</div><div class="sub">mg/dL</div></div><div class="stat-card fa"><div class="label">Fanny peak</div><div class="value">${peak(faVals)}</div><div class="sub">mg/dL</div></div>`;
+  const axData=getGlucose('axel').filter(r=r.t=dayStart.toISO()&&r.t=dayEnd.toISO());
+  const faData=getGlucose('fanny').filter(r=r.t=dayStart.toISO()&&r.t=dayEnd.toISO());
+  const logs=getLogs().filter(l=l.date===day).sort((a,b)=a.time.localeCompare(b.time));
+  const axVals=axData.map(r=r.v),faVals=faData.map(r=r.v);const lo=getTargetLow(),hi=getTargetHigh();
+  const tir=v=v.lengthMath.round(v.filter(x=x=lo&&x=hi).lengthv.length100)'-';
+  const avg=v=v.lengthMath.round(v.reduce((s,x)=s+x,0)v.length)'-';
+  const peak=v=v.lengthMath.max(...v)'-';
+  document.getElementById('daily-stats').innerHTML=`div class=stat-card axdiv class=labelAxel avgdivdiv class=value${avg(axVals)}divdiv class=submgdL · TIR ${tir(axVals)}%divdivdiv class=stat-card fadiv class=labelFanny avgdivdiv class=value${avg(faVals)}divdiv class=submgdL · TIR ${tir(faVals)}%divdivdiv class=stat-card axdiv class=labelAxel peakdivdiv class=value${peak(axVals)}divdiv class=submgdLdivdivdiv class=stat-card fadiv class=labelFanny peakdivdiv class=value${peak(faVals)}divdiv class=submgdLdivdiv`;
   if(chartDaily)chartDaily.destroy();const ctx=document.getElementById('chart-daily').getContext('2d');
-  const mealAnn=logs.filter(l=>l.cat==='meal'||l.cat==='sport'||l.cat==='test').map(l=>({x:luxon.DateTime.fromISO(day+'T'+l.time).toJSDate(),cat:l.cat,person:l.person,desc:l.desc}));
-  chartDaily=new Chart(ctx,{type:'line',data:{datasets:[{label:'Target Zone',data:[{x:dayStart.toJSDate(),y:hi},{x:dayEnd.toJSDate(),y:hi}],borderColor:'transparent',backgroundColor:'rgba(34,197,94,0.07)',fill:{target:{value:lo},above:'rgba(34,197,94,0.07)'},pointRadius:0,tension:0},{label:'Axel',data:axData.map(r=>({x:new Date(r.t),y:r.v})),borderColor:PROFILES.axel.color,backgroundColor:PROFILES.axel.color+'20',borderWidth:2,pointRadius:0,pointHitRadius:8,tension:.3,fill:false},{label:'Fanny',data:faData.map(r=>({x:new Date(r.t),y:r.v})),borderColor:PROFILES.fanny.color,backgroundColor:PROFILES.fanny.color+'20',borderWidth:2,pointRadius:0,pointHitRadius:8,tension:.3,fill:false},{label:'Events',data:mealAnn.map(m=>({x:m.x,y:hi+5})),pointStyle:mealAnn.map(m=>eventIcon(m.cat==='meal'?'🍴':m.cat==='sport'?'🏃':'🧪',personColor(m.person))),pointRadius:13,showLine:false,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{x:{type:'time',time:{unit:'hour',displayFormats:{hour:'HH:mm'}},min:dayStart.toJSDate(),max:dayEnd.toJSDate(),grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10}}},y:{min:30,max:220,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},callback:v=>v+' mg/dL'}}},plugins:{legend:{display:true,labels:{usePointStyle:true,pointStyle:'line',font:{size:11},filter:i=>i.text!=='Target Zone'&&i.text!=='Events'}},tooltip:{callbacks:{label:ctx=>{if(ctx.dataset.label==='Events'){const m=mealAnn[ctx.dataIndex];return m?m.desc:''}return ctx.dataset.label+': '+ctx.parsed.y+' mg/dL'}}}}}});
+  const mealAnn=logs.filter(l=l.cat==='meal'l.cat==='sport'l.cat==='test').map(l=({xluxon.DateTime.fromISO(day+'T'+l.time).toJSDate(),catl.cat,personl.person,descl.desc}));
+  chartDaily=new Chart(ctx,{type'line',data{datasets[{label'Target Zone',data[{xdayStart.toJSDate(),yhi},{xdayEnd.toJSDate(),yhi}],borderColor'transparent',backgroundColor'rgba(34,197,94,0.07)',fill{target{valuelo},above'rgba(34,197,94,0.07)'},pointRadius0,tension0},{label'Axel',dataaxData.map(r=({xnew Date(r.t),yr.v})),borderColorPROFILES.axel.color,backgroundColorPROFILES.axel.color+'20',borderWidth2,pointRadius0,pointHitRadius8,tension.3,fillfalse},{label'Fanny',datafaData.map(r=({xnew Date(r.t),yr.v})),borderColorPROFILES.fanny.color,backgroundColorPROFILES.fanny.color+'20',borderWidth2,pointRadius0,pointHitRadius8,tension.3,fillfalse},{label'Events',datamealAnn.map(m=({xm.x,yhi+5})),pointStylemealAnn.map(m=eventIcon(m.cat==='meal''🍴'm.cat==='sport''🏃''🧪',personColor(m.person))),pointRadius13,showLinefalse,borderWidth0}]},options{responsivetrue,maintainAspectRatiofalse,interaction{mode'index',intersectfalse},scales{x{type'time',time{unit'hour',displayFormats{hour'HHmm'}},mindayStart.toJSDate(),maxdayEnd.toJSDate(),grid{color'rgba(0,0,0,0.04)'},ticks{font{size10}}},y{min30,max220,grid{color'rgba(0,0,0,0.04)'},ticks{font{size10},callbackv=v+' mgdL'}}},plugins{legend{displaytrue,labels{usePointStyletrue,pointStyle'line',font{size11},filteri=i.text!=='Target Zone'&&i.text!=='Events'}},tooltip{callbacks{labelctx={if(ctx.dataset.label==='Events'){const m=mealAnn[ctx.dataIndex];return mm.desc''}return ctx.dataset.label+' '+ctx.parsed.y+' mgdL'}}}}}});
   const tlEl=document.getElementById('daily-timeline');
-  if(!logs.length){tlEl.innerHTML='<div class="empty"><p>No logs for this day.</p></div>'}
-  else{tlEl.innerHTML=logs.map(l=>{const pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';const pLetter=l.person==='both'?'AB':l.person==='axel'?'A':'F';const dur=fmtDuration(l.time,l.time_end);const durHtml=dur?`<span class="tl-dur"> (${dur})</span>`:'';const endHtml=l.time_end?`→${l.time_end}`:'';const testTags=(l.tests||[]).map(tid=>{const t=TESTS.find(x=>x.id===tid);return t?`<span class="tl-cat cat-test" style="margin-left:4px">🧪 ${t.name.split(':')[0]}</span>`:''}).join('');return`<div class="tl-item"><div class="tl-time">${l.time}<span class="tl-dur">${endHtml?'<br>'+endHtml:''}</span>${durHtml}</div><div class="tl-person ${pCls}">${pLetter}</div><span class="tl-cat cat-${l.cat}">${catLabel(l.cat)}</span>${testTags}<div class="tl-desc">${esc(l.desc)}</div></div>`}).join('')}
+  if(!logs.length){tlEl.innerHTML='div class=emptypNo logs for this day.pdiv'}
+  else{tlEl.innerHTML=logs.map(l={const pCls=l.person==='both''bo'l.person==='axel''ax''fa';const pLetter=l.person==='both''AB'l.person==='axel''A''F';const dur=fmtDuration(l.time,l.time_end);const durHtml=dur`span class=tl-dur (${dur})span`'';const endHtml=l.time_end`→${l.time_end}`'';const testTags=(l.tests[]).map(tid={const t=TESTS.find(x=x.id===tid);return t`span class=tl-cat cat-test style=margin-left4px🧪 ${t.name.split('')[0]}span`''}).join('');return`div class=tl-itemdiv class=tl-time${l.time}span class=tl-dur${endHtml'br'+endHtml''}span${durHtml}divdiv class=tl-person ${pCls}${pLetter}divspan class=tl-cat cat-${l.cat}${catLabel(l.cat)}span${testTags}div class=tl-desc${esc(l.desc)}divdiv`}).join('')}
 }
 
 function renderWeekly(){
   const label=document.getElementById('week-label');if(!window._weekStart)window._weekStart=luxon.DateTime.now().startOf('week');
-  const ws=window._weekStart,we=ws.plus({days:6});label.textContent=ws.toFormat('LLL d')+' – '+we.toFormat('LLL d, yyyy');
-  const days=[];for(let i=0;i<7;i++)days.push(ws.plus({days:i}));const axAvgs=[],faAvgs=[],labels=[];
-  days.forEach(d=>{const ds=d.startOf('day').toISO(),de=d.endOf('day').toISO();const ax=getGlucose('axel').filter(r=>r.t>=ds&&r.t<=de).map(r=>r.v);const fa=getGlucose('fanny').filter(r=>r.t>=ds&&r.t<=de).map(r=>r.v);labels.push(d.toFormat('ccc d'));axAvgs.push(ax.length?Math.round(ax.reduce((s,v)=>s+v,0)/ax.length):null);faAvgs.push(fa.length?Math.round(fa.reduce((s,v)=>s+v,0)/fa.length):null)});
-  const allAx=getGlucose('axel').filter(r=>r.t>=ws.toISO()&&r.t<=we.endOf('day').toISO()).map(r=>r.v);
-  const allFa=getGlucose('fanny').filter(r=>r.t>=ws.toISO()&&r.t<=we.endOf('day').toISO()).map(r=>r.v);
-  const lo=getTargetLow(),hi=getTargetHigh();const tir=v=>v.length?Math.round(v.filter(x=>x>=lo&&x<=hi).length/v.length*100):'-';const avg=v=>v.length?Math.round(v.reduce((s,x)=>s+x,0)/v.length):'-';const sd=v=>{if(v.length<2)return'-';const m=v.reduce((s,x)=>s+x,0)/v.length;return Math.round(Math.sqrt(v.reduce((s,x)=>s+(x-m)**2,0)/v.length))};
-  document.getElementById('weekly-stats').innerHTML=`<div class="stat-card ax"><div class="label">Axel weekly avg</div><div class="value">${avg(allAx)}</div><div class="sub">TIR ${tir(allAx)}% · SD ${sd(allAx)}</div></div><div class="stat-card fa"><div class="label">Fanny weekly avg</div><div class="value">${avg(allFa)}</div><div class="sub">TIR ${tir(allFa)}% · SD ${sd(allFa)}</div></div>`;
+  const ws=window._weekStart,we=ws.plus({days6});label.textContent=ws.toFormat('LLL d')+' – '+we.toFormat('LLL d, yyyy');
+  const days=[];for(let i=0;i7;i++)days.push(ws.plus({daysi}));const axAvgs=[],faAvgs=[],labels=[];
+  days.forEach(d={const ds=d.startOf('day').toISO(),de=d.endOf('day').toISO();const ax=getGlucose('axel').filter(r=r.t=ds&&r.t=de).map(r=r.v);const fa=getGlucose('fanny').filter(r=r.t=ds&&r.t=de).map(r=r.v);labels.push(d.toFormat('ccc d'));axAvgs.push(ax.lengthMath.round(ax.reduce((s,v)=s+v,0)ax.length)null);faAvgs.push(fa.lengthMath.round(fa.reduce((s,v)=s+v,0)fa.length)null)});
+  const allAx=getGlucose('axel').filter(r=r.t=ws.toISO()&&r.t=we.endOf('day').toISO()).map(r=r.v);
+  const allFa=getGlucose('fanny').filter(r=r.t=ws.toISO()&&r.t=we.endOf('day').toISO()).map(r=r.v);
+  const lo=getTargetLow(),hi=getTargetHigh();const tir=v=v.lengthMath.round(v.filter(x=x=lo&&x=hi).lengthv.length100)'-';const avg=v=v.lengthMath.round(v.reduce((s,x)=s+x,0)v.length)'-';const sd=v={if(v.length2)return'-';const m=v.reduce((s,x)=s+x,0)v.length;return Math.round(Math.sqrt(v.reduce((s,x)=s+(x-m)2,0)v.length))};
+  document.getElementById('weekly-stats').innerHTML=`div class=stat-card axdiv class=labelAxel weekly avgdivdiv class=value${avg(allAx)}divdiv class=subTIR ${tir(allAx)}% · SD ${sd(allAx)}divdivdiv class=stat-card fadiv class=labelFanny weekly avgdivdiv class=value${avg(allFa)}divdiv class=subTIR ${tir(allFa)}% · SD ${sd(allFa)}divdiv`;
   if(chartWeekly)chartWeekly.destroy();const ctx=document.getElementById('chart-weekly').getContext('2d');
-  chartWeekly=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Axel avg',data:axAvgs,backgroundColor:PROFILES.axel.color+'90',borderRadius:4},{label:'Fanny avg',data:faAvgs,backgroundColor:PROFILES.fanny.color+'90',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:60,max:180,ticks:{font:{size:10},callback:v=>v},grid:{color:'rgba(0,0,0,.04)'}},x:{ticks:{font:{size:10}}}},plugins:{legend:{labels:{font:{size:11}}}}}});
+  chartWeekly=new Chart(ctx,{type'bar',data{labels,datasets[{label'Axel avg',dataaxAvgs,backgroundColorPROFILES.axel.color+'90',borderRadius4},{label'Fanny avg',datafaAvgs,backgroundColorPROFILES.fanny.color+'90',borderRadius4}]},options{responsivetrue,maintainAspectRatiofalse,scales{y{min60,max180,ticks{font{size10},callbackv=v},grid{color'rgba(0,0,0,.04)'}},x{ticks{font{size10}}}},plugins{legend{labels{font{size11}}}}}});
 }
-function shiftDay(d){const p=document.getElementById('day-pick');const dt=luxon.DateTime.fromISO(p.value).plus({days:d});p.value=dt.toISODate();renderDaily()}
-function shiftWeek(d){window._weekStart=(window._weekStart||luxon.DateTime.now().startOf('week')).plus({weeks:d});renderWeekly()}
+function shiftDay(d){const p=document.getElementById('day-pick');const dt=luxon.DateTime.fromISO(p.value).plus({daysd});p.value=dt.toISODate();renderDaily()}
+function shiftWeek(d){window._weekStart=(window._weekStartluxon.DateTime.now().startOf('week')).plus({weeksd});renderWeekly()}
 
-/* ================================================================
+ ================================================================
    TESTS — with FR keywords + exclude for false positives
-   ================================================================ */
+   ================================================================ 
 const TESTS=[
-  {id:'alcohol_type',name:'Alcohol type: beer vs vodka',desc:'Same person, different days. Compare glucose response to beer vs vodka.',keywords:['beer','vodka','wine','alcohol','gin','whisky','whiskey','rum','cocktail','aperol','spritz','bière','vin','alcool','rosé','cidre']},
-  {id:'alcohol_timing',name:'Alcohol timing: alone vs after meal',desc:'Same drink — once on empty stomach, once after a full meal.',keywords:['beer','vodka','wine','alcohol','gin','whisky','whiskey','rum','cocktail','aperol','drink','bière','vin','alcool','apéro','apéritif']},
-  {id:'bread_type',name:'Levain vs regular bread',desc:'Same quantity of sourdough vs regular white bread.',keywords:['levain','sourdough','bread','pain','baguette','white bread','pain blanc','pain de mie','pain complet','pain semi-complet','pain campagne','pain céréales','toast']},
-  {id:'coffee_timing',name:'Coffee: alone vs after meal',desc:'Black coffee on empty stomach vs after a meal.',keywords:['coffee','café','espresso','nespresso','cappuccino','latte','café filtre','café noir'],exclude:['cuillère à café','cuillères à café','cuillère café']},
-  {id:'biscuit_timing',name:'Biscuit: breakfast vs after meal',desc:'Same biscuit eaten alone vs after a proper meal.',keywords:['biscuit','cookie','gâteau','cake','biscoff','granola bar','cereal bar','petit beurre','sablé']},
-  {id:'carb_order',name:'Carbs first vs carbs last',desc:'Same meal, different order.',keywords:['carbs first','carbs last','order','fibres avant','légumes avant','protein first']},
-  {id:'carb_free',name:'Carb-free meal vs carby meal',desc:'A meal with minimal carbs vs same meal with carbs.',keywords:['no carb','sans glucide','carb free','low carb','keto','zero carb']},
-  {id:'sport_type',name:'Sport type comparison',desc:'Compare glucose response to different activities.',keywords:['yoga','run','running','cycle','cycling','rowing','walk','walking','hiit','swim','swimming','pilates','weights','musculation','marche','vélo','jardinage','potager','rando','randonnée','course à pied','nage','natation','escalade','stretching','étirement','jogging','footing']},
-  {id:'sport_timing',name:'Sport timing: before breakfast vs after meal',desc:'Same exercise fasted vs after a meal.',keywords:['before breakfast','fasted','à jeun','after meal','après manger','post-prandial','before meal','avant petit-déj','avant repas','après repas']},
-  {id:'ingredient_timing',name:'Same ingredient, different time of day',desc:'Same food morning vs afternoon vs evening.',keywords:['morning','evening','soir','matin','afternoon','après-midi','midi']},
-  {id:'fermented',name:'Fermented foods effect',desc:'Same base meal with vs without fermented elements.',keywords:['lactofermenté','fermenté','kefir','kombucha','choucroute','kimchi','fermented','pickled','lactofermentation','jus lacto','miso','tempeh']},
-  {id:'meal_duration',name:'Meal duration: quick vs slow',desc:'Same meal eaten in <15min vs >45min. Log start + duration.',keywords:['rapide','lent','slow','fast','quick','duration','durée']},
-  {id:'dessert_timing',name:'Dessert: with meal vs 30min+ after',desc:'Same dessert eaten right after main vs 30+ min later.',keywords:['dessert','fruit après','chocolat après','nashi','poire','pomme','compote','sweet after','chocolat noir','fruit fin de repas','fruit end','banane']},
-  {id:'meal_spacing',name:'Meal spacing: short vs long gap',desc:'Compare glucose when meals are 4h vs 6h+ apart.',keywords:['spacing','espacement','gap','heures entre','hours between','jeûne','fasting','snack','encas','collation','grignotage','goûter']},
-  {id:'recovery_day',name:'Recovery day: post-exercise glucose',desc:'Glucose on rest days after intense activity.',keywords:['recovery','récupération','repos','rest day','rando','randonnée','hike','lendemain','day after','fatigue','courbatures']},
-  {id:'legume_type',name:'Legume type comparison',desc:'Compare glucose response to different legumes.',keywords:['foul','fèves','lentilles','pois chiches','haricots','beans','lentils','chickpeas','légumineuses','houmous','hummus','dhal','dal']},
-  {id:'cycle_phase',name:'Cycle menstruel: phase vs glycémie',desc:'Compare glucose patterns across menstrual phases. Log J1 (début règles), PMS symptoms, ovulation signs. After 2-3 cycles: overlay glucose by phase.',keywords:['règles','period','menstruation','cycle','PMS','SPM','ovulation','lutéale','folliculaire','crampes','ballonnements','spotting','J1','jour 1','saignements','milieu de cycle','seins sensibles','irritable','fatigue cyclique']},
+  {id'alcohol_type',name'Alcohol type beer vs vodka',desc'Same person, different days. Compare glucose response to beer vs vodka.',keywords['beer','vodka','wine','alcohol','gin','whisky','whiskey','rum','cocktail','aperol','spritz','bière','vin','alcool','rosé','cidre']},
+  {id'alcohol_timing',name'Alcohol timing alone vs after meal',desc'Same drink — once on empty stomach, once after a full meal.',keywords['beer','vodka','wine','alcohol','gin','whisky','whiskey','rum','cocktail','aperol','drink','bière','vin','alcool','apéro','apéritif']},
+  {id'bread_type',name'Levain vs regular bread',desc'Same quantity of sourdough vs regular white bread.',keywords['levain','sourdough','bread','pain','baguette','white bread','pain blanc','pain de mie','pain complet','pain semi-complet','pain campagne','pain céréales','toast']},
+  {id'coffee_timing',name'Coffee alone vs after meal',desc'Black coffee on empty stomach vs after a meal.',keywords['coffee','café','espresso','nespresso','cappuccino','latte','café filtre','café noir'],exclude['cuillère à café','cuillères à café','cuillère café']},
+  {id'biscuit_timing',name'Biscuit breakfast vs after meal',desc'Same biscuit eaten alone vs after a proper meal.',keywords['biscuit','cookie','gâteau','cake','biscoff','granola bar','cereal bar','petit beurre','sablé']},
+  {id'carb_order',name'Carbs first vs carbs last',desc'Same meal, different order.',keywords['carbs first','carbs last','order','fibres avant','légumes avant','protein first']},
+  {id'carb_free',name'Carb-free meal vs carby meal',desc'A meal with minimal carbs vs same meal with carbs.',keywords['no carb','sans glucide','carb free','low carb','keto','zero carb']},
+  {id'sport_type',name'Sport type comparison',desc'Compare glucose response to different activities.',keywords['yoga','run','running','cycle','cycling','rowing','walk','walking','hiit','swim','swimming','pilates','weights','musculation','marche','vélo','jardinage','potager','rando','randonnée','course à pied','nage','natation','escalade','stretching','étirement','jogging','footing']},
+  {id'sport_timing',name'Sport timing before breakfast vs after meal',desc'Same exercise fasted vs after a meal.',keywords['before breakfast','fasted','à jeun','after meal','après manger','post-prandial','before meal','avant petit-déj','avant repas','après repas']},
+  {id'ingredient_timing',name'Same ingredient, different time of day',desc'Same food morning vs afternoon vs evening.',keywords['morning','evening','soir','matin','afternoon','après-midi','midi']},
+  {id'fermented',name'Fermented foods effect',desc'Same base meal with vs without fermented elements.',keywords['lactofermenté','fermenté','kefir','kombucha','choucroute','kimchi','fermented','pickled','lactofermentation','jus lacto','miso','tempeh']},
+  {id'meal_duration',name'Meal duration quick vs slow',desc'Same meal eaten in 15min vs 45min. Log start + duration.',keywords['rapide','lent','slow','fast','quick','duration','durée']},
+  {id'dessert_timing',name'Dessert with meal vs 30min+ after',desc'Same dessert eaten right after main vs 30+ min later.',keywords['dessert','fruit après','chocolat après','nashi','poire','pomme','compote','sweet after','chocolat noir','fruit fin de repas','fruit end','banane']},
+  {id'meal_spacing',name'Meal spacing short vs long gap',desc'Compare glucose when meals are 4h vs 6h+ apart.',keywords['spacing','espacement','gap','heures entre','hours between','jeûne','fasting','snack','encas','collation','grignotage','goûter']},
+  {id'recovery_day',name'Recovery day post-exercise glucose',desc'Glucose on rest days after intense activity.',keywords['recovery','récupération','repos','rest day','rando','randonnée','hike','lendemain','day after','fatigue','courbatures']},
+  {id'legume_type',name'Legume type comparison',desc'Compare glucose response to different legumes.',keywords['foul','fèves','lentilles','pois chiches','haricots','beans','lentils','chickpeas','légumineuses','houmous','hummus','dhal','dal']},
+  {id'cycle_phase',name'Cycle menstruel phase vs glycémie',desc'Compare glucose patterns across menstrual phases. Log J1 (début règles), PMS symptoms, ovulation signs. After 2-3 cycles overlay glucose by phase.',keywords['règles','period','menstruation','cycle','PMS','SPM','ovulation','lutéale','folliculaire','crampes','ballonnements','spotting','J1','jour 1','saignements','milieu de cycle','seins sensibles','irritable','fatigue cyclique']},
 ];
 
-/* ================================================================
+ ================================================================
    TEST MATCHING — with exclude support
-   ================================================================ */
-function matchTests(desc){const d=desc.toLowerCase();return TESTS.filter(t=>t.keywords.some(k=>d.includes(k.toLowerCase()))&&!(t.exclude||[]).some(e=>d.includes(e.toLowerCase())))}
+   ================================================================ 
+function matchTests(desc){const d=desc.toLowerCase();return TESTS.filter(t=t.keywords.some(k=d.includes(k.toLowerCase()))&&!(t.exclude[]).some(e=d.includes(e.toLowerCase())))}
 
-function renderTests(){const tests=SJ('tests_meta');document.getElementById('tests-list').innerHTML=TESTS.map(t=>{const meta=tests.find(m=>m.id===t.id)||{};const status=meta.status||'pending';const stCls=status==='done'?'st-done':status==='active'?'st-active':'st-pending';const stLabel=status==='done'?'✓ Done':status==='active'?'● Active':'Pending';return`<div class="test-card"><div style="flex:1"><h3>${esc(t.name)}</h3><div class="desc">${esc(t.desc)}</div>${meta.date?`<div style="font-size:11px;color:var(--text3);margin-top:6px">Date: ${meta.date}</div>`:''}${meta.notes?`<div style="font-size:11px;color:var(--text2);margin-top:4px">Notes: ${esc(meta.notes)}</div>`:''}</div><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span class="test-status ${stCls}">${stLabel}</span><button class="btn btn-s" style="font-size:10px" onclick="editTest('${t.id}')">Edit</button></div></div>`}).join('')}
-function editTest(id){const tests=SJ('tests_meta');const existing=tests.find(m=>m.id===id)||{id};const date=prompt('Date (YYYY-MM-DD):',existing.date||luxon.DateTime.now().toISODate());if(date===null)return;const status=prompt('Status (pending/active/done):',existing.status||'active');if(status===null)return;const notes=prompt('Notes:',existing.notes||'');const updated=tests.filter(m=>m.id!==id);updated.push({id,date,status,notes});SSJ('tests_meta',updated);renderTests();schedulePush()}
+function renderTests(){const tests=SJ('tests_meta');document.getElementById('tests-list').innerHTML=TESTS.map(t={const meta=tests.find(m=m.id===t.id){};const status=meta.status'pending';const stCls=status==='done''st-done'status==='active''st-active''st-pending';const stLabel=status==='done''✓ Done'status==='active''● Active''Pending';return`div class=test-carddiv style=flex1h3${esc(t.name)}h3div class=desc${esc(t.desc)}div${meta.date`div style=font-size11px;colorvar(--text3);margin-top6pxDate ${meta.date}div`''}${meta.notes`div style=font-size11px;colorvar(--text2);margin-top4pxNotes ${esc(meta.notes)}div`''}divdiv style=displayflex;flex-directioncolumn;gap6px;align-itemsflex-endspan class=test-status ${stCls}${stLabel}spanbutton class=btn btn-s style=font-size10px onclick=editTest('${t.id}')Editbuttondivdiv`}).join('')}
+function editTest(id){const tests=SJ('tests_meta');const existing=tests.find(m=m.id===id){id};const date=prompt('Date (YYYY-MM-DD)',existing.dateluxon.DateTime.now().toISODate());if(date===null)return;const status=prompt('Status (pendingactivedone)',existing.status'active');if(status===null)return;const notes=prompt('Notes',existing.notes'');const updated=tests.filter(m=m.id!==id);updated.push({id,date,status,notes});SSJ('tests_meta',updated);renderTests();schedulePush()}
 
-/* ================================================================
+ ================================================================
    PATTERN DISCOVERY
-   ================================================================ */
-async function discoverPatterns(){const el=document.getElementById('discover-output');const btn=document.getElementById('btn-discover');btn.disabled=true;if(!S('openai')){el.innerHTML='<div class="err">OpenAI API key required. Click ⚙.</div>';btn.disabled=false;return}const logs=getLogs().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));if(logs.length<4){el.innerHTML='<div class="err">Need more log entries first.</div>';btn.disabled=false;return}el.innerHTML='<div style="text-align:center;padding:16px"><div class="spinner"></div><span style="font-size:12px;color:var(--text3)">Scanning...</span></div>';try{const allDays=[...new Set(logs.map(l=>l.date))].sort();const dayData=allDays.map(day=>{const dayLogs=logs.filter(l=>l.date===day);const ds=luxon.DateTime.fromISO(day).startOf('day').toISO();const de=luxon.DateTime.fromISO(day).endOf('day').toISO();const axG=getGlucose('axel').filter(r=>r.t>=ds&&r.t<=de);const faG=getGlucose('fanny').filter(r=>r.t>=ds&&r.t<=de);const events=dayLogs.filter(l=>l.cat==='meal'||l.cat==='sport').map(l=>{const et=luxon.DateTime.fromISO(day+'T'+l.time);const we=et.plus({minutes:90}).toISO();const ws=et.minus({minutes:10}).toISO();const aw=axG.filter(r=>r.t>=ws&&r.t<=we).map(r=>r.v);const fw=faG.filter(r=>r.t>=ws&&r.t<=we).map(r=>r.v);const durStr=l.time_end?` (duration: ${fmtDuration(l.time,l.time_end)})`:'';return{time:l.time,time_end:l.time_end||null,person:l.person,cat:l.cat,desc:l.desc+durStr,axPeak:aw.length?Math.max(...aw):null,axAvg:aw.length?Math.round(aw.reduce((s,v)=>s+v,0)/aw.length):null,faPeak:fw.length?Math.max(...fw):null,faAvg:fw.length?Math.round(fw.reduce((s,v)=>s+v,0)/fw.length):null}});return`${day} (${luxon.DateTime.fromISO(day).toFormat('cccc')}):\n`+events.map(e=>`  ${e.time}${e.time_end?'→'+e.time_end:''} [${e.person}] ${e.cat}: "${e.desc}" → Ax peak=${e.axPeak||'?'} avg=${e.axAvg||'?'} | Fa peak=${e.faPeak||'?'} avg=${e.faAvg||'?'}`).join('\n')}).join('\n\n');const sys=`${getAIContext()}\nYou are a pattern-discovery analyst. Find NATURAL EXPERIMENTS in the data. Output HTML with ai-box, ai-label, card classes. For each pattern: observation A, B, difference (with numbers), possible explanation, confidence, suggestion. Be SPECIFIC with numbers.`;const html=await callAI(sys,`Full event log:\n\n${dayData}`);el.innerHTML=html+`<button class="btn btn-s" onclick="saveToArchive('Pattern Discovery — '+luxon.DateTime.now().toISODate(),document.getElementById('discover-output').innerHTML);this.innerHTML='✓ Saved';this.disabled=true" style="margin-top:12px">📌 Save to archive</button>`}catch(err){el.innerHTML=`<div class="err">${esc(err.message)}</div>`}btn.disabled=false}
+   ================================================================ 
+async function discoverPatterns(){const el=document.getElementById('discover-output');const btn=document.getElementById('btn-discover');btn.disabled=true;if(!S('openai')){el.innerHTML='div class=errOpenAI API key required. Click ⚙.div';btn.disabled=false;return}const logs=getLogs().sort((a,b)=(a.date+a.time).localeCompare(b.date+b.time));if(logs.length4){el.innerHTML='div class=errNeed more log entries first.div';btn.disabled=false;return}el.innerHTML='div style=text-aligncenter;padding16pxdiv class=spinnerdivspan style=font-size12px;colorvar(--text3)Scanning...spandiv';try{const allDays=[...new Set(logs.map(l=l.date))].sort();const dayData=allDays.map(day={const dayLogs=logs.filter(l=l.date===day);const ds=luxon.DateTime.fromISO(day).startOf('day').toISO();const de=luxon.DateTime.fromISO(day).endOf('day').toISO();const axG=getGlucose('axel').filter(r=r.t=ds&&r.t=de);const faG=getGlucose('fanny').filter(r=r.t=ds&&r.t=de);const events=dayLogs.filter(l=l.cat==='meal'l.cat==='sport').map(l={const et=luxon.DateTime.fromISO(day+'T'+l.time);const we=et.plus({minutes90}).toISO();const ws=et.minus({minutes10}).toISO();const aw=axG.filter(r=r.t=ws&&r.t=we).map(r=r.v);const fw=faG.filter(r=r.t=ws&&r.t=we).map(r=r.v);const durStr=l.time_end` (duration ${fmtDuration(l.time,l.time_end)})`'';return{timel.time,time_endl.time_endnull,personl.person,catl.cat,descl.desc+durStr,axPeakaw.lengthMath.max(...aw)null,axAvgaw.lengthMath.round(aw.reduce((s,v)=s+v,0)aw.length)null,faPeakfw.lengthMath.max(...fw)null,faAvgfw.lengthMath.round(fw.reduce((s,v)=s+v,0)fw.length)null}});return`${day} (${luxon.DateTime.fromISO(day).toFormat('cccc')})n`+events.map(e=`  ${e.time}${e.time_end'→'+e.time_end''} [${e.person}] ${e.cat} ${e.desc} → Ax peak=${e.axPeak''} avg=${e.axAvg''}  Fa peak=${e.faPeak''} avg=${e.faAvg''}`).join('n')}).join('nn');const sys=`${getAIContext()}nYou are a pattern-discovery analyst. Find NATURAL EXPERIMENTS in the data. Output HTML with ai-box, ai-label, card classes. For each pattern observation A, B, difference (with numbers), possible explanation, confidence, suggestion. Be SPECIFIC with numbers.`;const html=await callAI(sys,`Full event lognn${dayData}`);el.innerHTML=html+`button class=btn btn-s onclick=saveToArchive('Pattern Discovery — '+luxon.DateTime.now().toISODate(),document.getElementById('discover-output').innerHTML);this.innerHTML='✓ Saved';this.disabled=true style=margin-top12px📌 Save to archivebutton`}catch(err){el.innerHTML=`div class=err${esc(err.message)}div`}btn.disabled=false}
 
-/* ================================================================
+ ================================================================
    LOG ENTRY — duration dropdown + Now button
-   ================================================================ */
+   ================================================================ 
 let logPerson='both';
-function selPerson(p,btn){logPerson=p;document.querySelectorAll('#log-person button').forEach(b=>b.className='');btn.className=p==='axel'?'sel-ax':p==='fanny'?'sel-fa':'sel-bo'}
+function selPerson(p,btn){logPerson=p;document.querySelectorAll('#log-person button').forEach(b=b.className='');btn.className=p==='axel''sel-ax'p==='fanny''sel-fa''sel-bo'}
 
 function saveLog(){
   const date=document.getElementById('log-date').value;
   const time=document.getElementById('log-time').value;
-  const durMin=parseInt(document.getElementById('log-duration').value)||0;
-  const time_end=durMin?addMinutes(time,durMin):null;
+  const durMin=parseInt(document.getElementById('log-duration').value)0;
+  const time_end=durMinaddMinutes(time,durMin)null;
   const cat=document.getElementById('log-cat').value;
   const desc=document.getElementById('log-desc').value.trim();
-  if(!date||!time||!desc){document.getElementById('log-msg').innerHTML='<span style="color:#c0392b">Fill all fields.</span>';return}
-  const matched=matchTests(desc);const testIds=matched.map(t=>t.id);
-  const logs=getLogs();logs.push({id:Date.now(),person:logPerson,date,time,time_end,cat,desc,tests:testIds});setLogs(logs);
+  if(!date!time!desc){document.getElementById('log-msg').innerHTML='span style=color#c0392bFill all fields.span';return}
+  const matched=matchTests(desc);const testIds=matched.map(t=t.id);
+  const logs=getLogs();logs.push({idDate.now(),personlogPerson,date,time,time_end,cat,desc,teststestIds});setLogs(logs);
   document.getElementById('log-desc').value='';
   document.getElementById('log-duration').value='';
-  let msg='<span style="color:var(--primary)">✓ Saved</span>';
-  if(time_end) msg+=`<span style="color:var(--text2);margin-left:8px">⏱ ${fmtDuration(time,time_end)}</span>`;
-  if(matched.length) msg+=`<span style="color:var(--text2);margin-left:8px">🧪 ${matched.map(t=>t.name.split(':')[0]).join(', ')}</span>`;
+  let msg='span style=colorvar(--primary)✓ Savedspan';
+  if(time_end) msg+=`span style=colorvar(--text2);margin-left8px⏱ ${fmtDuration(time,time_end)}span`;
+  if(matched.length) msg+=`span style=colorvar(--text2);margin-left8px🧪 ${matched.map(t=t.name.split('')[0]).join(', ')}span`;
   document.getElementById('log-msg').innerHTML=msg;
-  setTimeout(()=>document.getElementById('log-msg').innerHTML='',5000);
+  setTimeout(()=document.getElementById('log-msg').innerHTML='',5000);
   renderRecentLogs();schedulePush();
 }
 
-function renderRecentLogs(){const logs=getLogs().sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,20);const el=document.getElementById('log-recent');if(!logs.length){el.innerHTML='<div class="empty"><p>No entries yet.</p></div>';return}el.innerHTML=logs.map(l=>{const pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';const pLetter=l.person==='both'?'AB':l.person==='axel'?'A':'F';const dur=fmtDuration(l.time,l.time_end);const timeStr=l.time+(l.time_end?'→'+l.time_end:'')+(dur?' ('+dur+')':'');const testTags=(l.tests||[]).map(tid=>{const t=TESTS.find(x=>x.id===tid);return t?`<span class="tl-cat cat-test" style="margin-left:4px">🧪 ${t.name.split(':')[0]}</span>`:''}).join('');return`<div class="tl-item"><div class="tl-time" style="width:110px">${l.date}<br>${timeStr}</div><div class="tl-person ${pCls}">${pLetter}</div><span class="tl-cat cat-${l.cat}">${catLabel(l.cat)}</span>${testTags}<div class="tl-desc">${esc(l.desc)}</div><button class="arc-del" onclick="deleteLog(${l.id})" title="Delete">✕</button></div>`}).join('')}
-function deleteLog(id){setLogs(getLogs().filter(l=>l.id!==id));renderRecentLogs();schedulePush()}
-function catLabel(c){return{meal:'🍽️ Meal',sport:'🏃 Sport',note:'📝 Note',period:'🔴 Period',test:'🧪 Test'}[c]||c}
+function renderRecentLogs(){const logs=getLogs().sort((a,b)=(b.date+b.time).localeCompare(a.date+a.time)).slice(0,20);const el=document.getElementById('log-recent');if(!logs.length){el.innerHTML='div class=emptypNo entries yet.pdiv';return}el.innerHTML=logs.map(l={const pCls=l.person==='both''bo'l.person==='axel''ax''fa';const pLetter=l.person==='both''AB'l.person==='axel''A''F';const dur=fmtDuration(l.time,l.time_end);const timeStr=l.time+(l.time_end'→'+l.time_end'')+(dur' ('+dur+')''');const testTags=(l.tests[]).map(tid={const t=TESTS.find(x=x.id===tid);return t`span class=tl-cat cat-test style=margin-left4px🧪 ${t.name.split('')[0]}span`''}).join('');return`div class=tl-itemdiv class=tl-time style=width110px${l.date}br${timeStr}divdiv class=tl-person ${pCls}${pLetter}divspan class=tl-cat cat-${l.cat}${catLabel(l.cat)}span${testTags}div class=tl-desc${esc(l.desc)}divbutton class=arc-del onclick=deleteLog(${l.id}) title=Delete✕buttondiv`}).join('')}
+function deleteLog(id){setLogs(getLogs().filter(l=l.id!==id));renderRecentLogs();schedulePush()}
+function catLabel(c){return{meal'🍽️ Meal',sport'🏃 Sport',note'📝 Note',period'🔴 Period',test'🧪 Test'}[c]c}
 
-/* ================================================================
+ ================================================================
    DATA STATUS
-   ================================================================ */
-function renderDataStatus(){const ax=getGlucose('axel'),fa=getGlucose('fanny');const el=document.getElementById('data-status');const range=data=>{if(!data.length)return'No data';return`${data.length} readings · ${luxon.DateTime.fromISO(data[0].t).toFormat('LLL d HH:mm')} → ${luxon.DateTime.fromISO(data[data.length-1].t).toFormat('LLL d HH:mm')}`};el.innerHTML=`<p style="margin-bottom:6px"><strong style="color:var(--axel)">Axel:</strong> ${range(ax)}</p><p><strong style="color:var(--fanny)">Fanny:</strong> ${range(fa)}</p>`}
+   ================================================================ 
+function renderDataStatus(){const ax=getGlucose('axel'),fa=getGlucose('fanny');const el=document.getElementById('data-status');const range=data={if(!data.length)return'No data';return`${data.length} readings · ${luxon.DateTime.fromISO(data[0].t).toFormat('LLL d HHmm')} → ${luxon.DateTime.fromISO(data[data.length-1].t).toFormat('LLL d HHmm')}`};el.innerHTML=`p style=margin-bottom6pxstrong style=colorvar(--axel)Axelstrong ${range(ax)}ppstrong style=colorvar(--fanny)Fannystrong ${range(fa)}p`}
 
-/* ================================================================
+ ================================================================
    AI ANALYSIS
-   ================================================================ */
-async function callAI(sys,usr){const key=S('openai');if(!key)throw new Error('OpenAI API key not set. Click ⚙.');const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:S('model')||'gpt-4o-mini',temperature:.3,max_tokens:3000,messages:[{role:'system',content:sys},{role:'user',content:usr}]})});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||'API error '+res.status)}const d=await res.json();let c=d.choices?.[0]?.message?.content||'';return c.replace(/^```(?:html)?\s*\n?/i,'').replace(/\n?```\s*$/i,'')}
-function getAIContext(){const bl=getBaseline();const sections=bl.map(s=>`${s.title}: ${s.content}`).join('\n');const favs=getFavMeals();const favStr=favs.length?'\nFavorite meals: '+favs.map(f=>`${f.name} = ${f.desc}`).join('; '):'';return`Profiles: Axel (male, 36, born 1990) and Fanny (female, 39, born 1987). Both wearing Freestyle Libre 2 Plus CGM for 14-15 day experiment.\nTarget range: ${getTargetLow()}-${getTargetHigh()} mg/dL.\n`+sections+favStr}
-async function aiDailyInsight(){const el=document.getElementById('daily-ai');const day=document.getElementById('day-pick').value;el.innerHTML='<div style="text-align:center;padding:20px"><div class="spinner"></div><span style="font-size:12px;color:var(--text3)">Analyzing...</span></div>';try{const dayStart=luxon.DateTime.fromISO(day).startOf('day').toISO();const dayEnd=luxon.DateTime.fromISO(day).endOf('day').toISO();const ax=getGlucose('axel').filter(r=>r.t>=dayStart&&r.t<=dayEnd);const fa=getGlucose('fanny').filter(r=>r.t>=dayStart&&r.t<=dayEnd);const logs=getLogs().filter(l=>l.date===day).sort((a,b)=>a.time.localeCompare(b.time));const dataStr=`Date: ${day}\nAxel (${ax.length} readings): avg=${ax.length?Math.round(ax.reduce((s,r)=>s+r.v,0)/ax.length):'-'}, peak=${ax.length?Math.max(...ax.map(r=>r.v)):'-'}\nFanny (${fa.length} readings): avg=${fa.length?Math.round(fa.reduce((s,r)=>s+r.v,0)/fa.length):'-'}, peak=${fa.length?Math.max(...fa.map(r=>r.v)):'-'}\n\nHourly:\n${summarizeHourly(ax,'Axel')}\n${summarizeHourly(fa,'Fanny')}\n\nLogs:\n${logs.map(l=>`${l.time}${l.time_end?'→'+l.time_end:''} [${l.person}] ${l.cat}: ${l.desc}${l.time_end?' (duration: '+fmtDuration(l.time,l.time_end)+')':''}`).join('\n')||'No logs.'}`;const sys=`${getAIContext()}\nYou are a glycemia analyst. Daily insight in HTML with ai-box/ai-label classes. Key observations, correlations, what went well, what to watch. Be specific with numbers. When meal duration is available, analyze whether meal pacing correlates with glycemic response shape.`;const html=await callAI(sys,dataStr);el.innerHTML=html}catch(err){el.innerHTML=`<div class="err">${esc(err.message)}</div>`}}
-async function aiWeeklyInsight(){const el=document.getElementById('weekly-ai');el.innerHTML='<div style="text-align:center;padding:20px"><div class="spinner"></div><span style="font-size:12px;color:var(--text3)">Analyzing week...</span></div>';try{const ws=window._weekStart||luxon.DateTime.now().startOf('week');const we=ws.plus({days:6}).endOf('day');const ax=getGlucose('axel').filter(r=>r.t>=ws.toISO()&&r.t<=we.toISO());const fa=getGlucose('fanny').filter(r=>r.t>=ws.toISO()&&r.t<=we.toISO());const logs=getLogs().filter(l=>l.date>=ws.toISODate()&&l.date<=we.toISODate()).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));const lo=getTargetLow(),hi=getTargetHigh();const dataStr=`Week: ${ws.toISODate()} to ${we.toISODate()}\nAxel: ${ax.length} readings, avg=${ax.length?Math.round(ax.reduce((s,r)=>s+r.v,0)/ax.length):'-'}, TIR=${ax.length?Math.round(ax.filter(r=>r.v>=lo&&r.v<=hi).length/ax.length*100):'-'}%\nFanny: ${fa.length} readings, avg=${fa.length?Math.round(fa.reduce((s,r)=>s+r.v,0)/fa.length):'-'}, TIR=${fa.length?Math.round(fa.filter(r=>r.v>=lo&&r.v<=hi).length/fa.length*100):'-'}%\n\nLogs:\n${logs.map(l=>`${l.date} ${l.time}${l.time_end?'→'+l.time_end:''} [${l.person}] ${l.cat}: ${l.desc}`).join('\n')||'No logs.'}`;const sys=`${getAIContext()}\nWeekly summary in HTML with ai-box/ai-label classes. Overview, best/worst days, patterns, recommendations. Be specific.`;const html=await callAI(sys,dataStr);el.innerHTML=html}catch(err){el.innerHTML=`<div class="err">${esc(err.message)}</div>`}}
-function summarizeHourly(data,name){if(!data.length)return name+': no data';const hours={};data.forEach(r=>{const h=luxon.DateTime.fromISO(r.t).hour;if(!hours[h])hours[h]=[];hours[h].push(r.v)});return name+': '+Object.entries(hours).sort((a,b)=>a[0]-b[0]).map(([h,vals])=>`${h}h:${Math.round(vals.reduce((s,v)=>s+v,0)/vals.length)}`).join(', ')}
+   ================================================================ 
+async function callAI(sys,usr){const key=S('openai');if(!key)throw new Error('OpenAI API key not set. Click ⚙.');const res=await fetch('httpsapi.openai.comv1chatcompletions',{method'POST',headers{'Content-Type''applicationjson','Authorization''Bearer '+key},bodyJSON.stringify({modelS('model')'gpt-4o-mini',temperature.3,max_tokens3000,messages[{role'system',contentsys},{role'user',contentusr}]})});if(!res.ok){const e=await res.json().catch(()=({}));throw new Error(e.error.message'API error '+res.status)}const d=await res.json();let c=d.choices.[0].message.content'';return c.replace(^```(html)sni,'').replace(n```s$i,'')}
+function getAIContext(){const bl=getBaseline();const sections=bl.map(s=`${s.title} ${s.content}`).join('n');const favs=getFavMeals();const favStr=favs.length'nFavorite meals '+favs.map(f=`${f.name} = ${f.desc}`).join('; ')'';return`Profiles Axel (male, 36, born 1990) and Fanny (female, 39, born 1987). Both wearing Freestyle Libre 2 Plus CGM for 14-15 day experiment.nTarget range ${getTargetLow()}-${getTargetHigh()} mgdL.n`+sections+favStr}
+async function aiDailyInsight(){const el=document.getElementById('daily-ai');const day=document.getElementById('day-pick').value;el.innerHTML='div style=text-aligncenter;padding20pxdiv class=spinnerdivspan style=font-size12px;colorvar(--text3)Analyzing...spandiv';try{const dayStart=luxon.DateTime.fromISO(day).startOf('day').toISO();const dayEnd=luxon.DateTime.fromISO(day).endOf('day').toISO();const ax=getGlucose('axel').filter(r=r.t=dayStart&&r.t=dayEnd);const fa=getGlucose('fanny').filter(r=r.t=dayStart&&r.t=dayEnd);const logs=getLogs().filter(l=l.date===day).sort((a,b)=a.time.localeCompare(b.time));const dataStr=`Date ${day}nAxel (${ax.length} readings) avg=${ax.lengthMath.round(ax.reduce((s,r)=s+r.v,0)ax.length)'-'}, peak=${ax.lengthMath.max(...ax.map(r=r.v))'-'}nFanny (${fa.length} readings) avg=${fa.lengthMath.round(fa.reduce((s,r)=s+r.v,0)fa.length)'-'}, peak=${fa.lengthMath.max(...fa.map(r=r.v))'-'}nnHourlyn${summarizeHourly(ax,'Axel')}n${summarizeHourly(fa,'Fanny')}nnLogsn${logs.map(l=`${l.time}${l.time_end'→'+l.time_end''} [${l.person}] ${l.cat} ${l.desc}${l.time_end' (duration '+fmtDuration(l.time,l.time_end)+')'''}`).join('n')'No logs.'}`;const sys=`${getAIContext()}nYou are a glycemia analyst. Daily insight in HTML with ai-boxai-label classes. Key observations, correlations, what went well, what to watch. Be specific with numbers. When meal duration is available, analyze whether meal pacing correlates with glycemic response shape.`;const html=await callAI(sys,dataStr);el.innerHTML=html}catch(err){el.innerHTML=`div class=err${esc(err.message)}div`}}
+async function aiWeeklyInsight(){const el=document.getElementById('weekly-ai');el.innerHTML='div style=text-aligncenter;padding20pxdiv class=spinnerdivspan style=font-size12px;colorvar(--text3)Analyzing week...spandiv';try{const ws=window._weekStartluxon.DateTime.now().startOf('week');const we=ws.plus({days6}).endOf('day');const ax=getGlucose('axel').filter(r=r.t=ws.toISO()&&r.t=we.toISO());const fa=getGlucose('fanny').filter(r=r.t=ws.toISO()&&r.t=we.toISO());const logs=getLogs().filter(l=l.date=ws.toISODate()&&l.date=we.toISODate()).sort((a,b)=(a.date+a.time).localeCompare(b.date+b.time));const lo=getTargetLow(),hi=getTargetHigh();const dataStr=`Week ${ws.toISODate()} to ${we.toISODate()}nAxel ${ax.length} readings, avg=${ax.lengthMath.round(ax.reduce((s,r)=s+r.v,0)ax.length)'-'}, TIR=${ax.lengthMath.round(ax.filter(r=r.v=lo&&r.v=hi).lengthax.length100)'-'}%nFanny ${fa.length} readings, avg=${fa.lengthMath.round(fa.reduce((s,r)=s+r.v,0)fa.length)'-'}, TIR=${fa.lengthMath.round(fa.filter(r=r.v=lo&&r.v=hi).lengthfa.length100)'-'}%nnLogsn${logs.map(l=`${l.date} ${l.time}${l.time_end'→'+l.time_end''} [${l.person}] ${l.cat} ${l.desc}`).join('n')'No logs.'}`;const sys=`${getAIContext()}nWeekly summary in HTML with ai-boxai-label classes. Overview, bestworst days, patterns, recommendations. Be specific.`;const html=await callAI(sys,dataStr);el.innerHTML=html}catch(err){el.innerHTML=`div class=err${esc(err.message)}div`}}
+function summarizeHourly(data,name){if(!data.length)return name+' no data';const hours={};data.forEach(r={const h=luxon.DateTime.fromISO(r.t).hour;if(!hours[h])hours[h]=[];hours[h].push(r.v)});return name+' '+Object.entries(hours).sort((a,b)=a[0]-b[0]).map(([h,vals])=`${h}h${Math.round(vals.reduce((s,v)=s+v,0)vals.length)}`).join(', ')}
 
-/* ================================================================
+ ================================================================
    BASELINE & FAVORITES
-   ================================================================ */
-const DEFAULT_BASELINE=[{id:'sugar_codes',title:'Sugar Conventions',content:'FM=Fait maison. LS=Low sugar. NS=No added sugar. Peanut butter = always sugar-free.'},{id:'kitchen',title:'Kitchen Defaults',content:'Olive oil for all cooking and raw use.'},{id:'porridge',title:'Magnus Porridge',content:'2 parts whole rye : 1 pearl barley : 1 flaxseed : 1 sunflower seeds : 1 pumpkin seeds. Soaked overnight, cooked.'},{id:'movement',title:'Default Movement (Mon–Fri)',content:'15-20min walk at wake-up. 15-20min yoga before the walk.'},{id:'sleep',title:'Sleep Default',content:'Bed 21:00-21:30, wake 06:00 weekdays / 07:00-07:30 weekends.'},{id:'food_order',title:'Food Order Convention',content:'Foods listed in real consumption order.'},{id:'norms',title:'Stabilized Reference Norms',content:'Sugar ~7.9g/day, Fiber ~38.5g/day, Protein ~53g/day.'},{id:'recap',title:'Recap Structure',content:'Protein → Fiber → Disease risk → Glycemia → Activity → Micronutrients → Antioxidants → Vitality → Blind spots.'}];
-function getBaseline(){const stored=SJ('baseline');return stored.length?stored:DEFAULT_BASELINE}
+   ================================================================ 
+const DEFAULT_BASELINE=[{id'sugar_codes',title'Sugar Conventions',content'FM=Fait maison. LS=Low sugar. NS=No added sugar. Peanut butter = always sugar-free.'},{id'kitchen',title'Kitchen Defaults',content'Olive oil for all cooking and raw use.'},{id'porridge',title'Magnus Porridge',content'2 parts whole rye  1 pearl barley  1 flaxseed  1 sunflower seeds  1 pumpkin seeds. Soaked overnight, cooked.'},{id'movement',title'Default Movement (Mon–Fri)',content'15-20min walk at wake-up. 15-20min yoga before the walk.'},{id'sleep',title'Sleep Default',content'Bed 2100-2130, wake 0600 weekdays  0700-0730 weekends.'},{id'food_order',title'Food Order Convention',content'Foods listed in real consumption order.'},{id'norms',title'Stabilized Reference Norms',content'Sugar ~7.9gday, Fiber ~38.5gday, Protein ~53gday.'},{id'recap',title'Recap Structure',content'Protein → Fiber → Disease risk → Glycemia → Activity → Micronutrients → Antioxidants → Vitality → Blind spots.'}];
+function getBaseline(){const stored=SJ('baseline');return stored.lengthstoredDEFAULT_BASELINE}
 function setBaseline(data){SSJ('baseline',data)}
 function getFavMeals(){return SJ('fav_meals')}
 function setFavMeals(data){SSJ('fav_meals',data)}
-function renderBaseline(){const bl=getBaseline();const el=document.getElementById('baseline-sections');el.innerHTML=bl.map(s=>`<div class="card" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><h3 style="font-size:13px">${esc(s.title)}</h3><button class="btn btn-s" style="font-size:10px;padding:4px 10px;flex-shrink:0" onclick="editBaseline('${s.id}')">Edit</button></div><p style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.6">${esc(s.content)}</p></div>`).join('')+`<button class="btn btn-s" onclick="addBaselineSection()" style="margin-top:8px">+ Add section</button>`;renderFavMeals()}
-function editBaseline(id){const bl=getBaseline();const s=bl.find(x=>x.id===id);if(!s)return;const title=prompt('Title:',s.title);if(title===null)return;const content=prompt('Content:',s.content);if(content===null)return;s.title=title;s.content=content;setBaseline(bl);renderBaseline();schedulePush()}
-function addBaselineSection(){const title=prompt('New section title:');if(!title)return;const content=prompt('Content:');if(!content)return;const bl=getBaseline();bl.push({id:'custom_'+Date.now(),title,content});setBaseline(bl);renderBaseline();schedulePush()}
-function addFavMeal(){const name=document.getElementById('fav-name').value.trim();const desc=document.getElementById('fav-desc').value.trim();const cat=document.getElementById('fav-cat')?.value||'meal';if(!name||!desc)return;const favs=getFavMeals();favs.push({id:Date.now(),name,desc,cat});setFavMeals(favs);document.getElementById('fav-name').value='';document.getElementById('fav-desc').value='';renderFavMeals();renderFavButtons();schedulePush()}
-function deleteFavMeal(id){setFavMeals(getFavMeals().filter(f=>f.id!==id));renderFavMeals();renderFavButtons();schedulePush()}
-function renderFavMeals(){const favs=getFavMeals();const el=document.getElementById('fav-meals-list');if(!favs.length){el.innerHTML='<p style="font-size:12px;color:var(--text3)">No favorites yet.</p>';return}el.innerHTML=favs.map(f=>{const icon=f.cat==='sport'?'🏃':f.cat==='note'?'📝':'🍽️';return`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-lt);font-size:12px"><span style="width:20px;text-align:center">${icon}</span><strong style="min-width:120px">${esc(f.name)}</strong><span style="flex:1;color:var(--text2)">${esc(f.desc)}</span><button class="arc-del" onclick="deleteFavMeal(${f.id})">✕</button></div>`}).join('')}
-function renderFavButtons(){const container=document.getElementById('fav-buttons');if(!container)return;const favs=getFavMeals();if(!favs.length){container.innerHTML='';return}container.innerHTML='<label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px">Quick favorites</label>'+favs.map(f=>{const cls=f.cat==='sport'?'btn-ax':'btn-s';return`<button class="btn ${cls}" style="font-size:11px;margin:0 4px 6px 0" onclick="useFav(${f.id})">${esc(f.name)}</button>`}).join('')}
-function useFav(id){const f=getFavMeals().find(x=>x.id===id);if(!f)return;document.getElementById('log-desc').value=f.desc;document.getElementById('log-cat').value=f.cat||'meal'}
+function renderBaseline(){const bl=getBaseline();const el=document.getElementById('baseline-sections');el.innerHTML=bl.map(s=`div class=card style=margin-bottom12pxdiv style=displayflex;justify-contentspace-between;align-itemsflex-start;gap10pxh3 style=font-size13px${esc(s.title)}h3button class=btn btn-s style=font-size10px;padding4px 10px;flex-shrink0 onclick=editBaseline('${s.id}')Editbuttondivp style=font-size12px;colorvar(--text2);margin-top6px;line-height1.6${esc(s.content)}pdiv`).join('')+`button class=btn btn-s onclick=addBaselineSection() style=margin-top8px+ Add sectionbutton`;renderFavMeals()}
+function editBaseline(id){const bl=getBaseline();const s=bl.find(x=x.id===id);if(!s)return;const title=prompt('Title',s.title);if(title===null)return;const content=prompt('Content',s.content);if(content===null)return;s.title=title;s.content=content;setBaseline(bl);renderBaseline();schedulePush()}
+function addBaselineSection(){const title=prompt('New section title');if(!title)return;const content=prompt('Content');if(!content)return;const bl=getBaseline();bl.push({id'custom_'+Date.now(),title,content});setBaseline(bl);renderBaseline();schedulePush()}
+function addFavMeal(){const name=document.getElementById('fav-name').value.trim();const desc=document.getElementById('fav-desc').value.trim();const cat=document.getElementById('fav-cat').value'meal';if(!name!desc)return;const favs=getFavMeals();favs.push({idDate.now(),name,desc,cat});setFavMeals(favs);document.getElementById('fav-name').value='';document.getElementById('fav-desc').value='';renderFavMeals();renderFavButtons();schedulePush()}
+function deleteFavMeal(id){setFavMeals(getFavMeals().filter(f=f.id!==id));renderFavMeals();renderFavButtons();schedulePush()}
+function renderFavMeals(){const favs=getFavMeals();const el=document.getElementById('fav-meals-list');if(!favs.length){el.innerHTML='p style=font-size12px;colorvar(--text3)No favorites yet.p';return}el.innerHTML=favs.map(f={const icon=f.cat==='sport''🏃'f.cat==='note''📝''🍽️';return`div style=displayflex;align-itemscenter;gap8px;padding8px 0;border-bottom1px solid var(--border-lt);font-size12pxspan style=width20px;text-aligncenter${icon}spanstrong style=min-width120px${esc(f.name)}strongspan style=flex1;colorvar(--text2)${esc(f.desc)}spanbutton class=arc-del onclick=deleteFavMeal(${f.id})✕buttondiv`}).join('')}
+function renderFavButtons(){const container=document.getElementById('fav-buttons');if(!container)return;const favs=getFavMeals();if(!favs.length){container.innerHTML='';return}container.innerHTML='label style=font-size11px;font-weight600;colorvar(--text2);displayblock;margin-bottom5pxQuick favoriteslabel'+favs.map(f={const cls=f.cat==='sport''btn-ax''btn-s';return`button class=btn ${cls} style=font-size11px;margin0 4px 6px 0 onclick=useFav(${f.id})${esc(f.name)}button`}).join('')}
+function useFav(id){const f=getFavMeals().find(x=x.id===id);if(!f)return;document.getElementById('log-desc').value=f.desc;document.getElementById('log-cat').value=f.cat'meal'}
 
-/* ================================================================
+ ================================================================
    ARCHIVE
-   ================================================================ */
-function saveToArchive(title,html){const arc=getArchive();arc.unshift({id:Date.now(),title,date:new Date().toISOString(),html});setArchive(arc);schedulePush()}
-function renderArchive(){const arc=getArchive();const el=document.getElementById('archive-out');if(!arc.length){el.innerHTML='<div class="empty"><div class="icon">📂</div><h3>Archive empty</h3><p>AI insights will appear here when you save them.</p></div>';return}el.innerHTML=arc.map(a=>{const d=new Date(a.date);return`<div class="arc-item" onclick="viewArcItem(${a.id})"><div style="flex:1"><h3>${esc(a.title)}</h3><div class="arc-date">${d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div></div><button class="arc-del" onclick="event.stopPropagation();delArc(${a.id})">✕</button></div>`}).join('')}
-function viewArcItem(id){const item=getArchive().find(a=>a.id===id);if(!item)return;document.getElementById('archive-out').innerHTML=`<button class="btn btn-s" onclick="renderArchive()" style="margin-bottom:16px">← Back</button><div style="font-size:12px;color:var(--text3);margin-bottom:12px">${new Date(item.date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</div><h2 style="font-size:16px;font-weight:700;margin-bottom:16px">${esc(item.title)}</h2>${item.html}`}
-function delArc(id){if(!confirm('Delete?'))return;setArchive(getArchive().filter(a=>a.id!==id));renderArchive();schedulePush()}
+   ================================================================ 
+function saveToArchive(title,html){const arc=getArchive();arc.unshift({idDate.now(),title,datenew Date().toISOString(),html});setArchive(arc);schedulePush()}
+function renderArchive(){const arc=getArchive();const el=document.getElementById('archive-out');if(!arc.length){el.innerHTML='div class=emptydiv class=icon📂divh3Archive emptyh3pAI insights will appear here when you save them.pdiv';return}el.innerHTML=arc.map(a={const d=new Date(a.date);return`div class=arc-item onclick=viewArcItem(${a.id})div style=flex1h3${esc(a.title)}h3div class=arc-date${d.toLocaleDateString('en-US',{month'short',day'numeric',year'numeric'})}divdivbutton class=arc-del onclick=event.stopPropagation();delArc(${a.id})✕buttondiv`}).join('')}
+function viewArcItem(id){const item=getArchive().find(a=a.id===id);if(!item)return;document.getElementById('archive-out').innerHTML=`button class=btn btn-s onclick=renderArchive() style=margin-bottom16px← Backbuttondiv style=font-size12px;colorvar(--text3);margin-bottom12px${new Date(item.date).toLocaleDateString('en-US',{weekday'long',month'long',day'numeric',year'numeric'})}divh2 style=font-size16px;font-weight700;margin-bottom16px${esc(item.title)}h2${item.html}`}
+function delArc(id){if(!confirm('Delete'))return;setArchive(getArchive().filter(a=a.id!==id));renderArchive();schedulePush()}
 
-/* ================================================================
+ ================================================================
    EXPORT
-   ================================================================ */
-function exportAll(){const data={exported:new Date().toISOString(),profiles:PROFILES,baseline:getBaseline(),favoriteMeals:getFavMeals(),glucose:{axel:getGlucose('axel'),fanny:getGlucose('fanny')},logs:getLogs(),tests:SJ('tests_meta'),archive:getArchive(),settings:{targetLow:getTargetLow(),targetHigh:getTargetHigh()}};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`gly-export-${luxon.DateTime.now().toISODate()}.json`;a.click();URL.revokeObjectURL(url)}
+   ================================================================ 
+function exportAll(){const data={exportednew Date().toISOString(),profilesPROFILES,baselinegetBaseline(),favoriteMealsgetFavMeals(),glucose{axelgetGlucose('axel'),fannygetGlucose('fanny')},logsgetLogs(),testsSJ('tests_meta'),archivegetArchive(),settings{targetLowgetTargetLow(),targetHighgetTargetHigh()}};const blob=new Blob([JSON.stringify(data,null,2)],{type'applicationjson'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`gly-export-${luxon.DateTime.now().toISODate()}.json`;a.click();URL.revokeObjectURL(url)}
 
-/* ================================================================
+ ================================================================
    UTILS
-   ================================================================ */
+   ================================================================ 
 function esc(s){const e=document.createElement('span');e.textContent=s;return e.innerHTML}
 
-/* ================================================================
-   MIGRATION v3: patch logs + re-tag all + sport favorites
-   ================================================================ */
+ ================================================================
+   MIGRATION v3 patch logs + re-tag all + sport favorites
+   ================================================================ 
 (function migrate_v3(){
   if(S('migrated_v3')==='1') return;
   const logs=getLogs();
-  // Patch end times
-  logs.forEach(l=>{
-    if(l.id===1790603103868) l.time_end='16:40';
-    if(l.id===1790668122675) l.time_end='09:15';
+   Patch end times
+  logs.forEach(l={
+    if(l.id===1790603103868) l.time_end='1640';
+    if(l.id===1790668122675) l.time_end='0915';
   });
-  // Add missing sport logs
-  const ids=new Set(logs.map(l=>l.id));
+   Add missing sport logs
+  const ids=new Set(logs.map(l=l.id));
   [
-    {id:20260929062001,person:'both',date:'2026-09-29',time:'06:20',time_end:'06:30',cat:'sport',desc:'Yoga 10min',tests:[]},
-    {id:20260929064501,person:'both',date:'2026-09-29',time:'06:45',time_end:'07:00',cat:'sport',desc:'Marche matinale 15min',tests:[]},
-    {id:20260928190001,person:'both',date:'2026-09-28',time:'19:00',time_end:'20:30',cat:'sport',desc:'Potager : 4km vélo tranquille, jardinage doux (cueillette, taille), 4km vélo retour',tests:[]},
-  ].forEach(l=>{if(!ids.has(l.id))logs.push(l)});
-  // Re-tag ALL logs with updated test definitions
-  logs.forEach(l=>{l.tests=matchTests(l.desc).map(t=>t.id)});
+    {id20260929062001,person'both',date'2026-09-29',time'0620',time_end'0630',cat'sport',desc'Yoga 10min',tests[]},
+    {id20260929064501,person'both',date'2026-09-29',time'0645',time_end'0700',cat'sport',desc'Marche matinale 15min',tests[]},
+    {id20260928190001,person'both',date'2026-09-28',time'1900',time_end'2030',cat'sport',desc'Potager  4km vélo tranquille, jardinage doux (cueillette, taille), 4km vélo retour',tests[]},
+  ].forEach(l={if(!ids.has(l.id))logs.push(l)});
+   Re-tag ALL logs with updated test definitions
+  logs.forEach(l={l.tests=matchTests(l.desc).map(t=t.id)});
   setLogs(logs);
-  // Add default sport favorites
-  const favs=getFavMeals();const favNames=new Set(favs.map(f=>f.name));
+   Add default sport favorites
+  const favs=getFavMeals();const favNames=new Set(favs.map(f=f.name));
   [
-    {id:20260929100001,name:'Potager',desc:'4km vélo tranquille, jardinage doux (cueillette, taille), 4km vélo retour',cat:'sport'},
-    {id:20260929100002,name:'Potager + rivière',desc:'4km vélo tranquille, jardinage court, baignade rivière 15min eau froide, 4km vélo retour',cat:'sport'},
-    {id:20260929100003,name:'Yoga',desc:'Yoga 15-20min',cat:'sport'},
-    {id:20260929100004,name:'Marche',desc:'Marche 15-20min',cat:'sport'},
-    {id:20260929100005,name:'Jogging + marche',desc:'Jogging rythme tranquille 10-12min puis marche 30min',cat:'sport'},
-  ].forEach(f=>{if(!favNames.has(f.name))favs.push(f)});
+    {id20260929100001,name'Potager',desc'4km vélo tranquille, jardinage doux (cueillette, taille), 4km vélo retour',cat'sport'},
+    {id20260929100002,name'Potager + rivière',desc'4km vélo tranquille, jardinage court, baignade rivière 15min eau froide, 4km vélo retour',cat'sport'},
+    {id20260929100003,name'Yoga',desc'Yoga 15-20min',cat'sport'},
+    {id20260929100004,name'Marche',desc'Marche 15-20min',cat'sport'},
+    {id20260929100005,name'Jogging + marche',desc'Jogging rythme tranquille 10-12min puis marche 30min',cat'sport'},
+  ].forEach(f={if(!favNames.has(f.name))favs.push(f)});
   setFavMeals(favs);
   SS('migrated_v3','1');
 })();
 
-/* ================================================================
+ ================================================================
    INIT
-   ================================================================ */
+   ================================================================ 
 updateDot();
 document.getElementById('day-pick').valueAsDate=new Date();
 document.getElementById('log-date').value=luxon.DateTime.now().toISODate();
-document.getElementById('log-time').value=luxon.DateTime.now().toFormat('HH:mm');
-syncPull().then(()=>renderDaily());
-setInterval(()=>syncPull().then(()=>{if(document.querySelector('.nav button.on')?.dataset.v==='daily')renderDaily()}),60000);
-</script>
-</body>
-</html>
+document.getElementById('log-time').value=luxon.DateTime.now().toFormat('HHmm');
+syncPull().then(()=renderDaily());
+setInterval(()=syncPull().then(()={if(document.querySelector('.nav button.on').dataset.v==='daily')renderDaily()}),60000);
+script
+body
+html
