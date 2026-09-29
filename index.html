@@ -64,6 +64,7 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 .date-nav input[type=date]{font-family:var(--font);font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
 .tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-lt);font-size:12.5px}
 .tl-time{width:50px;font-weight:600;color:var(--text2);flex-shrink:0}
+.tl-dur{font-size:10px;font-weight:400;color:var(--text3)}
 .tl-person{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
 .tl-person.ax{background:var(--axel)}.tl-person.fa{background:var(--fanny)}.tl-person.bo{background:var(--primary)}
 .tl-cat{padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600;flex-shrink:0}
@@ -213,10 +214,13 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
     </div>
     <div class="form-row">
       <label>Date & Time</label>
-      <div style="display:flex;gap:8px">
-        <input type="date" id="log-date" style="flex:1">
-        <input type="time" id="log-time" style="flex:1">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="date" id="log-date" style="flex:1.2">
+        <input type="time" id="log-time" style="flex:1" title="Start time">
+        <span style="color:var(--text3);font-size:11px;flex-shrink:0">→</span>
+        <input type="time" id="log-time-end" style="flex:1" title="End time (optional)" placeholder="fin">
       </div>
+      <p style="font-size:10px;color:var(--text3);margin-top:4px">End time optional — useful for meals & activities to track duration.</p>
     </div>
     <div class="form-row">
       <label>Category</label>
@@ -392,7 +396,6 @@ async function syncPull(){
     if(!d.data&&!d.glucose_axel){setSyncDot('ok');return}
     const raw=typeof d.data==='string'?d.data:JSON.stringify(d);
     const data=JSON.parse(raw);
-    // Merge glucose
     ['axel','fanny'].forEach(p=>{
       const remote=data['glucose_'+p]||[];
       const local=getGlucose(p);
@@ -402,13 +405,11 @@ async function syncPull(){
       unique.sort((a,b)=>a.t.localeCompare(b.t));
       setGlucose(p,unique);
     });
-    // Merge logs
     const remoteLogs=data.logs||[];
     const localLogs=getLogs();
     const logIds=new Set(localLogs.map(l=>l.id));
     remoteLogs.forEach(l=>{if(!logIds.has(l.id))localLogs.push(l)});
     setLogs(localLogs);
-    // Others
     if(data.archive?.length) setArchive(data.archive);
     if(data.tests_meta?.length) SSJ('tests_meta',data.tests_meta);
     if(data.baseline?.length) setBaseline(data.baseline);
@@ -584,6 +585,17 @@ async function fetchLibreLinkUp(){
    ================================================================ */
 let chartDaily=null,chartWeekly=null;
 
+function fmtDuration(start,end){
+  if(!start||!end)return'';
+  const [sh,sm]=start.split(':').map(Number);
+  const [eh,em]=end.split(':').map(Number);
+  let mins=(eh*60+em)-(sh*60+sm);
+  if(mins<=0) return'';
+  if(mins<60) return mins+'min';
+  const h=Math.floor(mins/60);const m=mins%60;
+  return m?h+'h'+String(m).padStart(2,'0'):h+'h';
+}
+
 function renderDaily(){
   const pick=document.getElementById('day-pick');
   if(!pick.value) pick.valueAsDate=new Date();
@@ -615,7 +627,14 @@ function renderDaily(){
   ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{x:{type:'time',time:{unit:'hour',displayFormats:{hour:'HH:mm'}},min:dayStart.toJSDate(),max:dayEnd.toJSDate(),grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10}}},y:{min:50,max:220,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},callback:v=>v+' mg/dL'}}},plugins:{legend:{display:true,labels:{usePointStyle:true,pointStyle:'line',font:{size:11},filter:i=>i.text!=='Target Zone'&&i.text!=='Events'}},tooltip:{callbacks:{label:ctx=>{if(ctx.dataset.label==='Events'){const m=mealAnnotations[ctx.dataIndex];return m?m.desc:''}return ctx.dataset.label+': '+ctx.parsed.y+' mg/dL'}}}}}});
   const tlEl=document.getElementById('daily-timeline');
   if(!logs.length){tlEl.innerHTML='<div class="empty"><p>No logs for this day.</p></div>'}
-  else{tlEl.innerHTML=logs.map(l=>{const pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';const pLetter=l.person==='both'?'AB':l.person==='axel'?'A':'F';const testTags=(l.tests||[]).map(tid=>{const t=TESTS.find(x=>x.id===tid);return t?`<span class="tl-cat cat-test" style="margin-left:4px">🧪 ${t.name.split(':')[0]}</span>`:''}).join('');return`<div class="tl-item"><div class="tl-time">${l.time}</div><div class="tl-person ${pCls}">${pLetter}</div><span class="tl-cat cat-${l.cat}">${catLabel(l.cat)}</span>${testTags}<div class="tl-desc">${esc(l.desc)}</div></div>`}).join('')}
+  else{tlEl.innerHTML=logs.map(l=>{
+    const pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';
+    const pLetter=l.person==='both'?'AB':l.person==='axel'?'A':'F';
+    const dur=fmtDuration(l.time,l.time_end);
+    const durHtml=dur?`<span class="tl-dur"> (${dur})</span>`:'';
+    const endHtml=l.time_end?`→${l.time_end}`:'';
+    const testTags=(l.tests||[]).map(tid=>{const t=TESTS.find(x=>x.id===tid);return t?`<span class="tl-cat cat-test" style="margin-left:4px">🧪 ${t.name.split(':')[0]}</span>`:''}).join('');
+    return`<div class="tl-item"><div class="tl-time">${l.time}<span class="tl-dur">${endHtml?'<br>'+endHtml:''}</span>${durHtml}</div><div class="tl-person ${pCls}">${pLetter}</div><span class="tl-cat cat-${l.cat}">${catLabel(l.cat)}</span>${testTags}<div class="tl-desc">${esc(l.desc)}</div></div>`}).join('')}
 }
 
 function renderWeekly(){
@@ -644,7 +663,7 @@ function shiftDay(d){const p=document.getElementById('day-pick');const dt=luxon.
 function shiftWeek(d){window._weekStart=(window._weekStart||luxon.DateTime.now().startOf('week')).plus({weeks:d});renderWeekly()}
 
 /* ================================================================
-   TESTS
+   TESTS — includes 5 new tests from pattern analysis
    ================================================================ */
 const TESTS=[
   {id:'alcohol_type',name:'Alcohol type: beer vs vodka',desc:'Same person, different days. Compare glucose response to beer vs vodka.',keywords:['beer','vodka','wine','alcohol','gin','whisky','whiskey','rum','cocktail','aperol','spritz']},
@@ -657,6 +676,12 @@ const TESTS=[
   {id:'sport_type',name:'Sport type comparison',desc:'Compare glucose response to different activities.',keywords:['yoga','run','running','cycle','cycling','rowing','walk','walking','hiit','swim','swimming','pilates','weights','musculation']},
   {id:'sport_timing',name:'Sport timing: before breakfast vs after meal',desc:'Same exercise fasted vs after a meal.',keywords:['before breakfast','fasted','à jeun','after meal','après manger','post-prandial','before meal']},
   {id:'ingredient_timing',name:'Same ingredient, different time of day',desc:'Same food morning vs afternoon vs evening.',keywords:['morning','evening','soir','matin','afternoon','après-midi','midi']},
+  // ── NEW: discovered from data analysis ──
+  {id:'fermented',name:'Fermented foods effect',desc:'Same base meal with vs without fermented elements (lacto-fermented vegs, kefir, kombucha).',keywords:['lactofermenté','fermenté','kefir','kombucha','choucroute','kimchi','fermented','pickled','lactofermentation','jus lacto']},
+  {id:'meal_duration',name:'Meal duration: quick vs slow',desc:'Same meal eaten in <15min vs >45min. Log start + end time.',keywords:['rapide','lent','slow','fast','quick','duration','durée']},
+  {id:'dessert_timing',name:'Dessert: with meal vs 30min+ after',desc:'Same dessert eaten right after main course vs 30+ min later. Tests delayed glycemic second wave.',keywords:['dessert','fruit après','chocolat après','nashi','poire','pomme','compote','sweet after','chocolat noir','fruit fin de repas']},
+  {id:'meal_spacing',name:'Meal spacing: short vs long gap',desc:'Compare glucose when meals are 4h vs 6h+ apart. Tracks hypo risk from long fasting windows.',keywords:['spacing','espacement','gap','heures entre','hours between','jeûne','fasting','snack','encas','collation']},
+  {id:'recovery_day',name:'Recovery day: post-exercise glucose',desc:'Glucose patterns on rest days after intense activity (hike, long run). Tracks increased insulin sensitivity & hypo risk.',keywords:['recovery','récupération','repos','rest day','rando','randonnée','hike','lendemain','day after','fatigue','courbatures']},
 ];
 
 function renderTests(){
@@ -683,7 +708,7 @@ async function discoverPatterns(){
   el.innerHTML='<div style="text-align:center;padding:16px"><div class="spinner"></div><span style="font-size:12px;color:var(--text3)">Scanning...</span></div>';
   try{
     const allDays=[...new Set(logs.map(l=>l.date))].sort();
-    const dayData=allDays.map(day=>{const dayLogs=logs.filter(l=>l.date===day);const ds=luxon.DateTime.fromISO(day).startOf('day').toISO();const de=luxon.DateTime.fromISO(day).endOf('day').toISO();const axG=getGlucose('axel').filter(r=>r.t>=ds&&r.t<=de);const faG=getGlucose('fanny').filter(r=>r.t>=ds&&r.t<=de);const events=dayLogs.filter(l=>l.cat==='meal'||l.cat==='sport').map(l=>{const et=luxon.DateTime.fromISO(day+'T'+l.time);const we=et.plus({minutes:90}).toISO();const ws=et.minus({minutes:10}).toISO();const aw=axG.filter(r=>r.t>=ws&&r.t<=we).map(r=>r.v);const fw=faG.filter(r=>r.t>=ws&&r.t<=we).map(r=>r.v);return{time:l.time,person:l.person,cat:l.cat,desc:l.desc,axPeak:aw.length?Math.max(...aw):null,axAvg:aw.length?Math.round(aw.reduce((s,v)=>s+v,0)/aw.length):null,faPeak:fw.length?Math.max(...fw):null,faAvg:fw.length?Math.round(fw.reduce((s,v)=>s+v,0)/fw.length):null}});return`${day} (${luxon.DateTime.fromISO(day).toFormat('cccc')}):\n`+events.map(e=>`  ${e.time} [${e.person}] ${e.cat}: "${e.desc}" → Ax peak=${e.axPeak||'?'} avg=${e.axAvg||'?'} | Fa peak=${e.faPeak||'?'} avg=${e.faAvg||'?'}`).join('\n')}).join('\n\n');
+    const dayData=allDays.map(day=>{const dayLogs=logs.filter(l=>l.date===day);const ds=luxon.DateTime.fromISO(day).startOf('day').toISO();const de=luxon.DateTime.fromISO(day).endOf('day').toISO();const axG=getGlucose('axel').filter(r=>r.t>=ds&&r.t<=de);const faG=getGlucose('fanny').filter(r=>r.t>=ds&&r.t<=de);const events=dayLogs.filter(l=>l.cat==='meal'||l.cat==='sport').map(l=>{const et=luxon.DateTime.fromISO(day+'T'+l.time);const we=et.plus({minutes:90}).toISO();const ws=et.minus({minutes:10}).toISO();const aw=axG.filter(r=>r.t>=ws&&r.t<=we).map(r=>r.v);const fw=faG.filter(r=>r.t>=ws&&r.t<=we).map(r=>r.v);const durStr=l.time_end?` (duration: ${fmtDuration(l.time,l.time_end)})`:'';return{time:l.time,time_end:l.time_end||null,person:l.person,cat:l.cat,desc:l.desc+durStr,axPeak:aw.length?Math.max(...aw):null,axAvg:aw.length?Math.round(aw.reduce((s,v)=>s+v,0)/aw.length):null,faPeak:fw.length?Math.max(...fw):null,faAvg:fw.length?Math.round(fw.reduce((s,v)=>s+v,0)/fw.length):null}});return`${day} (${luxon.DateTime.fromISO(day).toFormat('cccc')}):\n`+events.map(e=>`  ${e.time}${e.time_end?'→'+e.time_end:''} [${e.person}] ${e.cat}: "${e.desc}" → Ax peak=${e.axPeak||'?'} avg=${e.axAvg||'?'} | Fa peak=${e.faPeak||'?'} avg=${e.faAvg||'?'}`).join('\n')}).join('\n\n');
     const sys=`${getAIContext()}\nYou are a pattern-discovery analyst. Find NATURAL EXPERIMENTS in the data. Output HTML with ai-box, ai-label, card classes. For each pattern: observation A, B, difference (with numbers), possible explanation, confidence, suggestion. Be SPECIFIC with numbers.`;
     const html=await callAI(sys,`Full event log:\n\n${dayData}`);
     el.innerHTML=html+`<button class="btn btn-s" onclick="saveToArchive('Pattern Discovery — '+luxon.DateTime.now().toISODate(),document.getElementById('discover-output').innerHTML);this.innerHTML='✓ Saved';this.disabled=true" style="margin-top:12px">📌 Save to archive</button>`;
@@ -692,18 +717,24 @@ async function discoverPatterns(){
 }
 
 /* ================================================================
-   LOG ENTRY
+   LOG ENTRY — now captures end time
    ================================================================ */
 let logPerson='both';
 function selPerson(p,btn){logPerson=p;document.querySelectorAll('#log-person button').forEach(b=>b.className='');btn.className=p==='axel'?'sel-ax':p==='fanny'?'sel-fa':'sel-bo'}
 
 function saveLog(){
-  const date=document.getElementById('log-date').value;const time=document.getElementById('log-time').value;const cat=document.getElementById('log-cat').value;const desc=document.getElementById('log-desc').value.trim();
+  const date=document.getElementById('log-date').value;
+  const time=document.getElementById('log-time').value;
+  const time_end=document.getElementById('log-time-end').value||null;
+  const cat=document.getElementById('log-cat').value;
+  const desc=document.getElementById('log-desc').value.trim();
   if(!date||!time||!desc){document.getElementById('log-msg').innerHTML='<span style="color:#c0392b">Fill all fields.</span>';return}
   const descLow=desc.toLowerCase();const matchedTests=TESTS.filter(t=>t.keywords.some(k=>descLow.includes(k.toLowerCase())));const testIds=matchedTests.map(t=>t.id);
-  const logs=getLogs();logs.push({id:Date.now(),person:logPerson,date,time,cat,desc,tests:testIds});setLogs(logs);
+  const logs=getLogs();logs.push({id:Date.now(),person:logPerson,date,time,time_end,cat,desc,tests:testIds});setLogs(logs);
   document.getElementById('log-desc').value='';
+  document.getElementById('log-time-end').value='';
   let msg='<span style="color:var(--primary)">✓ Saved</span>';
+  if(time_end) msg+=`<span style="color:var(--text2);margin-left:8px">⏱ ${fmtDuration(time,time_end)}</span>`;
   if(matchedTests.length) msg+=`<span style="color:var(--text2);margin-left:8px">🧪 Auto-tagged: ${matchedTests.map(t=>t.name.split(':')[0]).join(', ')}</span>`;
   document.getElementById('log-msg').innerHTML=msg;
   setTimeout(()=>document.getElementById('log-msg').innerHTML='',5000);
@@ -713,7 +744,13 @@ function saveLog(){
 function renderRecentLogs(){
   const logs=getLogs().sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,20);const el=document.getElementById('log-recent');
   if(!logs.length){el.innerHTML='<div class="empty"><p>No entries yet.</p></div>';return}
-  el.innerHTML=logs.map(l=>{const pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';const pLetter=l.person==='both'?'AB':l.person==='axel'?'A':'F';const testTags=(l.tests||[]).map(tid=>{const t=TESTS.find(x=>x.id===tid);return t?`<span class="tl-cat cat-test" style="margin-left:4px">🧪 ${t.name.split(':')[0]}</span>`:''}).join('');return`<div class="tl-item"><div class="tl-time" style="width:100px">${l.date}<br>${l.time}</div><div class="tl-person ${pCls}">${pLetter}</div><span class="tl-cat cat-${l.cat}">${catLabel(l.cat)}</span>${testTags}<div class="tl-desc">${esc(l.desc)}</div><button class="arc-del" onclick="deleteLog(${l.id})" title="Delete">✕</button></div>`}).join('');
+  el.innerHTML=logs.map(l=>{
+    const pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';
+    const pLetter=l.person==='both'?'AB':l.person==='axel'?'A':'F';
+    const dur=fmtDuration(l.time,l.time_end);
+    const timeStr=l.time+(l.time_end?'→'+l.time_end:'')+(dur?' ('+dur+')':'');
+    const testTags=(l.tests||[]).map(tid=>{const t=TESTS.find(x=>x.id===tid);return t?`<span class="tl-cat cat-test" style="margin-left:4px">🧪 ${t.name.split(':')[0]}</span>`:''}).join('');
+    return`<div class="tl-item"><div class="tl-time" style="width:110px">${l.date}<br>${timeStr}</div><div class="tl-person ${pCls}">${pLetter}</div><span class="tl-cat cat-${l.cat}">${catLabel(l.cat)}</span>${testTags}<div class="tl-desc">${esc(l.desc)}</div><button class="arc-del" onclick="deleteLog(${l.id})" title="Delete">✕</button></div>`}).join('');
 }
 
 function deleteLog(id){setLogs(getLogs().filter(l=>l.id!==id));renderRecentLogs();schedulePush()}
@@ -748,8 +785,8 @@ async function aiDailyInsight(){
   const el=document.getElementById('daily-ai');const day=document.getElementById('day-pick').value;
   el.innerHTML='<div style="text-align:center;padding:20px"><div class="spinner"></div><span style="font-size:12px;color:var(--text3)">Analyzing...</span></div>';
   try{const dayStart=luxon.DateTime.fromISO(day).startOf('day').toISO();const dayEnd=luxon.DateTime.fromISO(day).endOf('day').toISO();const ax=getGlucose('axel').filter(r=>r.t>=dayStart&&r.t<=dayEnd);const fa=getGlucose('fanny').filter(r=>r.t>=dayStart&&r.t<=dayEnd);const logs=getLogs().filter(l=>l.date===day).sort((a,b)=>a.time.localeCompare(b.time));
-  const dataStr=`Date: ${day}\nAxel (${ax.length} readings): avg=${ax.length?Math.round(ax.reduce((s,r)=>s+r.v,0)/ax.length):'-'}, peak=${ax.length?Math.max(...ax.map(r=>r.v)):'-'}\nFanny (${fa.length} readings): avg=${fa.length?Math.round(fa.reduce((s,r)=>s+r.v,0)/fa.length):'-'}, peak=${fa.length?Math.max(...fa.map(r=>r.v)):'-'}\n\nHourly:\n${summarizeHourly(ax,'Axel')}\n${summarizeHourly(fa,'Fanny')}\n\nLogs:\n${logs.map(l=>`${l.time} [${l.person}] ${l.cat}: ${l.desc}`).join('\n')||'No logs.'}`;
-  const sys=`${getAIContext()}\nYou are a glycemia analyst. Daily insight in HTML with ai-box/ai-label classes. Key observations, correlations, what went well, what to watch. Be specific with numbers.`;
+  const dataStr=`Date: ${day}\nAxel (${ax.length} readings): avg=${ax.length?Math.round(ax.reduce((s,r)=>s+r.v,0)/ax.length):'-'}, peak=${ax.length?Math.max(...ax.map(r=>r.v)):'-'}\nFanny (${fa.length} readings): avg=${fa.length?Math.round(fa.reduce((s,r)=>s+r.v,0)/fa.length):'-'}, peak=${fa.length?Math.max(...fa.map(r=>r.v)):'-'}\n\nHourly:\n${summarizeHourly(ax,'Axel')}\n${summarizeHourly(fa,'Fanny')}\n\nLogs:\n${logs.map(l=>`${l.time}${l.time_end?'→'+l.time_end:''} [${l.person}] ${l.cat}: ${l.desc}${l.time_end?' (duration: '+fmtDuration(l.time,l.time_end)+')':''}`).join('\n')||'No logs.'}`;
+  const sys=`${getAIContext()}\nYou are a glycemia analyst. Daily insight in HTML with ai-box/ai-label classes. Key observations, correlations, what went well, what to watch. Be specific with numbers. When meal duration is available, analyze whether meal pacing correlates with glycemic response shape.`;
   const html=await callAI(sys,dataStr);el.innerHTML=html;
   }catch(err){el.innerHTML=`<div class="err">${esc(err.message)}</div>`}
 }
@@ -759,7 +796,7 @@ async function aiWeeklyInsight(){
   el.innerHTML='<div style="text-align:center;padding:20px"><div class="spinner"></div><span style="font-size:12px;color:var(--text3)">Analyzing week...</span></div>';
   try{const ws=window._weekStart||luxon.DateTime.now().startOf('week');const we=ws.plus({days:6}).endOf('day');const ax=getGlucose('axel').filter(r=>r.t>=ws.toISO()&&r.t<=we.toISO());const fa=getGlucose('fanny').filter(r=>r.t>=ws.toISO()&&r.t<=we.toISO());const logs=getLogs().filter(l=>l.date>=ws.toISODate()&&l.date<=we.toISODate()).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
   const lo=getTargetLow(),hi=getTargetHigh();
-  const dataStr=`Week: ${ws.toISODate()} to ${we.toISODate()}\nAxel: ${ax.length} readings, avg=${ax.length?Math.round(ax.reduce((s,r)=>s+r.v,0)/ax.length):'-'}, TIR=${ax.length?Math.round(ax.filter(r=>r.v>=lo&&r.v<=hi).length/ax.length*100):'-'}%\nFanny: ${fa.length} readings, avg=${fa.length?Math.round(fa.reduce((s,r)=>s+r.v,0)/fa.length):'-'}, TIR=${fa.length?Math.round(fa.filter(r=>r.v>=lo&&r.v<=hi).length/fa.length*100):'-'}%\n\nLogs:\n${logs.map(l=>`${l.date} ${l.time} [${l.person}] ${l.cat}: ${l.desc}`).join('\n')||'No logs.'}`;
+  const dataStr=`Week: ${ws.toISODate()} to ${we.toISODate()}\nAxel: ${ax.length} readings, avg=${ax.length?Math.round(ax.reduce((s,r)=>s+r.v,0)/ax.length):'-'}, TIR=${ax.length?Math.round(ax.filter(r=>r.v>=lo&&r.v<=hi).length/ax.length*100):'-'}%\nFanny: ${fa.length} readings, avg=${fa.length?Math.round(fa.reduce((s,r)=>s+r.v,0)/fa.length):'-'}, TIR=${fa.length?Math.round(fa.filter(r=>r.v>=lo&&r.v<=hi).length/fa.length*100):'-'}%\n\nLogs:\n${logs.map(l=>`${l.date} ${l.time}${l.time_end?'→'+l.time_end:''} [${l.person}] ${l.cat}: ${l.desc}`).join('\n')||'No logs.'}`;
   const sys=`${getAIContext()}\nWeekly summary in HTML with ai-box/ai-label classes. Overview, best/worst days, patterns, recommendations. Be specific.`;
   const html=await callAI(sys,dataStr);el.innerHTML=html;
   }catch(err){el.innerHTML=`<div class="err">${esc(err.message)}</div>`}
