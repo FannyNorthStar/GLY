@@ -286,9 +286,12 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
     <h3>Favorite Meals (quick-log shortcuts)</h3>
     <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Add meals you eat often. They'll appear as one-tap buttons in the Log Entry tab.</p>
     <div id="fav-meals-list"></div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <input type="text" id="fav-name" placeholder="Label (e.g. Magnus breakfast)" style="flex:1;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
-      <input type="text" id="fav-desc" placeholder="Full description" style="flex:2;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <select id="fav-cat" style="padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);background:var(--surface-alt)">
+        <option value="meal">🍽️ Meal</option><option value="sport">🏃 Sport</option><option value="note">📝 Note</option>
+      </select>
+      <input type="text" id="fav-name" placeholder="Label (e.g. Potager)" style="flex:1;min-width:120px;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
+      <input type="text" id="fav-desc" placeholder="Full description" style="flex:2;min-width:180px;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
       <button class="btn btn-p" onclick="addFavMeal()" style="white-space:nowrap">Add</button>
     </div>
   </div>
@@ -830,12 +833,12 @@ function renderBaseline(){
 
 function editBaseline(id){const bl=getBaseline();const s=bl.find(x=>x.id===id);if(!s)return;const title=prompt('Title:',s.title);if(title===null)return;const content=prompt('Content:',s.content);if(content===null)return;s.title=title;s.content=content;setBaseline(bl);renderBaseline();schedulePush()}
 function addBaselineSection(){const title=prompt('New section title:');if(!title)return;const content=prompt('Content:');if(!content)return;const bl=getBaseline();bl.push({id:'custom_'+Date.now(),title,content});setBaseline(bl);renderBaseline();schedulePush()}
-function addFavMeal(){const name=document.getElementById('fav-name').value.trim();const desc=document.getElementById('fav-desc').value.trim();if(!name||!desc)return;const favs=getFavMeals();favs.push({id:Date.now(),name,desc});setFavMeals(favs);document.getElementById('fav-name').value='';document.getElementById('fav-desc').value='';renderFavMeals();renderFavButtons();schedulePush()}
+function addFavMeal(){const name=document.getElementById('fav-name').value.trim();const desc=document.getElementById('fav-desc').value.trim();const cat=document.getElementById('fav-cat')?.value||'meal';if(!name||!desc)return;const favs=getFavMeals();favs.push({id:Date.now(),name,desc,cat});setFavMeals(favs);document.getElementById('fav-name').value='';document.getElementById('fav-desc').value='';renderFavMeals();renderFavButtons();schedulePush()}
 function deleteFavMeal(id){setFavMeals(getFavMeals().filter(f=>f.id!==id));renderFavMeals();renderFavButtons();schedulePush()}
 
 function renderFavMeals(){const favs=getFavMeals();const el=document.getElementById('fav-meals-list');if(!favs.length){el.innerHTML='<p style="font-size:12px;color:var(--text3)">No favorites yet.</p>';return}el.innerHTML=favs.map(f=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-lt);font-size:12px"><strong style="min-width:120px">${esc(f.name)}</strong><span style="flex:1;color:var(--text2)">${esc(f.desc)}</span><button class="arc-del" onclick="deleteFavMeal(${f.id})">✕</button></div>`).join('')}
 function renderFavButtons(){const container=document.getElementById('fav-buttons');if(!container)return;const favs=getFavMeals();if(!favs.length){container.innerHTML='';return}container.innerHTML='<label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px">Quick favorites</label>'+favs.map(f=>`<button class="btn btn-s" style="font-size:11px;margin:0 4px 6px 0" onclick="useFav(${f.id})">${esc(f.name)}</button>`).join('')}
-function useFav(id){const f=getFavMeals().find(x=>x.id===id);if(!f)return;document.getElementById('log-desc').value=f.desc;document.getElementById('log-cat').value='meal'}
+function useFav(id){const f=getFavMeals().find(x=>x.id===id);if(!f)return;document.getElementById('log-desc').value=f.desc;document.getElementById('log-cat').value=f.cat||'meal'}
 
 /* ================================================================
    ARCHIVE
@@ -855,11 +858,47 @@ function exportAll(){const data={exported:new Date().toISOString(),profiles:PROF
    ================================================================ */
 function esc(s){const e=document.createElement('span');e.textContent=s;return e.innerHTML}
 
+/* ================================================================
+   ONE-TIME MIGRATION v2: patch end times + add missing logs + sport favs
+   ================================================================ */
+(function migrate_v2(){
+  if(S('migrated_v2')==='1') return;
+  const logs=getLogs();
+  // Patch end times on existing logs
+  logs.forEach(l=>{
+    if(l.id===1790603103868) l.time_end='16:40';
+    if(l.id===1790668122675) l.time_end='09:15';
+  });
+  // Add missing sport logs
+  const ids=new Set(logs.map(l=>l.id));
+  const add=[
+    {id:20260929062001,person:'both',date:'2026-09-29',time:'06:20',time_end:'06:30',cat:'sport',desc:'Yoga 10min',tests:['sport_type']},
+    {id:20260929064501,person:'both',date:'2026-09-29',time:'06:45',time_end:'07:00',cat:'sport',desc:'Marche matinale 15min',tests:['sport_type']},
+    {id:20260928190001,person:'both',date:'2026-09-28',time:'19:00',time_end:'20:30',cat:'sport',desc:'Potager : 4km vélo tranquille, jardinage doux (cueillette, taille), 4km vélo retour',tests:['sport_type']},
+  ];
+  add.forEach(l=>{if(!ids.has(l.id))logs.push(l)});
+  setLogs(logs);
+  // Add default sport favorites
+  const favs=getFavMeals();
+  const favNames=new Set(favs.map(f=>f.name));
+  [
+    {id:20260929100001,name:'Potager',desc:'4km vélo tranquille, jardinage doux (cueillette, taille), 4km vélo retour',cat:'sport'},
+    {id:20260929100002,name:'Potager + rivière',desc:'4km vélo tranquille, jardinage court, baignade rivière 15min eau froide, 4km vélo retour',cat:'sport'},
+    {id:20260929100003,name:'Yoga',desc:'Yoga 15-20min',cat:'sport'},
+    {id:20260929100004,name:'Marche',desc:'Marche 15-20min',cat:'sport'},
+    {id:20260929100005,name:'Jogging + marche',desc:'Jogging rythme tranquille 10-12min puis marche 30min',cat:'sport'},
+  ].forEach(f=>{if(!favNames.has(f.name))favs.push(f)});
+  setFavMeals(favs);
+  SS('migrated_v2','1');
+})();
+
 updateDot();
 document.getElementById('day-pick').valueAsDate=new Date();
 document.getElementById('log-date').value=luxon.DateTime.now().toISODate();
 document.getElementById('log-time').value=luxon.DateTime.now().toFormat('HH:mm');
 syncPull().then(()=>renderDaily());
+// Periodic sync every 60s — fixes phone→desktop lag
+setInterval(()=>syncPull().then(()=>{if(document.querySelector('.nav button.on')?.dataset.v==='daily')renderDaily()}),60000);
 </script>
 </body>
 </html>
