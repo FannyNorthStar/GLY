@@ -167,7 +167,7 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
     <input type="date" id="day-pick" onchange="renderDaily()">
     <button onclick="shiftDay(1)">›</button>
     <button class="btn btn-s" onclick="document.getElementById('day-pick').valueAsDate=new Date();renderDaily()" style="font-size:11px">Today</button>
-    <button class="btn btn-p" id="btn-ai-daily" onclick="aiDailyInsight()" style="margin-left:auto;font-size:11px">Analyser cette journée</button>
+    <button class="btn btn-p" id="btn-ai-daily" onclick="aiDailyInsight()" style="margin-left:auto;font-size:11px;background:#2b6b4f;color:#fff;padding:8px 14px;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0">▶ Analyser</button>
   </div>
   <div class="stats-grid" id="daily-stats"></div>
   <div class="chart-wrap"><canvas id="chart-daily"></canvas></div>
@@ -181,7 +181,7 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
     <button onclick="shiftWeek(-1)">‹</button>
     <span id="week-label" style="font-size:13px;font-weight:600"></span>
     <button onclick="shiftWeek(1)">›</button>
-    <button class="btn btn-p" id="btn-ai-weekly" onclick="aiWeeklyInsight()" style="margin-left:auto;font-size:11px">Analyser cette semaine</button>
+    <button class="btn btn-p" id="btn-ai-weekly" onclick="aiWeeklyInsight()" style="margin-left:auto;font-size:11px;background:#2b6b4f;color:#fff;padding:8px 14px;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0">▶ Analyser</button>
   </div>
   <div class="stats-grid" id="weekly-stats"></div>
   <div class="chart-wrap"><canvas id="chart-weekly"></canvas></div>
