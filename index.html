@@ -354,20 +354,15 @@ renderOverlay('axel',days);
 }
 
 function renderOverlay(person,days){
-var canvasId=person==='fanny'?'chart-ov-fanny':'chart-ov-axel';
-var chartRef=person==='fanny'?'chartOvF':'chartOvA';
-if(window[chartRef])window[chartRef].destroy();
-var lo=getTargetLow(),hi=getTargetHigh();
-var datasets=[];
-days.forEach(function(d,idx){
-var s=d.startOf('day').toISO(),e=d.endOf('day').toISO();
-var data=getGlucose(person).filter(function(r){return r.t>=s&&r.t<=e});
-if(!data.length)return;
-var pts=data.map(function(r){var dt=luxon.DateTime.fromISO(r.t);return{x:dt.hour+dt.minute/60,y:r.v}});
-datasets.push({label:d.toFormat('ccc d'),data:pts,borderColor:DAY_COLORS[idx%7],borderWidth:1.5,pointRadius:0,pointHitRadius:6,tension:.3,fill:false});
-});
-window[chartRef]=new Chart(document.getElementById(canvasId).getContext('2d'),{type:'line',data:{datasets:datasets},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',min:0,max:24,ticks:{font:{size:10},stepSize:2,callback:function(v){return v+'h'}},grid:{color:'rgba(0,0,0,0.04)'}},y:{min:30,max:220,ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}}},plugins:{legend:{labels:{font:{size:10},boxWidth:12}},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+ctx.parsed.y+' mg/dL'}}}}}});
-}
+var cid=person==='fanny'?'chart-ov-fanny':'chart-ov-axel';
+var ref=person==='fanny'?'chartOvF':'chartOvA';
+if(window[ref])window[ref].destroy();
+var lo=getTargetLow(),dHi=160,aV=[];var sets=[];
+days.forEach(function(d,i){var s=d.startOf('day').toISO(),e=d.endOf('day').toISO();var data=getGlucose(person).filter(function(r){return r.t>=s&&r.t<=e});if(!data.length)return;var pts=data.map(function(r){var dt=luxon.DateTime.fromISO(r.t);aV.push(r.v);return{x:dt.hour+dt.minute/60,y:r.v}});sets.push({label:d.toFormat('ccc d'),data:pts,borderColor:DAY_COLORS[i%7],borderWidth:1.5,borderDash:DAY_DASHES[i%7],pointRadius:0,pointHitRadius:6,tension:.3,fill:false})});
+var yn=aV.length?Math.min.apply(null,aV)-5:30,yx=aV.length?Math.max.apply(null,aV)+5:180;
+if(yn>lo-5)yn=lo-5;if(yx<dHi+5)yx=dHi+5;
+var z=[{label:'_hypo',data:[{x:0,y:lo},{x:24,y:lo}],fill:'origin',backgroundColor:'rgba(239,68,68,0.08)',borderColor:'rgba(239,68,68,0.3)',borderWidth:1,borderDash:[4,4],pointRadius:0,order:99},{label:'_high',data:[{x:0,y:dHi},{x:24,y:dHi}],fill:'end',backgroundColor:'rgba(239,68,68,0.08)',borderColor:'rgba(239,68,68,0.3)',borderWidth:1,borderDash:[4,4],pointRadius:0,order:99}];
+window[ref]=new Chart(document.getElementById(cid).getContext('2d'),{type:'line',data:{datasets:z.concat(sets)},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',min:0,max:24,ticks:{font:{size:10},stepSize:2,callback:function(v){return v+'h'}},grid:{color:'rgba(0,0,0,0.04)'}},y:{min:yn,max:yx,ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}}},plugins:{legend:{labels:{font:{size:10},boxWidth:12,filter:function(it){return it.text.charAt(0)!=='_'}}},tooltip:{callbacks:{label:function(ct){if(ct.dataset.label.charAt(0)==='_')return'';return ct.dataset.label+': '+ct.parsed.y+' mg/dL'}}}}}})}
 
 function shiftDay(d){var p=document.getElementById('day-pick');p.value=luxon.DateTime.fromISO(p.value).plus({days:d}).toISODate();renderDaily()}
 function shiftWeek(d){window._ws=(window._ws||luxon.DateTime.now().startOf('week')).plus({weeks:d});renderWeekly()}
