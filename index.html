@@ -59,14 +59,12 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 .date-nav button:hover{background:var(--surface-alt)}
 .date-nav input[type=date]{font-family:var(--font);font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
 .tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-lt);font-size:12.5px}
-.tl-time{width:50px;font-weight:600;color:var(--text2);flex-shrink:0}
-.tl-dur{font-size:10px;font-weight:400;color:var(--text3)}
+.tl-time{width:70px;font-weight:600;color:var(--text2);flex-shrink:0;font-size:11px;line-height:1.4}
 .tl-person{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
 .tl-person.ax{background:var(--axel)}.tl-person.fa{background:var(--fanny)}.tl-person.bo{background:var(--primary)}
 .tl-cat{padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600;flex-shrink:0}
 .cat-meal{background:#fef3c7;color:#92400e}.cat-sport{background:#dbeafe;color:#1e40af}
-.cat-test{background:#ede9fe;color:#5b21b6}.cat-note{background:#f3f4f6;color:#374151}
-.cat-period{background:var(--fanny-bg);color:var(--fanny)}
+.cat-note{background:#f3f4f6;color:#374151}.cat-period{background:var(--fanny-bg);color:var(--fanny)}
 .tl-desc{flex:1;color:var(--text)}
 .log-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
 .form-row{margin-bottom:14px}
@@ -85,11 +83,9 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 .stat-card .value{font-size:22px;font-weight:700;letter-spacing:-.02em}
 .stat-card .sub{font-size:10px;color:var(--text3);margin-top:2px}
 .stat-card.ax .value{color:var(--axel)}.stat-card.fa .value{color:var(--fanny)}
-.test-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.test-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px}
 .test-card h3{font-size:13px;font-weight:600;margin-bottom:4px}
 .test-card .desc{font-size:12px;color:var(--text2);line-height:1.5}
-.test-status{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap}
-.st-pending{background:#f3f4f6;color:#6b7280}.st-active{background:#dbeafe;color:#1d4ed8}.st-done{background:var(--primary-lt);color:var(--primary)}
 .ai-box{background:var(--primary-lt);border:1px solid #c5ddd0;border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:18px}
 .ai-box .ai-label{font-size:10px;font-weight:600;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;gap:5px}
 .ai-box p,.ai-box li{font-size:13px;line-height:1.6;color:var(--text)}.ai-box ul{padding-left:16px}.ai-box li{margin-bottom:4px}
@@ -114,13 +110,13 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 .err{background:#fef2f2;border:1px solid #fecaca;color:#c0392b;padding:12px 16px;border-radius:var(--radius);font-size:12px;margin-bottom:14px}
 .spinner{width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media(max-width:640px){main{padding:14px}.header-in{padding:10px 14px}.nav{padding:0 14px}.nav button{padding:8px 12px;font-size:11px}.stats-grid{grid-template-columns:1fr}.test-card{flex-direction:column}.chart-wrap canvas{max-height:260px}}
+@media(max-width:640px){main{padding:14px}.header-in{padding:10px 14px}.nav{padding:0 14px}.nav button{padding:8px 12px;font-size:11px}.stats-grid{grid-template-columns:1fr}.chart-wrap canvas{max-height:260px}}
 </style>
 </head>
 <body>
 <header class="header"><div class="header-in">
 <a href="#" class="logo"><div class="logo-mark">G</div><div><span class="logo-text">GLY</span><span class="logo-sub">Glycemia Tracker</span></div></a>
-<div class="hdr-actions"><div class="sync-dot" id="sync-dot" title="Sync status"></div><button class="btn-ic" id="btn-settings" title="Settings">&#9881;<div class="dot" id="key-dot"></div></button></div>
+<div class="hdr-actions"><div class="sync-dot" id="sync-dot"></div><button class="btn-ic" id="btn-settings">&#9881;<div class="dot" id="key-dot"></div></button></div>
 </div></header>
 
 <nav class="nav" role="tablist">
@@ -128,7 +124,6 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 </nav>
 
 <main>
-<!-- DAILY -->
 <div class="view on" id="v-daily">
 <div class="date-nav">
 <button onclick="shiftDay(-1)">&lsaquo;</button>
@@ -144,7 +139,6 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 <div id="daily-timeline"></div>
 </div>
 
-<!-- WEEKLY -->
 <div class="view" id="v-weekly">
 <div class="date-nav">
 <button onclick="shiftWeek(-1)">&lsaquo;</button>
@@ -154,24 +148,26 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 </div>
 <div class="stats-grid" id="weekly-stats"></div>
 <div class="chart-wrap"><canvas id="chart-weekly"></canvas></div>
+<h3 style="font-size:13px;font-weight:600;margin:16px 0 8px;color:var(--fanny)">Fanny &mdash; Overlay par jour</h3>
+<div class="chart-wrap"><canvas id="chart-ov-fanny"></canvas></div>
+<h3 style="font-size:13px;font-weight:600;margin:16px 0 8px;color:var(--axel)">Axel &mdash; Overlay par jour</h3>
+<div class="chart-wrap"><canvas id="chart-ov-axel"></canvas></div>
 <div id="weekly-ai"></div>
 </div>
 
-<!-- TESTS -->
 <div class="view" id="v-tests">
 <div class="card" style="margin-bottom:20px;border-color:#c5ddd0;background:var(--primary-lt)">
 <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px"><div>
-<h3 style="font-size:14px">Discover Natural Experiments</h3>
-<p style="font-size:12px;color:var(--text2);margin-top:4px">AI scans all your logs and glucose data to find unplanned comparisons.</p>
+<h3>Discover Natural Experiments</h3>
+<p style="font-size:12px;color:var(--text2);margin-top:4px">AI scans logs + glucose + past analyses to find patterns.</p>
 </div><button class="btn btn-p" onclick="discoverPatterns()" id="btn-discover" style="white-space:nowrap;flex-shrink:0">Scan patterns</button></div>
 <div id="discover-output" style="margin-top:12px"></div>
 </div>
-<h3 style="font-size:14px;font-weight:600;margin-bottom:12px">Planned Tests</h3>
-<p style="font-size:12px;color:var(--text2);margin-bottom:16px">Pre-built protocols. Assign a date, run the test, then compare responses.</p>
+<h3 style="font-size:14px;font-weight:600;margin-bottom:12px">Test Reference (for AI context)</h3>
+<p style="font-size:12px;color:var(--text2);margin-bottom:16px">These tests guide the AI analysis. No need to tag manually.</p>
 <div id="tests-list"></div>
 </div>
 
-<!-- LOG -->
 <div class="view" id="v-log">
 <div class="log-form">
 <h3 style="margin-bottom:14px">Quick Log</h3>
@@ -186,15 +182,12 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 <input type="time" id="log-time" style="flex:1">
 <button type="button" class="btn btn-s" onclick="document.getElementById('log-time').value=luxon.DateTime.now().toFormat('HH:mm')" style="padding:5px 10px;font-size:10px;flex-shrink:0">Now</button>
 <select id="log-duration" style="flex:0.8;padding:9px 8px;font-family:var(--font);font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--surface-alt)">
-<option value="">Duration</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">1h</option><option value="75">1h15</option><option value="90">1h30</option><option value="120">2h</option>
-</select>
-</div></div>
+<option value="">Duration</option><option value="5">5m</option><option value="10">10m</option><option value="15">15m</option><option value="20">20m</option><option value="30">30m</option><option value="45">45m</option><option value="60">1h</option><option value="75">1h15</option><option value="90">1h30</option><option value="120">2h</option>
+</select></div></div>
 <div class="form-row"><label>Category</label>
-<select id="log-cat"><option value="meal">&#127860; Meal</option><option value="sport">&#127939; Sport</option><option value="note">&#128221; Note</option><option value="period">&#128308; Period (Fanny)</option></select>
-</div>
+<select id="log-cat"><option value="meal">&#127860; Meal</option><option value="sport">&#127939; Sport</option><option value="note">&#128221; Note</option><option value="period">&#128308; Period (Fanny)</option></select></div>
 <div class="form-row"><label>Description</label><div id="fav-buttons"></div>
-<textarea id="log-desc" placeholder="e.g. Porridge Magnus 80g + blueberries + PB. Then coffee black."></textarea>
-</div>
+<textarea id="log-desc" placeholder="Describe what you ate, did, or observed."></textarea></div>
 <button class="btn btn-p" onclick="saveLog()">Save entry</button>
 <div id="log-msg" style="margin-top:10px;font-size:12px"></div>
 </div>
@@ -202,18 +195,16 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 <div id="log-recent"></div>
 </div>
 
-<!-- DATA -->
 <div class="view" id="v-data">
 <h3 style="font-size:13px;font-weight:600;margin-bottom:12px">Upload LibreView CSV</h3>
-<p style="font-size:12px;color:var(--text2);margin-bottom:16px">Export from <a href="https://www.libreview.io" target="_blank">libreview.io</a> &rarr; upload here.</p>
+<p style="font-size:12px;color:var(--text2);margin-bottom:16px">Export from <a href="https://www.libreview.io" target="_blank">libreview.io</a></p>
 <div class="upload-zone" id="upload-axel" onclick="this.querySelector('input').click()"><div class="icon">&#128193;</div><p><strong style="color:var(--axel)">Axel</strong> &mdash; Drop CSV or click</p><input type="file" accept=".csv" onchange="handleCSV('axel',event)"></div>
 <div class="upload-zone" id="upload-fanny" onclick="this.querySelector('input').click()"><div class="icon">&#128193;</div><p><strong style="color:var(--fanny)">Fanny</strong> &mdash; Drop CSV or click</p><input type="file" accept=".csv" onchange="handleCSV('fanny',event)"></div>
 <div id="upload-status"></div>
 <div class="card" style="margin-top:20px"><h3>Data Status</h3><div id="data-status" style="font-size:12px;color:var(--text2)"></div></div>
-<div class="card" style="margin-top:12px"><h3>Export All Data</h3><p style="font-size:12px;color:var(--text2);margin-bottom:10px">JSON with all glucose, logs, and AI analyses.</p><button class="btn btn-s" onclick="exportAll()">Download JSON</button></div>
+<div class="card" style="margin-top:12px"><h3>Export All Data</h3><p style="font-size:12px;color:var(--text2);margin-bottom:10px">JSON for Claude catch-up.</p><button class="btn btn-s" onclick="exportAll()">Download JSON</button></div>
 </div>
 
-<!-- BASELINE -->
 <div class="view" id="v-baseline">
 <div class="card"><h3>Profiles</h3><table class="baseline-table">
 <tr><th></th><th style="color:var(--axel)">Axel</th><th style="color:var(--fanny)">Fanny</th></tr>
@@ -221,41 +212,36 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 <tr><td>CGM</td><td colspan="2">Freestyle Libre 2 Plus</td></tr><tr><td>Experiment</td><td colspan="2">14-15 days</td></tr>
 </table></div>
 <div id="baseline-sections"></div>
-<div class="card" style="margin-top:16px"><h3>Quick Favorites (meals &amp; activities)</h3>
-<p style="font-size:12px;color:var(--text2);margin-bottom:12px">One-tap shortcuts in the Log Entry tab.</p>
+<div class="card" style="margin-top:16px"><h3>Quick Favorites</h3>
+<p style="font-size:12px;color:var(--text2);margin-bottom:12px">One-tap shortcuts in Log Entry.</p>
 <div id="fav-meals-list"></div>
 <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-<select id="fav-cat" style="padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);background:var(--surface-alt)"><option value="meal">&#127860; Meal</option><option value="sport">&#127939; Sport</option><option value="note">&#128221; Note</option></select>
-<input type="text" id="fav-name" placeholder="Label" style="flex:1;min-width:100px;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
-<input type="text" id="fav-desc" placeholder="Full description" style="flex:2;min-width:160px;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
+<select id="fav-cat" style="padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);background:var(--surface-alt)"><option value="meal">Meal</option><option value="sport">Sport</option><option value="note">Note</option></select>
+<input type="text" id="fav-name" placeholder="Label" style="flex:1;min-width:80px;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
+<input type="text" id="fav-desc" placeholder="Description" style="flex:2;min-width:140px;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
 <button class="btn btn-p" onclick="addFavMeal()" style="white-space:nowrap">Add</button>
 </div></div>
 </div>
 
-<!-- ARCHIVE -->
 <div class="view" id="v-archive"><div id="archive-out"></div></div>
 </main>
 
-<!-- SETTINGS MODAL -->
 <div class="modal-ov" id="modal-settings"><div class="modal">
-<h2>Settings</h2><p class="sub">Credentials stored in your browser only.</p>
+<h2>Settings</h2><p class="sub">Stored in your browser only.</p>
 <div class="form-row"><label>OpenAI API Key</label><input type="password" id="s-openai" placeholder="sk-..."></div>
-<div class="form-row"><label>OpenAI Model</label><select id="s-model" style="width:100%;padding:9px 12px;font-family:var(--font);font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surface-alt)"><option value="gpt-4o-mini">gpt-4o-mini (fast)</option><option value="gpt-4o">gpt-4o (best)</option></select></div>
-<div class="form-row"><label>LibreLinkUp Email</label><input type="email" id="s-llu-email" placeholder="your@email.com"></div>
-<div class="form-row"><label>LibreLinkUp Password</label><input type="password" id="s-llu-pass" placeholder="password"></div>
-<p style="font-size:10px;color:var(--text3);margin-top:-8px">Sent via secure proxy to LibreLinkUp API only.</p>
-<div class="form-row"><label>Sync PIN (same on all devices)</label><input type="text" id="s-sync-pin" placeholder="e.g. fanny2026 (min 4 chars)"></div>
-<p style="font-size:10px;color:var(--text3);margin-top:-8px">Same PIN on phone + PC to keep data in sync.</p>
-<div class="form-row"><label>Glucose Target Range (mg/dL)</label><div style="display:flex;gap:8px"><input type="number" id="s-gly-low" placeholder="70" style="flex:1"><input type="number" id="s-gly-high" placeholder="140" style="flex:1"></div></div>
+<div class="form-row"><label>OpenAI Model</label><select id="s-model" style="width:100%;padding:9px 12px;font-family:var(--font);font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surface-alt)"><option value="gpt-4o-mini">gpt-4o-mini</option><option value="gpt-4o">gpt-4o</option></select></div>
+<div class="form-row"><label>LibreLinkUp Email</label><input type="email" id="s-llu-email"></div>
+<div class="form-row"><label>LibreLinkUp Password</label><input type="password" id="s-llu-pass"></div>
+<div class="form-row"><label>Sync PIN</label><input type="text" id="s-sync-pin" placeholder="min 4 chars"></div>
+<div class="form-row"><label>Target Range (mg/dL)</label><div style="display:flex;gap:8px"><input type="number" id="s-gly-low" placeholder="70" style="flex:1"><input type="number" id="s-gly-high" placeholder="140" style="flex:1"></div></div>
 <div class="modal-actions"><button class="btn btn-s" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="saveSettings()">Save</button></div>
 </div></div>
 
 <script>
-/* STATE */
-const S=k=>localStorage.getItem('gly_'+k)||'';
-const SS=(k,v)=>localStorage.setItem('gly_'+k,v);
-const SJ=k=>{try{return JSON.parse(localStorage.getItem('gly_'+k)||'[]')}catch{return[]}};
-const SSJ=(k,v)=>localStorage.setItem('gly_'+k,JSON.stringify(v));
+var S=function(k){return localStorage.getItem('gly_'+k)||''};
+var SS=function(k,v){localStorage.setItem('gly_'+k,v)};
+var SJ=function(k){try{return JSON.parse(localStorage.getItem('gly_'+k)||'[]')}catch(e){return[]}};
+var SSJ=function(k,v){localStorage.setItem('gly_'+k,JSON.stringify(v))};
 function getGlucose(p){return SJ('glucose_'+p)}
 function setGlucose(p,d){SSJ('glucose_'+p,d)}
 function getLogs(){return SJ('logs')}
@@ -264,17 +250,17 @@ function getArchive(){return SJ('archive')}
 function setArchive(d){SSJ('archive',d)}
 function getTargetLow(){return parseInt(S('gly_low'))||70}
 function getTargetHigh(){return parseInt(S('gly_high'))||140}
-const PROFILES={axel:{name:'Axel',born:1990,age:36,sex:'Male',color:'#3b82f6',short:'A'},fanny:{name:'Fanny',born:1987,age:39,sex:'Female',color:'#e8437f',short:'F'}};
-const PROXY='https://gly-proxy.fanny-broissand.workers.dev';
+var PROFILES={axel:{name:'Axel',color:'#3b82f6'},fanny:{name:'Fanny',color:'#e8437f'}};
+var PROXY='https://gly-proxy.fanny-broissand.workers.dev';
 
 /* SYNC */
-function setSyncDot(s){var d=document.getElementById('sync-dot');d.className='sync-dot'+(s?' '+s:'')}
-async function syncPush(){var pin=S('sync_pin');if(!pin||pin.length<4){setSyncDot('');return}setSyncDot('working');try{var r=await fetch(PROXY+'/sync/push',{method:'POST',headers:{'Content-Type':'application/json','X-Sync-Pin':pin},body:JSON.stringify({data:JSON.stringify({ts:new Date().toISOString(),glucose_axel:getGlucose('axel'),glucose_fanny:getGlucose('fanny'),logs:getLogs(),archive:getArchive(),tests_meta:SJ('tests_meta'),baseline:getBaseline(),fav_meals:getFavMeals(),settings:{gly_low:S('gly_low'),gly_high:S('gly_high')}})})});setSyncDot(r.ok?'ok':'err')}catch(e){setSyncDot('err')}}
-async function syncPull(){var pin=S('sync_pin');if(!pin||pin.length<4){setSyncDot('');return}setSyncDot('working');try{var r=await fetch(PROXY+'/sync/pull',{headers:{'X-Sync-Pin':pin}});var d=await r.json();if(!d.data&&!d.glucose_axel){setSyncDot('ok');return}var raw=typeof d.data==='string'?d.data:JSON.stringify(d);var data=JSON.parse(raw);['axel','fanny'].forEach(function(p){var remote=data['glucose_'+p]||[];var local=getGlucose(p);var merged=[].concat(local,remote);var seen=new Set();var unique=merged.filter(function(r){if(seen.has(r.t))return false;seen.add(r.t);return true});unique.sort(function(a,b){return a.t.localeCompare(b.t)});setGlucose(p,unique)});var rl=data.logs||[];var ll=getLogs();var ids=new Set(ll.map(function(l){return l.id}));rl.forEach(function(l){if(!ids.has(l.id))ll.push(l)});setLogs(ll);if(data.archive&&data.archive.length)setArchive(data.archive);if(data.tests_meta&&data.tests_meta.length)SSJ('tests_meta',data.tests_meta);if(data.baseline&&data.baseline.length)setBaseline(data.baseline);if(data.fav_meals&&data.fav_meals.length)setFavMeals(data.fav_meals);if(data.settings){if(data.settings.gly_low)SS('gly_low',data.settings.gly_low);if(data.settings.gly_high)SS('gly_high',data.settings.gly_high)}setSyncDot('ok')}catch(e){setSyncDot('err')}}
-var _syncTimer=null;function schedulePush(){clearTimeout(_syncTimer);_syncTimer=setTimeout(syncPush,2000)}
+function setSyncDot(s){document.getElementById('sync-dot').className='sync-dot'+(s?' '+s:'')}
+function syncPush(){var pin=S('sync_pin');if(!pin||pin.length<4){setSyncDot('');return Promise.resolve()}setSyncDot('working');return fetch(PROXY+'/sync/push',{method:'POST',headers:{'Content-Type':'application/json','X-Sync-Pin':pin},body:JSON.stringify({data:JSON.stringify({ts:new Date().toISOString(),glucose_axel:getGlucose('axel'),glucose_fanny:getGlucose('fanny'),logs:getLogs(),archive:getArchive(),tests_meta:SJ('tests_meta'),baseline:getBaseline(),fav_meals:getFavMeals(),settings:{gly_low:S('gly_low'),gly_high:S('gly_high')}})})}).then(function(r){setSyncDot(r.ok?'ok':'err')}).catch(function(){setSyncDot('err')})}
+function syncPull(){var pin=S('sync_pin');if(!pin||pin.length<4){setSyncDot('');return Promise.resolve()}setSyncDot('working');return fetch(PROXY+'/sync/pull',{headers:{'X-Sync-Pin':pin}}).then(function(r){return r.json()}).then(function(d){if(!d.data&&!d.glucose_axel){setSyncDot('ok');return}var raw=typeof d.data==='string'?d.data:JSON.stringify(d);var data=JSON.parse(raw);['axel','fanny'].forEach(function(p){var remote=data['glucose_'+p]||[];var local=getGlucose(p);var merged=[].concat(local,remote);var seen={};var unique=merged.filter(function(r){if(seen[r.t])return false;seen[r.t]=1;return true});unique.sort(function(a,b){return a.t<b.t?-1:1});setGlucose(p,unique)});var rl=data.logs||[];var ll=getLogs();var ids={};ll.forEach(function(l){ids[l.id]=1});rl.forEach(function(l){if(!ids[l.id])ll.push(l)});setLogs(ll);if(data.archive&&data.archive.length)setArchive(data.archive);if(data.tests_meta)SSJ('tests_meta',data.tests_meta);if(data.baseline&&data.baseline.length)setBaseline(data.baseline);if(data.fav_meals&&data.fav_meals.length)setFavMeals(data.fav_meals);if(data.settings){if(data.settings.gly_low)SS('gly_low',data.settings.gly_low);if(data.settings.gly_high)SS('gly_high',data.settings.gly_high)}setSyncDot('ok')}).catch(function(){setSyncDot('err')})}
+var _st=null;function schedulePush(){clearTimeout(_st);_st=setTimeout(syncPush,2000)}
 
 /* NAV */
-document.querySelectorAll('.nav button').forEach(function(b){b.onclick=function(){document.querySelectorAll('.nav button').forEach(function(t){t.classList.remove('on')});document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on')});b.classList.add('on');document.getElementById('v-'+b.dataset.v).classList.add('on');if(b.dataset.v==='daily')renderDaily();if(b.dataset.v==='weekly')renderWeekly();if(b.dataset.v==='tests')renderTests();if(b.dataset.v==='log'){renderRecentLogs();renderFavButtons()}if(b.dataset.v==='data')renderDataStatus();if(b.dataset.v==='baseline')renderBaseline();if(b.dataset.v==='archive')renderArchive()}});
+document.querySelectorAll('.nav button').forEach(function(b){b.onclick=function(){document.querySelectorAll('.nav button').forEach(function(t){t.classList.remove('on')});document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on')});b.classList.add('on');document.getElementById('v-'+b.dataset.v).classList.add('on');var v=b.dataset.v;if(v==='daily')renderDaily();if(v==='weekly')renderWeekly();if(v==='tests')renderTests();if(v==='log'){renderRecentLogs();renderFavButtons()}if(v==='data')renderDataStatus();if(v==='baseline')renderBaseline();if(v==='archive')renderArchive()}});
 
 /* SETTINGS */
 document.getElementById('btn-settings').onclick=function(){document.getElementById('s-openai').value=S('openai');document.getElementById('s-model').value=S('model')||'gpt-4o-mini';document.getElementById('s-llu-email').value=S('llu_email');document.getElementById('s-llu-pass').value=S('llu_pass');document.getElementById('s-sync-pin').value=S('sync_pin');document.getElementById('s-gly-low').value=S('gly_low')||'70';document.getElementById('s-gly-high').value=S('gly_high')||'140';document.getElementById('modal-settings').classList.add('open')};
@@ -283,81 +269,78 @@ document.getElementById('modal-settings').onclick=function(e){if(e.target===e.cu
 function saveSettings(){SS('openai',document.getElementById('s-openai').value.trim());SS('model',document.getElementById('s-model').value);SS('llu_email',document.getElementById('s-llu-email').value.trim());SS('llu_pass',document.getElementById('s-llu-pass').value.trim());SS('sync_pin',document.getElementById('s-sync-pin').value.trim());SS('gly_low',document.getElementById('s-gly-low').value.trim());SS('gly_high',document.getElementById('s-gly-high').value.trim());updateDot();closeModal();schedulePush()}
 function updateDot(){document.getElementById('key-dot').className='dot'+(S('openai')?' ok':'')}
 
-/* CSV PARSER */
-function parseLibreCSV(text){var lines=text.split('\n'),readings=[],headerIdx=-1;for(var i=0;i<Math.min(lines.length,10);i++){var low=lines[i].toLowerCase();if(low.includes('device timestamp')||low.includes('horodatage')||low.includes('gerätezeitstempel')){headerIdx=i;break}}if(headerIdx===-1){for(var i=0;i<Math.min(lines.length,10);i++){if((lines[i].match(/,/g)||[]).length>=5){headerIdx=i;break}}}if(headerIdx===-1)return readings;var headers=lines[headerIdx].split(',').map(function(h){return h.trim().toLowerCase().replace(/"/g,'')});var tsCol=headers.findIndex(function(h){return h.includes('timestamp')||h.includes('horodatage')||h.includes('zeitstempel')});var histCol=headers.findIndex(function(h){return h.includes('historic glucose')||h.includes('historique')||h.includes('glukosewert')});var scanCol=headers.findIndex(function(h){return h.includes('scan glucose')||h.includes('numérisation')});for(var i=headerIdx+1;i<lines.length;i++){var cols=lines[i].split(',').map(function(c){return c.trim().replace(/"/g,'')});if(cols.length<=Math.max(tsCol,histCol,scanCol))continue;var ts=cols[tsCol];if(!ts)continue;var val=parseFloat(cols[histCol]);if(isNaN(val)&&scanCol>=0)val=parseFloat(cols[scanCol]);if(isNaN(val))continue;var dt=luxon.DateTime.fromFormat(ts,'dd-MM-yyyy HH:mm');if(!dt.isValid)dt=luxon.DateTime.fromFormat(ts,'MM-dd-yyyy HH:mm');if(!dt.isValid)dt=luxon.DateTime.fromFormat(ts,'yyyy-MM-dd HH:mm');if(!dt.isValid)dt=luxon.DateTime.fromFormat(ts,'dd/MM/yyyy HH:mm');if(!dt.isValid)dt=luxon.DateTime.fromFormat(ts,'MM/dd/yyyy HH:mm');if(!dt.isValid)dt=luxon.DateTime.fromISO(ts);if(!dt.isValid)continue;readings.push({t:dt.toISO(),v:val})}return readings.sort(function(a,b){return a.t.localeCompare(b.t)})}
-function handleCSV(person,event){var file=event.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){var readings=parseLibreCSV(e.target.result);if(!readings.length){document.getElementById('upload-status').innerHTML='<div class="err">Could not parse readings.</div>';return}var existing=getGlucose(person);var merged=[].concat(existing,readings);var seen=new Set();var unique=merged.filter(function(r){if(seen.has(r.t))return false;seen.add(r.t);return true});unique.sort(function(a,b){return a.t.localeCompare(b.t)});setGlucose(person,unique);document.getElementById('upload-status').innerHTML='<div class="ai-box"><div class="ai-label">Imported</div><p>'+readings.length+' readings for '+PROFILES[person].name+'. Total: '+unique.length+'.</p></div>';renderDataStatus();schedulePush()};reader.readAsText(file)}
-['upload-axel','upload-fanny'].forEach(function(id){var el=document.getElementById(id);var person=id.includes('axel')?'axel':'fanny';el.ondragover=function(e){e.preventDefault();el.classList.add('drag')};el.ondragleave=function(){el.classList.remove('drag')};el.ondrop=function(e){e.preventDefault();el.classList.remove('drag');var file=e.dataTransfer.files[0];if(file)handleCSV(person,{target:{files:[file]}})}});
+/* CSV */
+function parseLibreCSV(text){var lines=text.split('\n'),readings=[],hi=-1;for(var i=0;i<Math.min(lines.length,10);i++){var low=lines[i].toLowerCase();if(low.indexOf('device timestamp')>=0||low.indexOf('horodatage')>=0||low.indexOf('zeitstempel')>=0){hi=i;break}}if(hi===-1)for(var i=0;i<Math.min(lines.length,10);i++){if((lines[i].match(/,/g)||[]).length>=5){hi=i;break}}if(hi===-1)return readings;var hdrs=lines[hi].split(',').map(function(h){return h.trim().toLowerCase().replace(/"/g,'')});var tc=hdrs.findIndex(function(h){return h.indexOf('timestamp')>=0||h.indexOf('horodatage')>=0||h.indexOf('zeitstempel')>=0});var hc=hdrs.findIndex(function(h){return h.indexOf('historic glucose')>=0||h.indexOf('historique')>=0||h.indexOf('glukosewert')>=0});var sc=hdrs.findIndex(function(h){return h.indexOf('scan glucose')>=0||h.indexOf('num')>=0});for(var i=hi+1;i<lines.length;i++){var cols=lines[i].split(',').map(function(c){return c.trim().replace(/"/g,'')});if(cols.length<=Math.max(tc,hc,sc))continue;var ts=cols[tc];if(!ts)continue;var val=parseFloat(cols[hc]);if(isNaN(val)&&sc>=0)val=parseFloat(cols[sc]);if(isNaN(val))continue;var fmts=['dd-MM-yyyy HH:mm','MM-dd-yyyy HH:mm','yyyy-MM-dd HH:mm','dd/MM/yyyy HH:mm','MM/dd/yyyy HH:mm'];var dt=null;for(var f=0;f<fmts.length;f++){dt=luxon.DateTime.fromFormat(ts,fmts[f]);if(dt.isValid)break}if(!dt||!dt.isValid)dt=luxon.DateTime.fromISO(ts);if(!dt||!dt.isValid)continue;readings.push({t:dt.toISO(),v:val})}return readings.sort(function(a,b){return a.t<b.t?-1:1})}
+function handleCSV(person,event){var file=event.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){var readings=parseLibreCSV(e.target.result);if(!readings.length){document.getElementById('upload-status').innerHTML='<div class="err">Could not parse.</div>';return}var existing=getGlucose(person);var merged=[].concat(existing,readings);var seen={};var unique=merged.filter(function(r){if(seen[r.t])return false;seen[r.t]=1;return true});unique.sort(function(a,b){return a.t<b.t?-1:1});setGlucose(person,unique);document.getElementById('upload-status').innerHTML='<div class="ai-box"><p>Imported '+readings.length+' readings for '+PROFILES[person].name+'. Total: '+unique.length+'.</p></div>';renderDataStatus();schedulePush()};reader.readAsText(file)}
+['upload-axel','upload-fanny'].forEach(function(id){var el=document.getElementById(id);var person=id.indexOf('axel')>=0?'axel':'fanny';el.ondragover=function(e){e.preventDefault();el.classList.add('drag')};el.ondragleave=function(){el.classList.remove('drag')};el.ondrop=function(e){e.preventDefault();el.classList.remove('drag');var file=e.dataTransfer.files[0];if(file)handleCSV(person,{target:{files:[file]}})}});
 
 /* HELPERS */
 function esc(s){var e=document.createElement('span');e.textContent=s;return e.innerHTML}
-function fmtDuration(start,end){if(!start||!end)return'';var p=start.split(':').map(Number),q=end.split(':').map(Number);var mins=(q[0]*60+q[1])-(p[0]*60+p[1]);if(mins<=0)return'';if(mins<60)return mins+'min';var h=Math.floor(mins/60),m=mins%60;return m?h+'h'+String(m).padStart(2,'0'):h+'h'}
-function addMinutes(t,mins){var p=t.split(':').map(Number),total=p[0]*60+p[1]+mins;return String(Math.floor(total/60)%24).padStart(2,'0')+':'+String(total%60).padStart(2,'0')}
-function personColor(p){return p==='axel'?'#3b82f6':p==='fanny'?'#e8437f':'#8b5cf6'}
-function eventIcon(emoji,color,sz){sz=sz||26;var c=document.createElement('canvas');c.width=sz;c.height=sz;var x=c.getContext('2d');x.beginPath();x.arc(sz/2,sz/2,sz/2-1,0,Math.PI*2);x.fillStyle=color+'25';x.fill();x.strokeStyle=color;x.lineWidth=2;x.stroke();x.font=(sz-10)+'px serif';x.textAlign='center';x.textBaseline='middle';x.fillText(emoji,sz/2,sz/2+1);var img=new Image();img.src=c.toDataURL();return img}
-function catLabel(c){return{meal:'Meal',sport:'Sport',note:'Note',period:'Period',test:'Test'}[c]||c}
+function fmtDur(a,b){if(!a||!b)return'';var p=a.split(':').map(Number),q=b.split(':').map(Number),m=(q[0]*60+q[1])-(p[0]*60+p[1]);if(m<=0)return'';return m<60?m+'min':Math.floor(m/60)+'h'+(m%60?String(m%60).padStart(2,'0'):'')}
+function addMin(t,m){var p=t.split(':').map(Number),tot=p[0]*60+p[1]+m;return String(Math.floor(tot/60)%24).padStart(2,'0')+':'+String(tot%60).padStart(2,'0')}
+function pColor(p){return p==='axel'?'#3b82f6':p==='fanny'?'#e8437f':'#8b5cf6'}
+function evIcon(emoji,color){var sz=26,c=document.createElement('canvas');c.width=sz;c.height=sz;var x=c.getContext('2d');x.beginPath();x.arc(sz/2,sz/2,sz/2-1,0,Math.PI*2);x.fillStyle=color+'25';x.fill();x.strokeStyle=color;x.lineWidth=2;x.stroke();x.font=(sz-10)+'px serif';x.textAlign='center';x.textBaseline='middle';x.fillText(emoji,sz/2,sz/2+1);var img=new Image();img.src=c.toDataURL();return img}
+function catLabel(c){return{meal:'Meal',sport:'Sport',note:'Note',period:'Period'}[c]||c}
 
-/* TESTS */
+/* TESTS — reference only, no auto-tagging */
 var TESTS=[
-{id:'alcohol_type',name:'Alcohol type',desc:'Beer vs vodka vs wine.',keywords:['beer','vodka','wine','alcohol','gin','whisky','rum','cocktail','aperol','spritz','biere','vin','alcool','rose','cidre'],exclude:['vinaigrette','vinaigre','vin blanc de cuisine','deglace']},
-{id:'alcohol_timing',name:'Alcohol timing',desc:'Drink alone vs after meal.',keywords:['beer','vodka','wine','alcohol','gin','whisky','rum','cocktail','aperol','drink','biere','vin','alcool','apero','aperitif'],exclude:['vinaigrette','vinaigre','vin blanc de cuisine','deglace']},
-{id:'bread_type',name:'Levain vs regular bread',desc:'Same qty sourdough vs white bread.',keywords:['levain','sourdough','bread','pain','baguette','pain blanc','pain de mie','pain complet','pain semi-complet','toast']},
-{id:'coffee_timing',name:'Coffee timing',desc:'Coffee alone vs after meal.',keywords:['coffee','cafe','espresso','nespresso','cappuccino','latte','cafe filtre','cafe noir'],exclude:['cuillere a cafe','cuilleres a cafe','cuillere cafe']},
-{id:'biscuit_timing',name:'Biscuit timing',desc:'Biscuit alone vs after meal.',keywords:['biscuit','cookie','gateau','cake','biscoff','granola bar','sable']},
-{id:'carb_order',name:'Carb order',desc:'Carbs first vs last.',keywords:['carbs first','carbs last','order','fibres avant','legumes avant','protein first']},
-{id:'carb_free',name:'Carb-free meal',desc:'Minimal carbs vs carby meal.',keywords:['no carb','sans glucide','carb free','low carb','keto']},
-{id:'sport_type',name:'Sport type',desc:'Compare activities.',keywords:['yoga','run','running','cycle','cycling','rowing','walk','walking','hiit','swim','swimming','pilates','weights','musculation','marche','velo','jardinage','potager','rando','randonnee','course a pied','nage','natation','escalade','stretching','etirement','jogging','footing']},
-{id:'sport_timing',name:'Sport timing',desc:'Fasted vs after meal.',keywords:['before breakfast','fasted','a jeun','after meal','apres manger','post-prandial','avant petit-dej','avant repas','apres repas']},
-{id:'ingredient_timing',name:'Same food, different time',desc:'Same food morning vs evening.',keywords:['test matin','test soir','test midi','matin vs','soir vs','midi vs','same food','meme aliment','meme repas']},
-{id:'fermented',name:'Fermented foods',desc:'With vs without fermented elements.',keywords:['lactofermente','fermente','kefir','kombucha','choucroute','kimchi','fermented','pickled','miso','tempeh']},
-{id:'meal_duration',name:'Meal duration',desc:'Quick (<15min) vs slow (>45min).',keywords:['rapide','lent','slow','fast','quick','duration','duree']},
-{id:'dessert_timing',name:'Dessert timing',desc:'Dessert with meal vs 30min+ after.',keywords:['dessert','fruit apres','chocolat apres','nashi','poire','pomme','compote','chocolat noir','fruit fin de repas','banane'],exclude:['poireau','poireaux']},
-{id:'meal_spacing',name:'Meal spacing',desc:'4h vs 6h+ gap between meals.',keywords:['spacing','espacement','gap','heures entre','jeune','fasting','snack','encas','collation','grignotage','gouter'],exclude:['dejeuner','petit dejeuner','petit-dejeuner','dejeune']},
-{id:'recovery_day',name:'Recovery day',desc:'Glucose after intense activity.',keywords:['recovery','recuperation','repos','rest day','rando','randonnee','hike','lendemain','fatigue','courbatures']},
-{id:'legume_type',name:'Legume type',desc:'Compare legumes.',keywords:['foul','feves','lentilles','pois chiches','haricots','beans','lentils','chickpeas','legumineuses','houmous','hummus','dhal']},
-{id:'cycle_phase',name:'Cycle menstruel',desc:'Glucose patterns across menstrual phases.',keywords:['regles','period','menstruation','cycle','PMS','SPM','ovulation','luteale','folliculaire','crampes','ballonnements','spotting','J1','jour 1','saignements','seins sensibles']}
+{id:'alcohol_type',name:'Alcohol type',desc:'Beer vs vodka vs wine.'},
+{id:'alcohol_timing',name:'Alcohol timing',desc:'Drink alone vs after meal.'},
+{id:'bread_type',name:'Levain vs regular bread',desc:'Same qty sourdough vs white bread.'},
+{id:'coffee_timing',name:'Coffee timing',desc:'Coffee alone vs after meal.'},
+{id:'carb_order',name:'Carb order',desc:'Carbs first vs last in a meal.'},
+{id:'carb_free',name:'Carb-free meal',desc:'Minimal carbs vs carby meal.'},
+{id:'sport_type',name:'Sport type',desc:'Compare activities.'},
+{id:'sport_timing',name:'Sport timing',desc:'Fasted vs after meal.'},
+{id:'fermented',name:'Fermented foods',desc:'With vs without fermented elements.'},
+{id:'meal_duration',name:'Meal duration',desc:'Quick (<15min) vs slow (>45min).'},
+{id:'dessert_timing',name:'Dessert timing',desc:'Dessert with meal vs 30min+ after.'},
+{id:'meal_spacing',name:'Meal spacing',desc:'4h vs 6h+ gap between meals.'},
+{id:'recovery_day',name:'Recovery day',desc:'Glucose after intense activity.'},
+{id:'legume_type',name:'Legume type',desc:'Compare legumes.'},
+{id:'ingredient_timing',name:'Same food, different time',desc:'Same food morning vs evening.'},
+{id:'cycle_phase',name:'Cycle menstruel',desc:'Glucose patterns across menstrual phases.'}
 ];
 
-function matchTests(desc){var d=desc.toLowerCase();return TESTS.filter(function(t){return t.keywords.some(function(k){return d.includes(k.toLowerCase())})&&!(t.exclude||[]).some(function(e){return d.includes(e.toLowerCase())})})}
-
-function renderTests(){var tests=SJ('tests_meta');document.getElementById('tests-list').innerHTML=TESTS.map(function(t){var meta=tests.find(function(m){return m.id===t.id})||{};var status=meta.status||'pending';var stCls=status==='done'?'st-done':status==='active'?'st-active':'st-pending';var stLabel=status==='done'?'Done':status==='active'?'Active':'Pending';return'<div class="test-card"><div style="flex:1"><h3>'+esc(t.name)+'</h3><div class="desc">'+esc(t.desc)+'</div>'+(meta.date?'<div style="font-size:11px;color:var(--text3);margin-top:6px">Date: '+meta.date+'</div>':'')+'</div><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span class="test-status '+stCls+'">'+stLabel+'</span><button class="btn btn-s" style="font-size:10px" onclick="editTest(\''+t.id+'\')">Edit</button></div></div>'}).join('')}
-function editTest(id){var tests=SJ('tests_meta');var existing=tests.find(function(m){return m.id===id})||{id:id};var date=prompt('Date (YYYY-MM-DD):',existing.date||luxon.DateTime.now().toISODate());if(date===null)return;var status=prompt('Status (pending/active/done):',existing.status||'active');if(status===null)return;var notes=prompt('Notes:',existing.notes||'');var updated=tests.filter(function(m){return m.id!==id});updated.push({id:id,date:date,status:status,notes:notes});SSJ('tests_meta',updated);renderTests();schedulePush()}
+function renderTests(){document.getElementById('tests-list').innerHTML=TESTS.map(function(t){return'<div class="test-card"><h3>'+esc(t.name)+'</h3><div class="desc">'+esc(t.desc)+'</div></div>'}).join('')}
 
 /* CHARTS */
-var chartDaily=null,chartWeekly=null;
+var chartDaily=null,chartWeekly=null,chartOvF=null,chartOvA=null;
+var DAY_COLORS=['#ef4444','#f59e0b','#22c55e','#3b82f6','#8b5cf6','#ec4899','#6366f1'];
 
 function renderDaily(){
 var pick=document.getElementById('day-pick');if(!pick.value)pick.valueAsDate=new Date();var day=pick.value;
-var dayStart=luxon.DateTime.fromISO(day).startOf('day'),dayEnd=dayStart.endOf('day');
-var axData=getGlucose('axel').filter(function(r){return r.t>=dayStart.toISO()&&r.t<=dayEnd.toISO()});
-var faData=getGlucose('fanny').filter(function(r){return r.t>=dayStart.toISO()&&r.t<=dayEnd.toISO()});
-var logs=getLogs().filter(function(l){return l.date===day}).sort(function(a,b){return a.time.localeCompare(b.time)});
-var axVals=axData.map(function(r){return r.v}),faVals=faData.map(function(r){return r.v});
+var ds=luxon.DateTime.fromISO(day).startOf('day'),de=ds.endOf('day');
+var axD=getGlucose('axel').filter(function(r){return r.t>=ds.toISO()&&r.t<=de.toISO()});
+var faD=getGlucose('fanny').filter(function(r){return r.t>=ds.toISO()&&r.t<=de.toISO()});
+var logs=getLogs().filter(function(l){return l.date===day}).sort(function(a,b){return a.time<b.time?-1:1});
+var axV=axD.map(function(r){return r.v}),faV=faD.map(function(r){return r.v});
 var lo=getTargetLow(),hi=getTargetHigh();
 var tir=function(v){return v.length?Math.round(v.filter(function(x){return x>=lo&&x<=hi}).length/v.length*100):'-'};
 var avg=function(v){return v.length?Math.round(v.reduce(function(s,x){return s+x},0)/v.length):'-'};
-var peak=function(v){return v.length?Math.max.apply(null,v):'-'};
-document.getElementById('daily-stats').innerHTML='<div class="stat-card ax"><div class="label">Axel avg</div><div class="value">'+avg(axVals)+'</div><div class="sub">mg/dL &middot; TIR '+tir(axVals)+'%</div></div><div class="stat-card fa"><div class="label">Fanny avg</div><div class="value">'+avg(faVals)+'</div><div class="sub">mg/dL &middot; TIR '+tir(faVals)+'%</div></div><div class="stat-card ax"><div class="label">Axel peak</div><div class="value">'+peak(axVals)+'</div><div class="sub">mg/dL</div></div><div class="stat-card fa"><div class="label">Fanny peak</div><div class="value">'+peak(faVals)+'</div><div class="sub">mg/dL</div></div>';
+var pk=function(v){return v.length?Math.max.apply(null,v):'-'};
+document.getElementById('daily-stats').innerHTML='<div class="stat-card ax"><div class="label">Axel avg</div><div class="value">'+avg(axV)+'</div><div class="sub">mg/dL &middot; TIR '+tir(axV)+'%</div></div><div class="stat-card fa"><div class="label">Fanny avg</div><div class="value">'+avg(faV)+'</div><div class="sub">mg/dL &middot; TIR '+tir(faV)+'%</div></div><div class="stat-card ax"><div class="label">Axel peak</div><div class="value">'+pk(axV)+'</div><div class="sub">mg/dL</div></div><div class="stat-card fa"><div class="label">Fanny peak</div><div class="value">'+pk(faV)+'</div><div class="sub">mg/dL</div></div>';
 if(chartDaily)chartDaily.destroy();
 var ctx=document.getElementById('chart-daily').getContext('2d');
-var evts=logs.filter(function(l){return l.cat==='meal'||l.cat==='sport'||l.cat==='test'}).map(function(l){return{x:luxon.DateTime.fromISO(day+'T'+l.time).toJSDate(),cat:l.cat,person:l.person,desc:l.desc}});
+var evts=logs.filter(function(l){return l.cat==='meal'||l.cat==='sport'}).map(function(l){return{x:luxon.DateTime.fromISO(day+'T'+l.time).toJSDate(),cat:l.cat,person:l.person,desc:l.desc}});
 chartDaily=new Chart(ctx,{type:'line',data:{datasets:[
-{label:'Target Zone',data:[{x:dayStart.toJSDate(),y:hi},{x:dayEnd.toJSDate(),y:hi}],borderColor:'transparent',backgroundColor:'rgba(34,197,94,0.07)',fill:{target:{value:lo},above:'rgba(34,197,94,0.07)'},pointRadius:0,tension:0},
-{label:'Axel',data:axData.map(function(r){return{x:new Date(r.t),y:r.v}}),borderColor:'#3b82f6',borderWidth:2,pointRadius:0,pointHitRadius:8,tension:.3,fill:false},
-{label:'Fanny',data:faData.map(function(r){return{x:new Date(r.t),y:r.v}}),borderColor:'#e8437f',borderWidth:2,pointRadius:0,pointHitRadius:8,tension:.3,fill:false},
-{label:'Events',data:evts.map(function(m){return{x:m.x,y:hi+5}}),pointStyle:evts.map(function(m){var emoji=m.cat==='meal'?'\u{1F374}':m.cat==='sport'?'\u{1F3C3}':'\u{1F9EA}';return eventIcon(emoji,personColor(m.person))}),pointRadius:13,showLine:false,borderWidth:0}
-]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{x:{type:'time',time:{unit:'hour',displayFormats:{hour:'HH:mm'}},min:dayStart.toJSDate(),max:dayEnd.toJSDate(),grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10}}},y:{min:30,max:220,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10}}}},plugins:{legend:{labels:{usePointStyle:true,pointStyle:'line',font:{size:11},filter:function(i){return i.text!=='Target Zone'&&i.text!=='Events'}}},tooltip:{callbacks:{label:function(ctx){if(ctx.dataset.label==='Events'){var m=evts[ctx.dataIndex];return m?m.desc:''}return ctx.dataset.label+': '+ctx.parsed.y+' mg/dL'}}}}}});
+{label:'Target',data:[{x:ds.toJSDate(),y:hi},{x:de.toJSDate(),y:hi}],borderColor:'transparent',backgroundColor:'rgba(34,197,94,0.07)',fill:{target:{value:lo},above:'rgba(34,197,94,0.07)'},pointRadius:0,tension:0},
+{label:'Axel',data:axD.map(function(r){return{x:new Date(r.t),y:r.v}}),borderColor:'#3b82f6',borderWidth:2,pointRadius:0,pointHitRadius:8,tension:.3,fill:false},
+{label:'Fanny',data:faD.map(function(r){return{x:new Date(r.t),y:r.v}}),borderColor:'#e8437f',borderWidth:2,pointRadius:0,pointHitRadius:8,tension:.3,fill:false},
+{label:'Events',data:evts.map(function(m){return{x:m.x,y:hi+5}}),pointStyle:evts.map(function(m){return evIcon(m.cat==='meal'?'\u{1F374}':'\u{1F3C3}',pColor(m.person))}),pointRadius:13,showLine:false,borderWidth:0}
+]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{x:{type:'time',time:{unit:'hour',displayFormats:{hour:'HH:mm'}},min:ds.toJSDate(),max:de.toJSDate(),grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10}}},y:{min:30,max:220,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10}}}},plugins:{legend:{labels:{usePointStyle:true,pointStyle:'line',font:{size:11},filter:function(i){return i.text!=='Target'&&i.text!=='Events'}}},tooltip:{callbacks:{label:function(ctx){if(ctx.dataset.label==='Events'){var m=evts[ctx.dataIndex];return m?m.desc:''}return ctx.dataset.label+': '+ctx.parsed.y}}}}}});
 var tlEl=document.getElementById('daily-timeline');
 if(!logs.length){tlEl.innerHTML='<div class="empty"><p>No logs for this day.</p></div>'}
-else{tlEl.innerHTML=logs.map(function(l){var pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';var pLetter=l.person==='both'?'AB':l.person==='axel'?'A':'F';var dur=fmtDuration(l.time,l.time_end);var durHtml=dur?' <span class="tl-dur">('+dur+')</span>':'';var endHtml=l.time_end?'<br><span class="tl-dur">'+l.time_end+'</span>':'';var testTags=(l.tests||[]).map(function(tid){var t=TESTS.find(function(x){return x.id===tid});return t?' <span class="tl-cat cat-test">'+t.name+'</span>':''}).join('');return'<div class="tl-item"><div class="tl-time">'+l.time+endHtml+durHtml+'</div><div class="tl-person '+pCls+'">'+pLetter+'</div><span class="tl-cat cat-'+l.cat+'">'+catLabel(l.cat)+'</span>'+testTags+'<div class="tl-desc">'+esc(l.desc)+'</div></div>'}).join('')}
+else{tlEl.innerHTML=logs.map(function(l){var pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';var pL=l.person==='both'?'AB':l.person==='axel'?'A':'F';var dur=fmtDur(l.time,l.time_end);var timeH=l.time+(l.time_end?'<br><span style="font-weight:400;color:var(--text3)">'+l.time_end+(dur?' ('+dur+')':'')+'</span>':'');return'<div class="tl-item"><div class="tl-time">'+timeH+'</div><div class="tl-person '+pCls+'">'+pL+'</div><span class="tl-cat cat-'+l.cat+'">'+catLabel(l.cat)+'</span><div class="tl-desc">'+esc(l.desc)+'</div></div>'}).join('')}
 }
 
 function renderWeekly(){
-if(!window._weekStart)window._weekStart=luxon.DateTime.now().startOf('week');
-var ws=window._weekStart,we=ws.plus({days:6});
+if(!window._ws)window._ws=luxon.DateTime.now().startOf('week');
+var ws=window._ws,we=ws.plus({days:6});
 document.getElementById('week-label').textContent=ws.toFormat('LLL d')+' \u2013 '+we.toFormat('LLL d, yyyy');
-var days=[],axAvgs=[],faAvgs=[],labels=[];
+var days=[],axAvg=[],faAvg=[],labels=[];
 for(var i=0;i<7;i++)days.push(ws.plus({days:i}));
-days.forEach(function(d){var ds=d.startOf('day').toISO(),de=d.endOf('day').toISO();var ax=getGlucose('axel').filter(function(r){return r.t>=ds&&r.t<=de}).map(function(r){return r.v});var fa=getGlucose('fanny').filter(function(r){return r.t>=ds&&r.t<=de}).map(function(r){return r.v});labels.push(d.toFormat('ccc d'));axAvgs.push(ax.length?Math.round(ax.reduce(function(s,v){return s+v},0)/ax.length):null);faAvgs.push(fa.length?Math.round(fa.reduce(function(s,v){return s+v},0)/fa.length):null)});
+days.forEach(function(d){var s=d.startOf('day').toISO(),e=d.endOf('day').toISO();var ax=getGlucose('axel').filter(function(r){return r.t>=s&&r.t<=e}).map(function(r){return r.v});var fa=getGlucose('fanny').filter(function(r){return r.t>=s&&r.t<=e}).map(function(r){return r.v});labels.push(d.toFormat('ccc d'));axAvg.push(ax.length?Math.round(ax.reduce(function(s,v){return s+v},0)/ax.length):null);faAvg.push(fa.length?Math.round(fa.reduce(function(s,v){return s+v},0)/fa.length):null)});
 var allAx=getGlucose('axel').filter(function(r){return r.t>=ws.toISO()&&r.t<=we.endOf('day').toISO()}).map(function(r){return r.v});
 var allFa=getGlucose('fanny').filter(function(r){return r.t>=ws.toISO()&&r.t<=we.endOf('day').toISO()}).map(function(r){return r.v});
 var lo=getTargetLow(),hi=getTargetHigh();
@@ -365,103 +348,117 @@ var tir=function(v){return v.length?Math.round(v.filter(function(x){return x>=lo
 var avg=function(v){return v.length?Math.round(v.reduce(function(s,x){return s+x},0)/v.length):'-'};
 document.getElementById('weekly-stats').innerHTML='<div class="stat-card ax"><div class="label">Axel weekly avg</div><div class="value">'+avg(allAx)+'</div><div class="sub">TIR '+tir(allAx)+'%</div></div><div class="stat-card fa"><div class="label">Fanny weekly avg</div><div class="value">'+avg(allFa)+'</div><div class="sub">TIR '+tir(allFa)+'%</div></div>';
 if(chartWeekly)chartWeekly.destroy();
-var ctx=document.getElementById('chart-weekly').getContext('2d');
-chartWeekly=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{label:'Axel avg',data:axAvgs,backgroundColor:'#3b82f690',borderRadius:4},{label:'Fanny avg',data:faAvgs,backgroundColor:'#e8437f90',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:60,max:180,ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},x:{ticks:{font:{size:10}}}},plugins:{legend:{labels:{font:{size:11}}}}}});
+chartWeekly=new Chart(document.getElementById('chart-weekly').getContext('2d'),{type:'bar',data:{labels:labels,datasets:[{label:'Axel',data:axAvg,backgroundColor:'#3b82f690',borderRadius:4},{label:'Fanny',data:faAvg,backgroundColor:'#e8437f90',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:60,max:180,ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},x:{ticks:{font:{size:10}}}},plugins:{legend:{labels:{font:{size:11}}}}}});
+renderOverlay('fanny',days);
+renderOverlay('axel',days);
 }
+
+function renderOverlay(person,days){
+var canvasId=person==='fanny'?'chart-ov-fanny':'chart-ov-axel';
+var chartRef=person==='fanny'?'chartOvF':'chartOvA';
+if(window[chartRef])window[chartRef].destroy();
+var lo=getTargetLow(),hi=getTargetHigh();
+var datasets=[];
+days.forEach(function(d,idx){
+var s=d.startOf('day').toISO(),e=d.endOf('day').toISO();
+var data=getGlucose(person).filter(function(r){return r.t>=s&&r.t<=e});
+if(!data.length)return;
+var pts=data.map(function(r){var dt=luxon.DateTime.fromISO(r.t);return{x:dt.hour+dt.minute/60,y:r.v}});
+datasets.push({label:d.toFormat('ccc d'),data:pts,borderColor:DAY_COLORS[idx%7],borderWidth:1.5,pointRadius:0,pointHitRadius:6,tension:.3,fill:false});
+});
+window[chartRef]=new Chart(document.getElementById(canvasId).getContext('2d'),{type:'line',data:{datasets:datasets},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',min:0,max:24,ticks:{font:{size:10},stepSize:2,callback:function(v){return v+'h'}},grid:{color:'rgba(0,0,0,0.04)'}},y:{min:30,max:220,ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}}},plugins:{legend:{labels:{font:{size:10},boxWidth:12}},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+ctx.parsed.y+' mg/dL'}}}}}});
+}
+
 function shiftDay(d){var p=document.getElementById('day-pick');p.value=luxon.DateTime.fromISO(p.value).plus({days:d}).toISODate();renderDaily()}
-function shiftWeek(d){window._weekStart=(window._weekStart||luxon.DateTime.now().startOf('week')).plus({weeks:d});renderWeekly()}
+function shiftWeek(d){window._ws=(window._ws||luxon.DateTime.now().startOf('week')).plus({weeks:d});renderWeekly()}
 
 /* PATTERN DISCOVERY */
-async function discoverPatterns(){var el=document.getElementById('discover-output');var btn=document.getElementById('btn-discover');btn.disabled=true;if(!S('openai')){el.innerHTML='<div class="err">OpenAI API key required. Click gear icon.</div>';btn.disabled=false;return}var logs=getLogs().sort(function(a,b){return(a.date+a.time).localeCompare(b.date+b.time)});if(logs.length<4){el.innerHTML='<div class="err">Need more log entries.</div>';btn.disabled=false;return}el.innerHTML='<div style="text-align:center;padding:16px"><div class="spinner"></div></div>';try{var allDays=Array.from(new Set(logs.map(function(l){return l.date}))).sort();var dayData=allDays.map(function(day){var dayLogs=logs.filter(function(l){return l.date===day});var ds=luxon.DateTime.fromISO(day).startOf('day').toISO();var de=luxon.DateTime.fromISO(day).endOf('day').toISO();var axG=getGlucose('axel').filter(function(r){return r.t>=ds&&r.t<=de});var faG=getGlucose('fanny').filter(function(r){return r.t>=ds&&r.t<=de});var events=dayLogs.filter(function(l){return l.cat==='meal'||l.cat==='sport'}).map(function(l){var et=luxon.DateTime.fromISO(day+'T'+l.time);var we2=et.plus({minutes:90}).toISO();var ws2=et.minus({minutes:10}).toISO();var aw=axG.filter(function(r){return r.t>=ws2&&r.t<=we2}).map(function(r){return r.v});var fw=faG.filter(function(r){return r.t>=ws2&&r.t<=we2}).map(function(r){return r.v});return{time:l.time,time_end:l.time_end||null,person:l.person,cat:l.cat,desc:l.desc,axPeak:aw.length?Math.max.apply(null,aw):null,faPeak:fw.length?Math.max.apply(null,fw):null}});return day+':\n'+events.map(function(e){return'  '+e.time+(e.time_end?'>'+e.time_end:'')+' ['+e.person+'] '+e.cat+': "'+e.desc+'" Ax='+e.axPeak+' Fa='+e.faPeak}).join('\n')}).join('\n\n');var html=await callAI(getAIContext()+'\nFind NATURAL EXPERIMENTS. Output HTML with ai-box classes. Be specific with numbers.','Events:\n\n'+dayData);el.innerHTML=html}catch(err){el.innerHTML='<div class="err">'+esc(err.message)+'</div>'}btn.disabled=false}
+function discoverPatterns(){var el=document.getElementById('discover-output');var btn=document.getElementById('btn-discover');btn.disabled=true;if(!S('openai')){el.innerHTML='<div class="err">OpenAI API key required.</div>';btn.disabled=false;return}var logs=getLogs().sort(function(a,b){return(a.date+a.time)<(b.date+b.time)?-1:1});if(logs.length<4){el.innerHTML='<div class="err">Need more log entries.</div>';btn.disabled=false;return}el.innerHTML='<div style="text-align:center;padding:16px"><div class="spinner"></div></div>';var allDays=Array.from(new Set(logs.map(function(l){return l.date}))).sort();var dayData=allDays.map(function(day){var dl=logs.filter(function(l){return l.date===day});var s=luxon.DateTime.fromISO(day).startOf('day').toISO(),e=luxon.DateTime.fromISO(day).endOf('day').toISO();var axG=getGlucose('axel').filter(function(r){return r.t>=s&&r.t<=e});var faG=getGlucose('fanny').filter(function(r){return r.t>=s&&r.t<=e});var events=dl.filter(function(l){return l.cat==='meal'||l.cat==='sport'}).map(function(l){var et=luxon.DateTime.fromISO(day+'T'+l.time);var w1=et.minus({minutes:10}).toISO(),w2=et.plus({minutes:90}).toISO();var aw=axG.filter(function(r){return r.t>=w1&&r.t<=w2}).map(function(r){return r.v});var fw=faG.filter(function(r){return r.t>=w1&&r.t<=w2}).map(function(r){return r.v});return l.time+(l.time_end?'>'+l.time_end:'')+' ['+l.person+'] '+l.cat+': '+l.desc+' | Ax='+(aw.length?Math.max.apply(null,aw):'?')+' Fa='+(fw.length?Math.max.apply(null,fw):'?')});return day+':\n  '+events.join('\n  ')}).join('\n\n');
+callAI(getAIContext()+'\nFind NATURAL EXPERIMENTS. Output HTML with ai-box classes. Compare with past analyses if available. Be specific with numbers.','Events:\n\n'+dayData).then(function(html){el.innerHTML=html;saveToArchive('Patterns \u2014 '+luxon.DateTime.now().toISODate(),html);schedulePush()}).catch(function(err){el.innerHTML='<div class="err">'+esc(err.message)+'</div>'}).finally(function(){btn.disabled=false})}
 
-/* LOG ENTRY */
+/* LOG — no auto-tagging */
 var logPerson='both';
 function selPerson(p,btn){logPerson=p;document.querySelectorAll('#log-person button').forEach(function(b){b.className=''});btn.className=p==='axel'?'sel-ax':p==='fanny'?'sel-fa':'sel-bo'}
-
 function saveLog(){
-var date=document.getElementById('log-date').value;
-var time=document.getElementById('log-time').value;
+var date=document.getElementById('log-date').value,time=document.getElementById('log-time').value;
 var durMin=parseInt(document.getElementById('log-duration').value)||0;
-var time_end=durMin?addMinutes(time,durMin):null;
-var cat=document.getElementById('log-cat').value;
-var desc=document.getElementById('log-desc').value.trim();
+var time_end=durMin?addMin(time,durMin):null;
+var cat=document.getElementById('log-cat').value,desc=document.getElementById('log-desc').value.trim();
 if(!date||!time||!desc){document.getElementById('log-msg').innerHTML='<span style="color:#c0392b">Fill all fields.</span>';return}
-var matched=matchTests(desc);var testIds=matched.map(function(t){return t.id});
-var logs=getLogs();logs.push({id:Date.now(),person:logPerson,date:date,time:time,time_end:time_end,cat:cat,desc:desc,tests:testIds});setLogs(logs);
+var logs=getLogs();logs.push({id:Date.now(),person:logPerson,date:date,time:time,time_end:time_end,cat:cat,desc:desc});setLogs(logs);
 document.getElementById('log-desc').value='';document.getElementById('log-duration').value='';
 var msg='<span style="color:var(--primary)">Saved</span>';
-if(time_end)msg+=' <span style="color:var(--text2)">'+fmtDuration(time,time_end)+'</span>';
-if(matched.length)msg+=' <span style="color:var(--text2)">Tags: '+matched.map(function(t){return t.name}).join(', ')+'</span>';
+if(time_end)msg+=' <span style="color:var(--text2)">'+fmtDur(time,time_end)+'</span>';
 document.getElementById('log-msg').innerHTML=msg;
-setTimeout(function(){document.getElementById('log-msg').innerHTML=''},5000);
-renderRecentLogs();schedulePush();
-}
-
-function renderRecentLogs(){var logs=getLogs().sort(function(a,b){return(b.date+b.time).localeCompare(a.date+a.time)}).slice(0,20);var el=document.getElementById('log-recent');if(!logs.length){el.innerHTML='<div class="empty"><p>No entries yet.</p></div>';return}el.innerHTML=logs.map(function(l){var pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';var pLetter=l.person==='both'?'AB':l.person==='axel'?'A':'F';var dur=fmtDuration(l.time,l.time_end);var timeStr=l.time+(l.time_end?'\u2192'+l.time_end:'')+(dur?' ('+dur+')':'');var testTags=(l.tests||[]).map(function(tid){var t=TESTS.find(function(x){return x.id===tid});return t?' <span class="tl-cat cat-test">'+t.name+'</span>':''}).join('');return'<div class="tl-item"><div class="tl-time" style="width:110px">'+l.date+'<br>'+timeStr+'</div><div class="tl-person '+pCls+'">'+pLetter+'</div><span class="tl-cat cat-'+l.cat+'">'+catLabel(l.cat)+'</span>'+testTags+'<div class="tl-desc">'+esc(l.desc)+'</div><button class="arc-del" onclick="deleteLog('+l.id+')" title="Delete">\u2715</button></div>'}).join('')}
+setTimeout(function(){document.getElementById('log-msg').innerHTML=''},4000);
+renderRecentLogs();schedulePush()}
+function renderRecentLogs(){var logs=getLogs().sort(function(a,b){return(b.date+b.time)<(a.date+a.time)?-1:1}).slice(0,20);var el=document.getElementById('log-recent');if(!logs.length){el.innerHTML='<div class="empty"><p>No entries yet.</p></div>';return}el.innerHTML=logs.map(function(l){var pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';var pL=l.person==='both'?'AB':l.person==='axel'?'A':'F';var dur=fmtDur(l.time,l.time_end);var ts=l.time+(l.time_end?'\u2192'+l.time_end:'')+(dur?' ('+dur+')':'');return'<div class="tl-item"><div class="tl-time">'+l.date+'<br>'+ts+'</div><div class="tl-person '+pCls+'">'+pL+'</div><span class="tl-cat cat-'+l.cat+'">'+catLabel(l.cat)+'</span><div class="tl-desc">'+esc(l.desc)+'</div><button class="arc-del" onclick="deleteLog('+l.id+')">\u2715</button></div>'}).join('')}
 function deleteLog(id){setLogs(getLogs().filter(function(l){return l.id!==id}));renderRecentLogs();schedulePush()}
 
 /* DATA STATUS */
-function renderDataStatus(){var ax=getGlucose('axel'),fa=getGlucose('fanny');var el=document.getElementById('data-status');var range=function(data){if(!data.length)return'No data';return data.length+' readings: '+luxon.DateTime.fromISO(data[0].t).toFormat('LLL d HH:mm')+' \u2192 '+luxon.DateTime.fromISO(data[data.length-1].t).toFormat('LLL d HH:mm')};el.innerHTML='<p style="margin-bottom:6px"><strong style="color:#3b82f6">Axel:</strong> '+range(ax)+'</p><p><strong style="color:#e8437f">Fanny:</strong> '+range(fa)+'</p>'}
+function renderDataStatus(){var ax=getGlucose('axel'),fa=getGlucose('fanny');var el=document.getElementById('data-status');var rng=function(d){if(!d.length)return'No data';return d.length+' pts: '+luxon.DateTime.fromISO(d[0].t).toFormat('LLL d HH:mm')+' \u2192 '+luxon.DateTime.fromISO(d[d.length-1].t).toFormat('LLL d HH:mm')};el.innerHTML='<p style="margin-bottom:6px"><strong style="color:#3b82f6">Axel:</strong> '+rng(ax)+'</p><p><strong style="color:#e8437f">Fanny:</strong> '+rng(fa)+'</p>'}
 
-/* AI */
-async function callAI(sys,usr){var key=S('openai');if(!key)throw new Error('OpenAI API key not set. Click gear icon.');var res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:S('model')||'gpt-4o-mini',temperature:.3,max_tokens:3000,messages:[{role:'system',content:sys},{role:'user',content:usr}]})});if(!res.ok){var e=await res.json().catch(function(){return{}});throw new Error((e.error&&e.error.message)||'API error '+res.status)}var d=await res.json();var c=d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content||'';return c.replace(/^```(?:html)?\s*\n?/i,'').replace(/\n?```\s*$/i,'')}
-function getAIContext(){var bl=getBaseline();var sections=bl.map(function(s){return s.title+': '+s.content}).join('\n');var favs=getFavMeals();var favStr=favs.length?'\nFavorites: '+favs.map(function(f){return f.name+'='+f.desc}).join('; '):'';return'Profiles: Axel (M,36) Fanny (F,39). CGM Libre 2 Plus. Target: '+getTargetLow()+'-'+getTargetHigh()+' mg/dL.\n'+sections+favStr}
-function summarizeHourly(data,name){if(!data.length)return name+': no data';var hours={};data.forEach(function(r){var h=luxon.DateTime.fromISO(r.t).hour;if(!hours[h])hours[h]=[];hours[h].push(r.v)});return name+': '+Object.entries(hours).sort(function(a,b){return a[0]-b[0]}).map(function(e){return e[0]+'h:'+Math.round(e[1].reduce(function(s,v){return s+v},0)/e[1].length)}).join(', ')}
-async function aiDailyInsight(){var el=document.getElementById('daily-ai');var day=document.getElementById('day-pick').value;el.innerHTML='<div style="text-align:center;padding:20px"><div class="spinner"></div></div>';try{var ds=luxon.DateTime.fromISO(day).startOf('day').toISO(),de=luxon.DateTime.fromISO(day).endOf('day').toISO();var ax=getGlucose('axel').filter(function(r){return r.t>=ds&&r.t<=de});var fa=getGlucose('fanny').filter(function(r){return r.t>=ds&&r.t<=de});var logs=getLogs().filter(function(l){return l.date===day}).sort(function(a,b){return a.time.localeCompare(b.time)});var dataStr='Date: '+day+'\nAxel: '+ax.length+' readings, avg='+(ax.length?Math.round(ax.reduce(function(s,r){return s+r.v},0)/ax.length):'-')+'\nFanny: '+fa.length+' readings, avg='+(fa.length?Math.round(fa.reduce(function(s,r){return s+r.v},0)/fa.length):'-')+'\n\n'+summarizeHourly(ax,'Axel')+'\n'+summarizeHourly(fa,'Fanny')+'\n\nLogs:\n'+(logs.map(function(l){return l.time+(l.time_end?'>'+l.time_end:'')+' ['+l.person+'] '+l.cat+': '+l.desc}).join('\n')||'None');var html=await callAI(getAIContext()+'\nDaily insight in HTML with ai-box classes. Be specific with numbers.',dataStr);el.innerHTML=html}catch(err){el.innerHTML='<div class="err">'+esc(err.message)+'</div>'}}
-async function aiWeeklyInsight(){var el=document.getElementById('weekly-ai');el.innerHTML='<div style="text-align:center;padding:20px"><div class="spinner"></div></div>';try{var ws=window._weekStart||luxon.DateTime.now().startOf('week');var we=ws.plus({days:6}).endOf('day');var ax=getGlucose('axel').filter(function(r){return r.t>=ws.toISO()&&r.t<=we.toISO()});var fa=getGlucose('fanny').filter(function(r){return r.t>=ws.toISO()&&r.t<=we.toISO()});var logs=getLogs().filter(function(l){return l.date>=ws.toISODate()&&l.date<=we.toISODate()}).sort(function(a,b){return(a.date+a.time).localeCompare(b.date+b.time)});var lo=getTargetLow(),hi=getTargetHigh();var dataStr='Week: '+ws.toISODate()+' to '+we.toISODate()+'\nAxel: '+ax.length+' readings, avg='+(ax.length?Math.round(ax.reduce(function(s,r){return s+r.v},0)/ax.length):'-')+'\nFanny: '+fa.length+' readings\n\nLogs:\n'+(logs.map(function(l){return l.date+' '+l.time+' ['+l.person+'] '+l.cat+': '+l.desc}).join('\n')||'None');var html=await callAI(getAIContext()+'\nWeekly summary in HTML with ai-box classes. Be specific.',dataStr);el.innerHTML=html}catch(err){el.innerHTML='<div class="err">'+esc(err.message)+'</div>'}}
+/* AI — with cumulative archive context */
+function callAI(sys,usr){var key=S('openai');if(!key)return Promise.reject(new Error('OpenAI API key not set.'));return fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:S('model')||'gpt-4o-mini',temperature:.3,max_tokens:3000,messages:[{role:'system',content:sys},{role:'user',content:usr}]})}).then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error&&e.error.message||'API error')});return r.json()}).then(function(d){var c=d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content||'';return c.replace(/^```(?:html)?\s*\n?/i,'').replace(/\n?```\s*$/i,'')})}
+
+function getAIContext(){
+var bl=getBaseline().map(function(s){return s.title+': '+s.content}).join('\n');
+var favs=getFavMeals();var favStr=favs.length?'\nFavorites: '+favs.map(function(f){return f.name+'='+f.desc}).join('; '):'';
+var testRef='\nAvailable tests to look for: '+TESTS.map(function(t){return t.name+' ('+t.desc+')'}).join(', ');
+var arc=getArchive().slice(0,5);
+var arcStr=arc.length?'\n\nPrevious analyses (most recent first):\n'+arc.map(function(a){return'['+a.title+'] '+(a.html||'').replace(/<[^>]+>/g,' ').substring(0,300)}).join('\n'):'';
+return'Profiles: Axel (M,36,Flanders) Fanny (F,39,Spain/Algeria/Morocco,recovered BN 16-20,binge drinking 20s). CGM Libre 2 Plus. Target: '+getTargetLow()+'-'+getTargetHigh()+'.\n'+bl+favStr+testRef+arcStr
+}
+
+function aiDailyInsight(){var el=document.getElementById('daily-ai');var day=document.getElementById('day-pick').value;el.innerHTML='<div style="text-align:center;padding:20px"><div class="spinner"></div></div>';var s=luxon.DateTime.fromISO(day).startOf('day').toISO(),e=luxon.DateTime.fromISO(day).endOf('day').toISO();var ax=getGlucose('axel').filter(function(r){return r.t>=s&&r.t<=e});var fa=getGlucose('fanny').filter(function(r){return r.t>=s&&r.t<=e});var logs=getLogs().filter(function(l){return l.date===day}).sort(function(a,b){return a.time<b.time?-1:1});var dataStr='Date: '+day+'\nAxel: '+ax.length+' readings, avg='+(ax.length?Math.round(ax.reduce(function(s,r){return s+r.v},0)/ax.length):'-')+', peak='+(ax.length?Math.max.apply(null,ax.map(function(r){return r.v})):'-')+'\nFanny: '+fa.length+' readings, avg='+(fa.length?Math.round(fa.reduce(function(s,r){return s+r.v},0)/fa.length):'-')+', peak='+(fa.length?Math.max.apply(null,fa.map(function(r){return r.v})):'-')+'\n\nLogs:\n'+(logs.map(function(l){return l.time+(l.time_end?'>'+l.time_end:'')+' ['+l.person+'] '+l.cat+': '+l.desc}).join('\n')||'None');
+callAI(getAIContext()+'\nDaily insight in HTML with ai-box classes. Identify which tests from the test list are relevant. Compare with previous analyses. Be specific with numbers.',dataStr).then(function(html){el.innerHTML=html;saveToArchive('Daily \u2014 '+day,html);schedulePush()}).catch(function(err){el.innerHTML='<div class="err">'+esc(err.message)+'</div>'})}
+
+function aiWeeklyInsight(){var el=document.getElementById('weekly-ai');el.innerHTML='<div style="text-align:center;padding:20px"><div class="spinner"></div></div>';var ws=window._ws||luxon.DateTime.now().startOf('week');var we=ws.plus({days:6}).endOf('day');var logs=getLogs().filter(function(l){return l.date>=ws.toISODate()&&l.date<=we.toISODate()}).sort(function(a,b){return(a.date+a.time)<(b.date+b.time)?-1:1});var dataStr='Week: '+ws.toISODate()+' to '+we.toISODate()+'\nLogs:\n'+(logs.map(function(l){return l.date+' '+l.time+' ['+l.person+'] '+l.cat+': '+l.desc}).join('\n')||'None');
+callAI(getAIContext()+'\nWeekly summary in HTML with ai-box classes. Identify tests and patterns. Compare with previous analyses. Be specific.',dataStr).then(function(html){el.innerHTML=html;saveToArchive('Weekly \u2014 '+ws.toISODate(),html);schedulePush()}).catch(function(err){el.innerHTML='<div class="err">'+esc(err.message)+'</div>'})}
 
 /* BASELINE & FAVORITES */
-var DEFAULT_BASELINE=[{id:'sugar_codes',title:'Sugar Conventions',content:'FM=Fait maison. LS=Low sugar. NS=No added sugar. PB=always sugar-free.'},{id:'kitchen',title:'Kitchen Defaults',content:'Olive oil for all cooking and raw use.'},{id:'porridge',title:'Magnus Porridge',content:'2 parts whole rye : 1 pearl barley : 1 flaxseed : 1 sunflower seeds : 1 pumpkin seeds. Soaked overnight.'},{id:'movement',title:'Default Movement',content:'15-20min walk at wake-up. 15-20min yoga before the walk.'},{id:'sleep',title:'Sleep Default',content:'Bed 21:00-21:30, wake 06:00 weekdays / 07:00-07:30 weekends.'},{id:'food_order',title:'Food Order',content:'Foods listed in real consumption order.'},{id:'norms',title:'Reference Norms',content:'Sugar ~7.9g/day, Fiber ~38.5g/day, Protein ~53g/day.'},{id:'recap',title:'Recap Structure',content:'Protein > Fiber > Disease risk > Glycemia > Activity > Micronutrients > Antioxidants > Vitality > Blind spots.'}];
-function getBaseline(){var stored=SJ('baseline');return stored.length?stored:DEFAULT_BASELINE}
-function setBaseline(data){SSJ('baseline',data)}
+var DEFAULT_BASELINE=[{id:'sugar_codes',title:'Sugar Conventions',content:'FM=Fait maison. LS=Low sugar. NS=No added sugar. PB=always sugar-free.'},{id:'kitchen',title:'Kitchen Defaults',content:'Olive oil for all cooking and raw use.'},{id:'porridge',title:'Magnus Porridge',content:'2 parts whole rye : 1 pearl barley : 1 flaxseed : 1 sunflower seeds : 1 pumpkin seeds.'},{id:'movement',title:'Default Movement',content:'15-20min walk + 15-20min yoga at wake-up.'},{id:'sleep',title:'Sleep Default',content:'Bed 21:00-21:30, wake 06:00 / 07:00-07:30 weekends.'},{id:'food_order',title:'Food Order',content:'Listed in real consumption order.'},{id:'norms',title:'Reference Norms',content:'Sugar ~7.9g/day, Fiber ~38.5g/day, Protein ~53g/day.'},{id:'recap',title:'Recap Structure',content:'Protein > Fiber > Disease risk > Glycemia > Activity > Micronutrients > Antioxidants > Vitality > Blind spots.'}];
+function getBaseline(){var s=SJ('baseline');return s.length?s:DEFAULT_BASELINE}
+function setBaseline(d){SSJ('baseline',d)}
 function getFavMeals(){return SJ('fav_meals')}
-function setFavMeals(data){SSJ('fav_meals',data)}
-function renderBaseline(){var bl=getBaseline();document.getElementById('baseline-sections').innerHTML=bl.map(function(s){return'<div class="card" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><h3 style="font-size:13px">'+esc(s.title)+'</h3><button class="btn btn-s" style="font-size:10px;padding:4px 10px" onclick="editBaseline(\''+s.id+'\')">Edit</button></div><p style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.6">'+esc(s.content)+'</p></div>'}).join('')+'<button class="btn btn-s" onclick="addBaselineSection()" style="margin-top:8px">+ Add section</button>';renderFavMeals()}
-function editBaseline(id){var bl=getBaseline();var s=bl.find(function(x){return x.id===id});if(!s)return;var title=prompt('Title:',s.title);if(title===null)return;var content=prompt('Content:',s.content);if(content===null)return;s.title=title;s.content=content;setBaseline(bl);renderBaseline();schedulePush()}
-function addBaselineSection(){var title=prompt('New section title:');if(!title)return;var content=prompt('Content:');if(!content)return;var bl=getBaseline();bl.push({id:'custom_'+Date.now(),title:title,content:content});setBaseline(bl);renderBaseline();schedulePush()}
-function addFavMeal(){var name=document.getElementById('fav-name').value.trim();var desc=document.getElementById('fav-desc').value.trim();var cat=document.getElementById('fav-cat')?document.getElementById('fav-cat').value:'meal';if(!name||!desc)return;var favs=getFavMeals();favs.push({id:Date.now(),name:name,desc:desc,cat:cat});setFavMeals(favs);document.getElementById('fav-name').value='';document.getElementById('fav-desc').value='';renderFavMeals();renderFavButtons();schedulePush()}
+function setFavMeals(d){SSJ('fav_meals',d)}
+function renderBaseline(){var bl=getBaseline();document.getElementById('baseline-sections').innerHTML=bl.map(function(s){return'<div class="card" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><h3 style="font-size:13px">'+esc(s.title)+'</h3><button class="btn btn-s" style="font-size:10px;padding:4px 10px" onclick="editBaseline(\''+s.id+'\')">Edit</button></div><p style="font-size:12px;color:var(--text2);margin-top:6px">'+esc(s.content)+'</p></div>'}).join('')+'<button class="btn btn-s" onclick="addBaselineSection()" style="margin-top:8px">+ Add section</button>';renderFavMeals()}
+function editBaseline(id){var bl=getBaseline();var s=bl.find(function(x){return x.id===id});if(!s)return;var t=prompt('Title:',s.title);if(!t)return;var c=prompt('Content:',s.content);if(!c)return;s.title=t;s.content=c;setBaseline(bl);renderBaseline();schedulePush()}
+function addBaselineSection(){var t=prompt('Title:');if(!t)return;var c=prompt('Content:');if(!c)return;var bl=getBaseline();bl.push({id:'c_'+Date.now(),title:t,content:c});setBaseline(bl);renderBaseline();schedulePush()}
+function addFavMeal(){var n=document.getElementById('fav-name').value.trim(),d=document.getElementById('fav-desc').value.trim(),c=document.getElementById('fav-cat').value;if(!n||!d)return;var f=getFavMeals();f.push({id:Date.now(),name:n,desc:d,cat:c});setFavMeals(f);document.getElementById('fav-name').value='';document.getElementById('fav-desc').value='';renderFavMeals();renderFavButtons();schedulePush()}
 function deleteFavMeal(id){setFavMeals(getFavMeals().filter(function(f){return f.id!==id}));renderFavMeals();renderFavButtons();schedulePush()}
-function renderFavMeals(){var favs=getFavMeals();var el=document.getElementById('fav-meals-list');if(!favs.length){el.innerHTML='<p style="font-size:12px;color:var(--text3)">No favorites yet.</p>';return}el.innerHTML=favs.map(function(f){var icon=f.cat==='sport'?'\u{1F3C3}':f.cat==='note'?'\u{1F4DD}':'\u{1F374}';return'<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-lt);font-size:12px"><span style="width:20px;text-align:center">'+icon+'</span><strong style="min-width:100px">'+esc(f.name)+'</strong><span style="flex:1;color:var(--text2)">'+esc(f.desc)+'</span><button class="arc-del" onclick="deleteFavMeal('+f.id+')">\u2715</button></div>'}).join('')}
-function renderFavButtons(){var container=document.getElementById('fav-buttons');if(!container)return;var favs=getFavMeals();if(!favs.length){container.innerHTML='';return}container.innerHTML='<div style="margin-bottom:8px">'+favs.map(function(f){var cls=f.cat==='sport'?'btn-ax':'btn-s';return'<button class="btn '+cls+'" style="font-size:11px;margin:0 4px 6px 0" onclick="useFav('+f.id+')">'+esc(f.name)+'</button>'}).join('')+'</div>'}
+function renderFavMeals(){var f=getFavMeals(),el=document.getElementById('fav-meals-list');if(!f.length){el.innerHTML='<p style="font-size:12px;color:var(--text3)">No favorites.</p>';return}el.innerHTML=f.map(function(v){var ic=v.cat==='sport'?'\u{1F3C3}':v.cat==='note'?'\u{1F4DD}':'\u{1F374}';return'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-lt);font-size:12px"><span>'+ic+'</span><strong style="min-width:80px">'+esc(v.name)+'</strong><span style="flex:1;color:var(--text2)">'+esc(v.desc)+'</span><button class="arc-del" onclick="deleteFavMeal('+v.id+')">\u2715</button></div>'}).join('')}
+function renderFavButtons(){var c=document.getElementById('fav-buttons');if(!c)return;var f=getFavMeals();if(!f.length){c.innerHTML='';return}c.innerHTML='<div style="margin-bottom:8px">'+f.map(function(v){return'<button class="btn '+(v.cat==='sport'?'btn-ax':'btn-s')+'" style="font-size:11px;margin:0 4px 6px 0" onclick="useFav('+v.id+')">'+esc(v.name)+'</button>'}).join('')+'</div>'}
 function useFav(id){var f=getFavMeals().find(function(x){return x.id===id});if(!f)return;document.getElementById('log-desc').value=f.desc;document.getElementById('log-cat').value=f.cat||'meal'}
 
-/* ARCHIVE */
-function saveToArchive(title,html){var arc=getArchive();arc.unshift({id:Date.now(),title:title,date:new Date().toISOString(),html:html});setArchive(arc);schedulePush()}
-function renderArchive(){var arc=getArchive();var el=document.getElementById('archive-out');if(!arc.length){el.innerHTML='<div class="empty"><div class="icon">&#128194;</div><h3>Archive empty</h3><p>AI insights appear here when saved.</p></div>';return}el.innerHTML=arc.map(function(a){var d=new Date(a.date);return'<div class="arc-item" onclick="viewArcItem('+a.id+')"><div style="flex:1"><h3>'+esc(a.title)+'</h3><div class="arc-date">'+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</div></div><button class="arc-del" onclick="event.stopPropagation();delArc('+a.id+')">\u2715</button></div>'}).join('')}
-function viewArcItem(id){var item=getArchive().find(function(a){return a.id===id});if(!item)return;document.getElementById('archive-out').innerHTML='<button class="btn btn-s" onclick="renderArchive()" style="margin-bottom:16px">\u2190 Back</button><h2 style="font-size:16px;font-weight:700;margin-bottom:16px">'+esc(item.title)+'</h2>'+item.html}
+/* ARCHIVE — auto-saved by AI, consulted by next analysis */
+function saveToArchive(title,html){var a=getArchive();a.unshift({id:Date.now(),title:title,date:new Date().toISOString(),html:html});if(a.length>50)a=a.slice(0,50);setArchive(a);schedulePush()}
+function renderArchive(){var a=getArchive(),el=document.getElementById('archive-out');if(!a.length){el.innerHTML='<div class="empty"><div class="icon">&#128194;</div><h3>Archive empty</h3><p>AI analyses are auto-saved here.</p></div>';return}el.innerHTML=a.map(function(v){var d=new Date(v.date);return'<div class="arc-item" onclick="viewArc('+v.id+')"><div style="flex:1"><h3>'+esc(v.title)+'</h3><div class="arc-date">'+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</div></div><button class="arc-del" onclick="event.stopPropagation();delArc('+v.id+')">\u2715</button></div>'}).join('')}
+function viewArc(id){var item=getArchive().find(function(a){return a.id===id});if(!item)return;document.getElementById('archive-out').innerHTML='<button class="btn btn-s" onclick="renderArchive()" style="margin-bottom:16px">\u2190 Back</button><h2 style="font-size:16px;font-weight:700;margin-bottom:16px">'+esc(item.title)+'</h2>'+item.html}
 function delArc(id){if(!confirm('Delete?'))return;setArchive(getArchive().filter(function(a){return a.id!==id}));renderArchive();schedulePush()}
 
 /* EXPORT */
-function exportAll(){var data={exported:new Date().toISOString(),profiles:PROFILES,baseline:getBaseline(),favoriteMeals:getFavMeals(),glucose:{axel:getGlucose('axel'),fanny:getGlucose('fanny')},logs:getLogs(),tests:SJ('tests_meta'),archive:getArchive(),settings:{targetLow:getTargetLow(),targetHigh:getTargetHigh()}};var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='gly-export-'+luxon.DateTime.now().toISODate()+'.json';a.click();URL.revokeObjectURL(url)}
+function exportAll(){var d={exported:new Date().toISOString(),profiles:PROFILES,baseline:getBaseline(),favoriteMeals:getFavMeals(),glucose:{axel:getGlucose('axel'),fanny:getGlucose('fanny')},logs:getLogs(),archive:getArchive(),settings:{targetLow:getTargetLow(),targetHigh:getTargetHigh()}};var b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download='gly-export-'+luxon.DateTime.now().toISODate()+'.json';a.click();URL.revokeObjectURL(u)}
 
-/* MIGRATION v4 */
+/* MIGRATION v5 — clean logs (remove old tests field) + restore lost entries */
 (function(){
-if(S('migrated_v4b')==='1')return;
+if(S('migrated_v5')==='1')return;
 var logs=getLogs();
-logs.forEach(function(l){
-if(l.id===1790603103868)l.time_end='16:40';
-if(l.id===1790668122675)l.time_end='09:15';
-});
-var ids=new Set(logs.map(function(l){return l.id}));
+logs.forEach(function(l){if(l.id===1790603103868)l.time_end='16:40';if(l.id===1790668122675)l.time_end='09:15';delete l.tests});
+var ids={};logs.forEach(function(l){ids[l.id]=1});
 [
-{id:20260929062001,person:'both',date:'2026-09-29',time:'06:20',time_end:'06:30',cat:'sport',desc:'Yoga 10min',tests:[]},
-{id:20260929064501,person:'both',date:'2026-09-29',time:'06:45',time_end:'07:00',cat:'sport',desc:'Marche matinale 15min',tests:[]},
-{id:20260928190001,person:'both',date:'2026-09-28',time:'19:00',time_end:'20:30',cat:'sport',desc:'Potager : 4km velo tranquille, jardinage doux (cueillette, taille), 4km velo retour',tests:[]},
-{id:20260930063001,person:'both',date:'2026-09-30',time:'06:30',time_end:'06:50',cat:'sport',desc:'Marche du matin 20min',tests:[]},
-{id:20260930080001,person:'both',date:'2026-09-30',time:'08:00',time_end:'08:30',cat:'meal',desc:'Petit dejeuner : salade poireau courgettes vinaigrette ; 1 bol de soupe pappa al pomodoro (tomate ail oignon poivrons avec un peu de pain), 2 oeufs sur le plat, 50g porridge de magnus + 1 cuillere a soupe beurre de cacahuete ; 2 figues cuites',tests:[]}
-].forEach(function(l){if(!ids.has(l.id))logs.push(l)});
-logs.forEach(function(l){l.tests=matchTests(l.desc).map(function(t){return t.id})});
+{id:20260929062001,person:'both',date:'2026-09-29',time:'06:20',time_end:'06:30',cat:'sport',desc:'Yoga 10min'},
+{id:20260929064501,person:'both',date:'2026-09-29',time:'06:45',time_end:'07:00',cat:'sport',desc:'Marche matinale 15min'},
+{id:20260928190001,person:'both',date:'2026-09-28',time:'19:00',time_end:'20:30',cat:'sport',desc:'Potager : 4km velo tranquille, jardinage doux, 4km velo retour'},
+{id:20260930063001,person:'both',date:'2026-09-30',time:'06:30',time_end:'06:50',cat:'sport',desc:'Marche du matin 20min'},
+{id:20260930080001,person:'both',date:'2026-09-30',time:'08:00',time_end:'08:30',cat:'meal',desc:'Petit dejeuner : salade poireau courgettes vinaigrette ; 1 bol de soupe pappa al pomodoro (tomate ail oignon poivrons avec un peu de pain), 2 oeufs sur le plat, 50g porridge de magnus + 1 cuillere a soupe beurre de cacahuete ; 2 figues cuites'}
+].forEach(function(l){if(!ids[l.id])logs.push(l)});
 setLogs(logs);
-var favs=getFavMeals();var favNames=new Set(favs.map(function(f){return f.name}));
-[
-{id:20260929100001,name:'Potager',desc:'4km velo tranquille, jardinage doux, 4km velo retour',cat:'sport'},
-{id:20260929100002,name:'Potager + riviere',desc:'4km velo, jardinage court, baignade riviere 15min eau froide, 4km velo retour',cat:'sport'},
-{id:20260929100003,name:'Yoga',desc:'Yoga 15-20min',cat:'sport'},
-{id:20260929100004,name:'Marche',desc:'Marche 15-20min',cat:'sport'},
-{id:20260929100005,name:'Jogging + marche',desc:'Jogging tranquille 10-12min puis marche 30min',cat:'sport'}
-].forEach(function(f){if(!favNames.has(f.name))favs.push(f)});
+var favs=getFavMeals();var fn={};favs.forEach(function(f){fn[f.name]=1});
+[{id:20260929100001,name:'Potager',desc:'4km velo, jardinage doux, 4km velo retour',cat:'sport'},{id:20260929100002,name:'Potager + riviere',desc:'4km velo, jardinage court, baignade 15min eau froide, 4km velo retour',cat:'sport'},{id:20260929100003,name:'Yoga',desc:'Yoga 15-20min',cat:'sport'},{id:20260929100004,name:'Marche',desc:'Marche 15-20min',cat:'sport'},{id:20260929100005,name:'Jogging + marche',desc:'Jogging tranquille 10-12min puis marche 30min',cat:'sport'}
+].forEach(function(f){if(!fn[f.name])favs.push(f)});
 setFavMeals(favs);
-SS('migrated_v4b','1');
+SS('migrated_v5','1');
 })();
 
 /* INIT */
@@ -470,7 +467,7 @@ document.getElementById('day-pick').valueAsDate=new Date();
 document.getElementById('log-date').value=luxon.DateTime.now().toISODate();
 document.getElementById('log-time').value=luxon.DateTime.now().toFormat('HH:mm');
 syncPull().then(function(){renderDaily()});
-setInterval(function(){syncPull().then(function(){if(document.querySelector('.nav button.on')&&document.querySelector('.nav button.on').dataset.v==='daily')renderDaily()})},60000);
+setInterval(function(){syncPull().then(function(){var active=document.querySelector('.nav button.on');if(active&&active.dataset.v==='daily')renderDaily()})},60000);
 </script>
 </body>
 </html>
