@@ -125,12 +125,12 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 
 <main>
 <div class="view on" id="v-daily">
-<div class="date-nav">
-<button onclick="shiftDay(-1)">&lsaquo;</button>
-<input type="date" id="day-pick" onchange="renderDaily()">
-<button onclick="shiftDay(1)">&rsaquo;</button>
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+<button onclick="shiftDay(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">&lsaquo;</button>
+<input type="date" id="day-pick" onchange="renderDaily()" style="font-family:var(--font);font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface)">
+<button onclick="shiftDay(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">&rsaquo;</button>
 <button class="btn btn-s" onclick="document.getElementById('day-pick').valueAsDate=new Date();renderDaily()" style="font-size:11px">Today</button>
-<button class="btn-an" id="btn-ai-daily" onclick="aiDailyInsight()">&#9654; Analyser</button>
+<button class="btn-an" onclick="aiDailyInsight()">&#9654; Analyser cette journ&#233;e</button>
 </div>
 <div class="stats-grid" id="daily-stats"></div>
 <div class="chart-wrap"><canvas id="chart-daily"></canvas></div>
@@ -140,11 +140,11 @@ main{max-width:var(--max-w);margin:0 auto;padding:20px}
 </div>
 
 <div class="view" id="v-weekly">
-<div class="date-nav">
-<button onclick="shiftWeek(-1)">&lsaquo;</button>
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+<button onclick="shiftWeek(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">&lsaquo;</button>
 <span id="week-label" style="font-size:13px;font-weight:600"></span>
-<button onclick="shiftWeek(1)">&rsaquo;</button>
-<button class="btn-an" id="btn-ai-weekly" onclick="aiWeeklyInsight()">&#9654; Analyser</button>
+<button onclick="shiftWeek(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">&rsaquo;</button>
+<button class="btn-an" onclick="aiWeeklyInsight()">&#9654; Analyser cette semaine</button>
 </div>
 <div class="stats-grid" id="weekly-stats"></div>
 <div class="chart-wrap"><canvas id="chart-weekly"></canvas></div>
