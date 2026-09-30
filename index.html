@@ -298,8 +298,8 @@ function catLabel(c){return{meal:'Meal',sport:'Sport',note:'Note',period:'Period
 
 /* TESTS */
 var TESTS=[
-{id:'alcohol_type',name:'Alcohol type',desc:'Beer vs vodka vs wine.',keywords:['beer','vodka','wine','alcohol','gin','whisky','rum','cocktail','aperol','spritz','biere','vin','alcool','rose','cidre']},
-{id:'alcohol_timing',name:'Alcohol timing',desc:'Drink alone vs after meal.',keywords:['beer','vodka','wine','alcohol','gin','whisky','rum','cocktail','aperol','drink','biere','vin','alcool','apero','aperitif']},
+{id:'alcohol_type',name:'Alcohol type',desc:'Beer vs vodka vs wine.',keywords:['beer','vodka','wine','alcohol','gin','whisky','rum','cocktail','aperol','spritz','biere','vin','alcool','rose','cidre'],exclude:['vinaigrette','vinaigre','vin blanc de cuisine','deglace']},
+{id:'alcohol_timing',name:'Alcohol timing',desc:'Drink alone vs after meal.',keywords:['beer','vodka','wine','alcohol','gin','whisky','rum','cocktail','aperol','drink','biere','vin','alcool','apero','aperitif'],exclude:['vinaigrette','vinaigre','vin blanc de cuisine','deglace']},
 {id:'bread_type',name:'Levain vs regular bread',desc:'Same qty sourdough vs white bread.',keywords:['levain','sourdough','bread','pain','baguette','pain blanc','pain de mie','pain complet','pain semi-complet','toast']},
 {id:'coffee_timing',name:'Coffee timing',desc:'Coffee alone vs after meal.',keywords:['coffee','cafe','espresso','nespresso','cappuccino','latte','cafe filtre','cafe noir'],exclude:['cuillere a cafe','cuilleres a cafe','cuillere cafe']},
 {id:'biscuit_timing',name:'Biscuit timing',desc:'Biscuit alone vs after meal.',keywords:['biscuit','cookie','gateau','cake','biscoff','granola bar','sable']},
@@ -310,8 +310,8 @@ var TESTS=[
 {id:'ingredient_timing',name:'Same food, different time',desc:'Morning vs evening.',keywords:['morning','evening','soir','matin','afternoon','apres-midi','midi']},
 {id:'fermented',name:'Fermented foods',desc:'With vs without fermented elements.',keywords:['lactofermente','fermente','kefir','kombucha','choucroute','kimchi','fermented','pickled','miso','tempeh']},
 {id:'meal_duration',name:'Meal duration',desc:'Quick (<15min) vs slow (>45min).',keywords:['rapide','lent','slow','fast','quick','duration','duree']},
-{id:'dessert_timing',name:'Dessert timing',desc:'Dessert with meal vs 30min+ after.',keywords:['dessert','fruit apres','chocolat apres','nashi','poire','pomme','compote','chocolat noir','fruit fin de repas','banane']},
-{id:'meal_spacing',name:'Meal spacing',desc:'4h vs 6h+ gap between meals.',keywords:['spacing','espacement','gap','heures entre','jeune','fasting','snack','encas','collation','grignotage','gouter']},
+{id:'dessert_timing',name:'Dessert timing',desc:'Dessert with meal vs 30min+ after.',keywords:['dessert','fruit apres','chocolat apres','nashi','poire','pomme','compote','chocolat noir','fruit fin de repas','banane'],exclude:['poireau','poireaux']},
+{id:'meal_spacing',name:'Meal spacing',desc:'4h vs 6h+ gap between meals.',keywords:['spacing','espacement','gap','heures entre','jeune','fasting','snack','encas','collation','grignotage','gouter'],exclude:['dejeuner','petit dejeuner','petit-dejeuner','dejeune']},
 {id:'recovery_day',name:'Recovery day',desc:'Glucose after intense activity.',keywords:['recovery','recuperation','repos','rest day','rando','randonnee','hike','lendemain','fatigue','courbatures']},
 {id:'legume_type',name:'Legume type',desc:'Compare legumes.',keywords:['foul','feves','lentilles','pois chiches','haricots','beans','lentils','chickpeas','legumineuses','houmous','hummus','dhal']},
 {id:'cycle_phase',name:'Cycle menstruel',desc:'Glucose patterns across menstrual phases.',keywords:['regles','period','menstruation','cycle','PMS','SPM','ovulation','luteale','folliculaire','crampes','ballonnements','spotting','J1','jour 1','saignements','seins sensibles']}
