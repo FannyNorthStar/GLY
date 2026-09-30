@@ -436,7 +436,7 @@ function exportAll(){var data={exported:new Date().toISOString(),profiles:PROFIL
 
 /* MIGRATION v4 */
 (function(){
-if(S('migrated_v4')==='1')return;
+if(S('migrated_v4b')==='1')return;
 var logs=getLogs();
 logs.forEach(function(l){
 if(l.id===1790603103868)l.time_end='16:40';
@@ -446,7 +446,9 @@ var ids=new Set(logs.map(function(l){return l.id}));
 [
 {id:20260929062001,person:'both',date:'2026-09-29',time:'06:20',time_end:'06:30',cat:'sport',desc:'Yoga 10min',tests:[]},
 {id:20260929064501,person:'both',date:'2026-09-29',time:'06:45',time_end:'07:00',cat:'sport',desc:'Marche matinale 15min',tests:[]},
-{id:20260928190001,person:'both',date:'2026-09-28',time:'19:00',time_end:'20:30',cat:'sport',desc:'Potager : 4km velo tranquille, jardinage doux (cueillette, taille), 4km velo retour',tests:[]}
+{id:20260928190001,person:'both',date:'2026-09-28',time:'19:00',time_end:'20:30',cat:'sport',desc:'Potager : 4km velo tranquille, jardinage doux (cueillette, taille), 4km velo retour',tests:[]},
+{id:20260930063001,person:'both',date:'2026-09-30',time:'06:30',time_end:'06:50',cat:'sport',desc:'Marche du matin 20min',tests:[]},
+{id:20260930080001,person:'both',date:'2026-09-30',time:'08:00',time_end:'08:30',cat:'meal',desc:'Petit dejeuner : salade poireau courgettes vinaigrette ; 1 bol de soupe pappa al pomodoro (tomate ail oignon poivrons avec un peu de pain), 2 oeufs sur le plat, 50g porridge de magnus + 1 cuillere a soupe beurre de cacahuete ; 2 figues cuites',tests:[]}
 ].forEach(function(l){if(!ids.has(l.id))logs.push(l)});
 logs.forEach(function(l){l.tests=matchTests(l.desc).map(function(t){return t.id})});
 setLogs(logs);
@@ -459,7 +461,7 @@ var favs=getFavMeals();var favNames=new Set(favs.map(function(f){return f.name})
 {id:20260929100005,name:'Jogging + marche',desc:'Jogging tranquille 10-12min puis marche 30min',cat:'sport'}
 ].forEach(function(f){if(!favNames.has(f.name))favs.push(f)});
 setFavMeals(favs);
-SS('migrated_v4','1');
+SS('migrated_v4b','1');
 })();
 
 /* INIT */
