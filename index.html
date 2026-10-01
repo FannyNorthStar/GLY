@@ -181,7 +181,6 @@ When 2+ variants exist, comparison charts appear below automatically.</p></div>
 <input type="text" id="fav-desc" placeholder="Description" style="flex:2;min-width:140px;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
 <button class="btn btn-p" onclick="addFavMeal()" style="white-space:nowrap">Add</button></div></div></div>
 <!-- ARCHIVE --><div class="view" id="v-archive"><div id="archive-out"></div></div>
-<!-- LEARN --><div class="view" id="v-learn">
 <!-- RELATIVE --><div class="view" id="v-relative">
 <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
 <button onclick="shiftRelDay(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">&lsaquo;</button>
@@ -192,78 +191,67 @@ When 2+ variants exist, comparison charts appear below automatically.</p></div>
 <div class="chart-wrap"><canvas id="chart-relative"></canvas></div>
 <p style="font-size:11px;color:var(--text3)">Y=0 = average glucose midnight-6am. Positive = above overnight baseline. Helps identify true spike amplitude vs individual baseline.</p>
 </div>
+<!-- LEARN --><div class="view" id="v-learn">
 <h2 style="font-size:18px;font-weight:700;margin-bottom:20px">Guide Pratique</h2>
-<div class="learn-card"><h3>Spikes : les regles</h3>
-<p><strong>2 petits pics a 110 > 1 gros pic a 160.</strong> La variabilite glycemique (amplitude des pics) est plus dommageable que la glycemie moyenne. Un pic a 160 genere du stress oxydatif, active NF-kB (inflammation), et declenche une reponse insulinique excessive qui peut causer une hypo reactionnelle.</p>
-<p><strong>Le delta compte plus que la valeur absolue.</strong> Passer de 85 a 140 (+55) est plus stressant metaboliquement que rester stable a 100. Le pancreas secrete une bolus d'insuline proportionnelle au delta.</p>
-<p><strong>Seuils :</strong> &lt;54 = hypo severe (danger). &lt;70 = hypo legere. 70-100 = optimal. 100-140 = normal post-repas. >140 = pic eleve. >160 = stress oxydatif. >180 = alerte rouge.</p></div>
-
+<div class="learn-card"><h3>Spikes : les règles</h3>
+<p><strong>2 petits pics à 110 > 1 gros pic à 160.</strong> La variabilité glycémique (amplitude des pics) est plus dommageable que la glycémie moyenne. Un pic à 160 génère du stress oxydatif, active NF-kB (inflammation), et déclenche une réponse insulinique excessive qui peut causer une hypo réactionnelle.</p>
+<p><strong>Le delta compte plus que la valeur absolue.</strong> Passer de 85 à 140 (+55) est plus stressant métaboliquement que rester stable à 100. Le pancréas sécrète une bolus d'insuline proportionnelle au delta.</p>
+<p><strong>Seuils :</strong> &lt;54 = hypo sévère (danger). &lt;70 = hypo légère. 70-100 = optimal. 100-140 = normal post-repas. >140 = pic élevé. >160 = stress oxydatif. >180 = alerte rouge.</p></div>
 <div class="learn-card"><h3>Ordre du repas</h3>
-<p><strong>1. Legumes/fibres - 2. Proteines/graisses - 3. Glucides.</strong></p>
-<p>Etude Shukla (Weill Cornell, Diabetes Care 2015) : manger les glucides en dernier reduit l'aire sous la courbe glycemique de <strong>73%</strong> vs glucides en premier. A 60min : glycemie 126 vs 199 mg/dL. Confirme en 2025 : pics reduits de <strong>44%</strong> avec CGM. Etude japonaise : <strong>-39%</strong> chez des sujets sains.</p>
-<p>Mecanisme : les fibres creent un gel visqueux (ralentit vidange gastrique), proteines/graisses stimulent GLP-1 et GIP (incretines, preparent le pancreas). Quand les glucides arrivent, l'insuline est deja en circulation.</p>
-<p><strong>Vinaigre avant repas :</strong> 1cs vinaigre de cidre dans eau 15min avant. Inhibe l'amylase salivaire. Effet modere (~15-20% reduction), moins fort que l'ordre alimentaire.</p></div>
-
-<div class="learn-card"><h3>Fruits : seul vs apres repas</h3>
-<p><strong>Un fruit seul = spike rapide.</strong> Le fruit contient du glucose (entre directement en circulation) + du fructose (metabolise par le foie). Sans graisses/fibres externes pour ralentir, pic en 15-25min.</p>
-<p><strong>Un fruit apres un repas riche en fibres/proteines = spike amorti.</strong> La vidange gastrique est deja ralentie. MAIS si le repas etait deja riche en glucides (pain + feculents), le fruit s'ajoute a la charge = double vague possible.</p>
-<p><strong>Fruit seul + graisses/proteines</strong> (pomme + poignee de noix, poire + beurre de cacahuete) = bon compromis. Testable directement sur le CGM.</p>
-<p><strong>Varie selon le fruit :</strong> banane mure et raisin = spike rapide. Baies, pomme verte, poire = plus modere. Le CGM mesure VOTRE reponse individuelle.</p></div>
-
+<p><strong>1. Légumes/fibres → 2. Protéines/graisses → 3. Glucides.</strong></p>
+<p>Étude Shukla (Weill Cornell, Diabetes Care 2015) : manger les glucides en dernier réduit l'aire sous la courbe glycémique de <strong>73%</strong> vs glucides en premier. À 60min : glycémie 126 vs 199 mg/dL. Confirmé en 2025 : pics réduits de <strong>44%</strong> avec CGM. Étude japonaise : <strong>-39%</strong> chez des sujets sains.</p>
+<p>Mécanisme : les fibres créent un gel visqueux (ralentit vidange gastrique), protéines/graisses stimulent GLP-1 et GIP (incrétines, préparent le pancréas). Quand les glucides arrivent, l'insuline est déjà en circulation.</p>
+<p><strong>Vinaigre avant repas :</strong> 1cs vinaigre de cidre dans eau 15min avant. Inhibe l'amylase salivaire. Effet modéré (~15-20% réduction), moins fort que l'ordre alimentaire.</p></div>
+<div class="learn-card"><h3>Fruits : seul vs après repas</h3>
+<p><strong>Un fruit seul = spike rapide.</strong> Le fruit contient du glucose (entre directement en circulation) + du fructose (métabolisé par le foie). Sans graisses/fibres externes pour ralentir, pic en 15-25min.</p>
+<p><strong>Un fruit après un repas riche en fibres/protéines = spike amorti.</strong> La vidange gastrique est déjà ralentie. MAIS si le repas était déjà riche en glucides (pain + féculents), le fruit s'ajoute à la charge = double vague possible.</p>
+<p><strong>Fruit seul + graisses/protéines</strong> (pomme + poignée de noix, poire + beurre de cacahuète) = bon compromis. Testable directement sur le CGM.</p>
+<p><strong>Varie selon le fruit :</strong> banane mûre et raisin = spike rapide. Baies, pomme verte, poire = plus modéré. Le CGM mesure VOTRE réponse individuelle.</p></div>
 <div class="learn-card"><h3>Mouvement post-repas</h3>
-<p><strong>Meta-analyse 2023 (Sports Medicine, 81 essais) :</strong> l'exercice post-repas reduit significativement le pic glycemique chez les personnes saines ET avec intolerance au glucose.</p>
-<p><strong>Chiffres cles :</strong> 10min de marche apres chaque repas = <strong>-12% glycemie moyenne</strong>, <strong>-22% post-diner</strong> (Reynolds 2016). Pic reduit de <strong>17-24% en moyenne</strong>, jusqu'a 50% dans certaines etudes. L'intensite compte moins que le timing.</p>
-<p>Mecanisme : contraction musculaire active les transporteurs GLUT4 qui absorbent le glucose <em>sans insuline</em>. Velo, jardinage, menage = meme effet.</p>
-<p><strong>Sport intense a jeun :</strong> peut temporairement AUGMENTER la glycemie de 10-30 mg/dL (adrenaline + cortisol = glycogenolyse hepatique). Normal, baisse ensuite.</p></div>
-
-<div class="learn-card"><h3>Eau froide / bain riviere</h3>
-<p><strong>Effet immediat :</strong> l'immersion en eau froide declenche une decharge de noradrenaline (x2-3 en 1 min). Peut temporairement elever la glycemie de 10-20 mg/dL via glycogenolyse hepatique.</p>
-<p><strong>Effet retarde (1-4h apres) :</strong> amelioration de la sensibilite insulinique. Activation du tissu adipeux brun (BAT) qui augmente la captation du glucose. Resultat net positif sur la journee.</p>
-<p><strong>Sur le CGM :</strong> petit bump pendant/juste apres la baignade, puis valeurs plus basses dans les heures suivantes. Bon candidat pour test : jour potager+riviere vs jour potager seul.</p></div>
-
+<p><strong>Méta-analyse 2023 (Sports Medicine, 81 essais) :</strong> l'exercice post-repas réduit significativement le pic glycémique chez les personnes saines ET avec intolérance au glucose.</p>
+<p><strong>Chiffres clés :</strong> 10min de marche après chaque repas = <strong>-12% glycémie moyenne</strong>, <strong>-22% post-dîner</strong> (Reynolds 2016). Pic réduit de <strong>17-24% en moyenne</strong>, jusqu'à 50% dans certaines études. L'intensité compte moins que le timing.</p>
+<p>Mécanisme : contraction musculaire active les transporteurs GLUT4 qui absorbent le glucose <em>sans insuline</em>. Vélo, jardinage, ménage = même effet.</p>
+<p><strong>Sport intense à jeun :</strong> peut temporairement AUGMENTER la glycémie de 10-30 mg/dL (adrénaline + cortisol = glycogénolyse hépatique). Normal, baisse ensuite.</p></div>
+<div class="learn-card"><h3>Eau froide / bain rivière</h3>
+<p><strong>Effet immédiat :</strong> l'immersion en eau froide déclenche une décharge de noradrénaline (x2-3 en 1 min). Peut temporairement élever la glycémie de 10-20 mg/dL via glycogénolyse hépatique.</p>
+<p><strong>Effet retardé (1-4h après) :</strong> amélioration de la sensibilité insulinique. Activation du tissu adipeux brun (BAT) qui augmente la captation du glucose. Résultat net positif sur la journée.</p>
+<p><strong>Sur le CGM :</strong> petit bump pendant/juste après la baignade, puis valeurs plus basses dans les heures suivantes. Bon candidat pour test : jour potager+rivière vs jour potager seul.</p></div>
 <div class="learn-card"><h3>Espacement des repas</h3>
-<p><strong>4-5h entre repas = optimal.</strong> Assez pour que l'insuline redescende, pas assez pour epuiser le glycogene.</p>
-<p><strong>>6h sans manger :</strong> risque d'hypo, surtout pour Fanny (historique + sensibilite insulinique elevee). Le foie compense mais si reserves basses (post-exercice), la glycemie chute.</p>
-<p><strong>&lt;3h entre repas :</strong> l'insuline du repas precedent est encore active. Risque de pic cumule ou hypoglycemie reactionnelle retardee.</p></div>
-
-<div class="learn-card"><h3>Pieges courants</h3>
-<p><strong>Les proteines declenchent aussi l'insuline.</strong> Un steak ne fait pas monter la glycemie sur le CGM, mais stimule l'insuline (via leucine/arginine). Pas "neutre" metaboliquement.</p>
-<p><strong>Les graisses causent un pic RETARDE.</strong> Un repas tres gras (pizza, friture, chocolat) peut causer une elevation 3-6h apres. Sur le CGM : pic "fantome" sans repas apparent. Les graisses ralentissent la vidange gastrique ET induisent une resistance insulinique transitoire via les acides gras libres.</p>
-<p><strong>Variation individuelle enorme.</strong> Etude PREDICT (ZOE, 1100 participants) : la genetique n'explique que ~30% de la reponse glycemique. Le microbiome, le sommeil, le stress comptent autant. Ce qui marche pour Axel peut ne pas marcher pour Fanny.</p>
-<p><strong>Le stress eleve la glycemie sans manger.</strong> Le cortisol stimule la neoglucogenese hepatique. Un stress aigu peut faire monter de 20-40 mg/dL. Spike inexplicable en apres-midi = probablement stress.</p></div>
-
-<div class="learn-card"><h3>Sommeil et glycemie</h3>
-<p><strong>Mauvais sommeil = +15-25% de resistance insulinique le lendemain.</strong> Une seule nuit courte (&lt;6h) suffit. Le cortisol matinal est plus eleve, le dawn phenomenon plus marque.</p>
-<p><strong>Manger tard (&lt;2h avant coucher) :</strong> la digestion interfere avec le sommeil profond, et la glycemie reste elevee pendant les premieres heures de nuit.</p>
-<p><strong>Dawn phenomenon (montee 04h-07h) :</strong> normal. Le cortisol monte pour preparer le reveil. +10-20 mg/dL = typique. >30 mg/dL = flag.</p></div>
-
-<h2 style="font-size:18px;font-weight:700;margin:30px 0 20px">Consequences des niveaux de glucose</h2>
-
+<p><strong>4-5h entre repas = optimal.</strong> Assez pour que l'insuline redescende, pas assez pour épuiser le glycogène.</p>
+<p><strong>>6h sans manger :</strong> risque d'hypo, surtout pour Fanny (historique + sensibilité insulinique élevée). Le foie compense mais si réserves basses (post-exercice), la glycémie chute.</p>
+<p><strong>&lt;3h entre repas :</strong> l'insuline du repas précédent est encore active. Risque de pic cumulé ou hypoglycémie réactionnelle retardée.</p></div>
+<div class="learn-card"><h3>Pièges courants</h3>
+<p><strong>Les protéines déclenchent aussi l'insuline.</strong> Un steak ne fait pas monter la glycémie sur le CGM, mais stimule l'insuline (via leucine/arginine). Pas "neutre" métaboliquement.</p>
+<p><strong>Les graisses causent un pic RETARDÉ.</strong> Un repas très gras (pizza, friture, chocolat) peut causer une élévation 3-6h après. Sur le CGM : pic "fantôme" sans repas apparent. Les graisses ralentissent la vidange gastrique ET induisent une résistance insulinique transitoire via les acides gras libres.</p>
+<p><strong>Variation individuelle énorme.</strong> Étude PREDICT (ZOE, 1100 participants) : la génétique n'explique que ~30% de la réponse glycémique. Le microbiome, le sommeil, le stress comptent autant. Ce qui marche pour Axel peut ne pas marcher pour Fanny.</p>
+<p><strong>Le stress élève la glycémie sans manger.</strong> Le cortisol stimule la néoglucogenèse hépatique. Un stress aigu peut faire monter de 20-40 mg/dL. Spike inexplicable en après-midi = probablement stress.</p></div>
+<div class="learn-card"><h3>Sommeil et glycémie</h3>
+<p><strong>Mauvais sommeil = +15-25% de résistance insulinique le lendemain.</strong> Une seule nuit courte (&lt;6h) suffit. Le cortisol matinal est plus élevé, le dawn phenomenon plus marqué.</p>
+<p><strong>Manger tard (&lt;2h avant coucher) :</strong> la digestion interfère avec le sommeil profond, et la glycémie reste élevée pendant les premières heures de nuit.</p>
+<p><strong>Dawn phenomenon (montée 04h-07h) :</strong> normal. Le cortisol monte pour préparer le réveil. +10-20 mg/dL = typique. >30 mg/dL = flag.</p></div>
+<h2 style="font-size:18px;font-weight:700;margin:30px 0 20px">Conséquences des niveaux de glucose</h2>
 <div class="learn-card" style="border-left:4px solid #f59e0b"><h3>Court terme (heures)</h3>
-<p><strong>Pic >140 :</strong> fatigue post-prandiale ("food coma"), difficulte de concentration, envie de sucre 2-3h apres (hypo reactionnelle).</p>
-<p><strong>Pic >180 :</strong> stress oxydatif aigu, inflammation vasculaire temporaire, glycation acceleree des proteines.</p>
-<p><strong>Hypo &lt;70 :</strong> tremblements, confusion, irritabilite, faim intense. Le cerveau n'a presque pas de reserves de glucose.</p>
-<p><strong>Hypo &lt;54 :</strong> risque de perte de conscience, convulsions. Urgence medicale si prolongee.</p></div>
-
-<div class="learn-card" style="border-left:4px solid #f59e0b"><h3>Moyen terme (semaines a mois)</h3>
-<p><strong>Variabilite glycemique chronique :</strong> inflammation de bas grade (CRP elevee), resistance insulinique progressive, prise de poids viscerale.</p>
-<p><strong>Pics repetes >140 :</strong> les cellules beta du pancreas s'usent (glucotoxicite). La phase 1 de secretion insulinique (rapide) se deteriore en premier.</p>
-<p><strong>Hypos repetees :</strong> le corps s'habitue ("hypoglycemia unawareness") et ne declenche plus les symptomes d'alerte.</p></div>
-
-<div class="learn-card" style="border-left:4px solid #ef4444"><h3>Long terme (annees)</h3>
-<p><strong>Pre-diabete puis diabete type 2 :</strong> quand les cellules beta ne compensent plus. Glycemie a jeun >100 de facon repetee = premier signe. HbA1c >5.7% = pre-diabete.</p>
-<p><strong>Maladies cardiovasculaires :</strong> la glycation endommage l'endothelium vasculaire. Risque x2-4 chez les diabetiques.</p>
-<p><strong>Neuropathie :</strong> glucose eleve endommage les petits nerfs (pieds, mains, digestion). Picotements, engourdissements.</p>
-<p><strong>Retinopathie et nephropathie :</strong> micro-vaisseaux retiniens et glomerules renaux parmi les premiers touches.</p>
-<p><strong>La bonne nouvelle :</strong> tout ceci est evitable. Maintenir TIR >85%, pics &lt;140, variabilite faible reduit le risque massivement. C'est ce que le CGM permet de piloter.</p></div>
-
-<div class="learn-card" style="border-left:4px solid var(--primary)"><h3>Cibles de reference</h3>
-<p><strong>Glycemie a jeun :</strong> 75-95 (optimal), &lt;100 (acceptable).</p>
-<p><strong>Pic post-repas :</strong> &lt;120 (excellent), &lt;140 (bon), >140 (ameliorable), >160 (a corriger).</p>
-<p><strong>Delta post-repas :</strong> &lt;30 (excellent), &lt;50 (normal), >50 (eleve).</p>
-<p><strong>Retour baseline :</strong> &lt;2h (bon), >3h (resistance insulinique possible).</p>
+<p><strong>Pic >140 :</strong> fatigue post-prandiale ("food coma"), difficulté de concentration, envie de sucre 2-3h après (hypo réactionnelle).</p>
+<p><strong>Pic >180 :</strong> stress oxydatif aigu, inflammation vasculaire temporaire, glycation accélérée des protéines.</p>
+<p><strong>Hypo &lt;70 :</strong> tremblements, confusion, irritabilité, faim intense. Le cerveau n'a presque pas de réserves de glucose.</p>
+<p><strong>Hypo &lt;54 :</strong> risque de perte de conscience, convulsions. Urgence médicale si prolongée.</p></div>
+<div class="learn-card" style="border-left:4px solid #f59e0b"><h3>Moyen terme (semaines à mois)</h3>
+<p><strong>Variabilité glycémique chronique :</strong> inflammation de bas grade (CRP élevée), résistance insulinique progressive, prise de poids viscérale.</p>
+<p><strong>Pics répétés >140 :</strong> les cellules bêta du pancréas s'usent (glucotoxicité). La phase 1 de sécrétion insulinique (rapide) se détériore en premier.</p>
+<p><strong>Hypos répétées :</strong> le corps s'habitue ("hypoglycemia unawareness") et ne déclenche plus les symptômes d'alerte.</p></div>
+<div class="learn-card" style="border-left:4px solid #ef4444"><h3>Long terme (années)</h3>
+<p><strong>Pré-diabète puis diabète type 2 :</strong> quand les cellules bêta ne compensent plus. Glycémie à jeun >100 de façon répétée = premier signe. HbA1c >5.7% = pré-diabète.</p>
+<p><strong>Maladies cardiovasculaires :</strong> la glycation endommage l'endothélium vasculaire. Risque x2-4 chez les diabétiques.</p>
+<p><strong>Neuropathie :</strong> glucose élevé endommage les petits nerfs (pieds, mains, digestion). Picotements, engourdissements.</p>
+<p><strong>Rétinopathie et néphropathie :</strong> micro-vaisseaux rétiniens et glomérules rénaux parmi les premiers touchés.</p>
+<p><strong>La bonne nouvelle :</strong> tout ceci est évitable. Maintenir TIR >85%, pics &lt;140, variabilité faible réduit le risque massivement. C'est ce que le CGM permet de piloter.</p></div>
+<div class="learn-card" style="border-left:4px solid var(--primary)"><h3>Cibles de référence</h3>
+<p><strong>Glycémie à jeun :</strong> 75-95 (optimal), &lt;100 (acceptable).</p>
+<p><strong>Pic post-repas :</strong> &lt;120 (excellent), &lt;140 (bon), >140 (améliorable), >160 (à corriger).</p>
+<p><strong>Delta post-repas :</strong> &lt;30 (excellent), &lt;50 (normal), >50 (élevé).</p>
+<p><strong>Retour baseline :</strong> &lt;2h (bon), >3h (résistance insulinique possible).</p>
 <p><strong>Nuit (22h-06h) :</strong> 70-90 mg/dL stable, SD &lt;10.</p>
-<p><strong>TIR (70-140) :</strong> >90% (excellent), >80% (bon), &lt;70% (a ameliorer).</p>
+<p><strong>TIR (70-140) :</strong> >90% (excellent), >80% (bon), &lt;70% (à améliorer).</p>
 <p><strong>Dawn phenomenon :</strong> &lt;+15 mg/dL (normal), >+30 (flag).</p></div>
 </div>
 </main>
@@ -311,7 +299,7 @@ function renderTests(){document.getElementById('tests-list').innerHTML=TESTS.map
 function parseTestTags(desc){var m=desc.match(/#(\d+[A-Za-z]*)/g);return m?m.map(function(x){return x.substring(1)}):[] }
 function getTestGroups(){var logs=getLogs();var groups={};logs.forEach(function(l){var tags=parseTestTags(l.desc);tags.forEach(function(tag){var num=tag.replace(/[A-Za-z]+$/,'');var variant=tag.replace(/^\d+/,'')||'_';if(!groups[num])groups[num]={};if(!groups[num][variant])groups[num][variant]=[];groups[num][variant].push(l)})});return groups}
 var _testCharts=[];
-function renderTestComparisons(){var el=document.getElementById('tests-comparisons');_testCharts.forEach(function(c){c.destroy()});_testCharts=[];var groups=getTestGroups();var nums=Object.keys(groups).sort(function(a,b){return parseInt(a)-parseInt(b)});if(!nums.length){el.innerHTML='<p style="font-size:12px;color:var(--text3)">No #tags found in logs yet. Add #1A, #1B etc. to log descriptions.</p>';return}var html='';nums.forEach(function(num){var g=groups[num];var variants=Object.keys(g).sort();html+='<div class="card" style="margin-bottom:16px"><h3>Test #'+esc(num)+'</h3>';variants.forEach(function(v){var logs=g[v];html+='<div style="margin:6px 0;font-size:12px"><strong style="color:var(--primary)">#'+esc(num)+esc(v!=='_'?v:'')+'</strong> ('+logs.length+' occurrence'+(logs.length>1?'s':'')+'): ';html+=logs.map(function(l){return l.date+' '+l.time+' <span style="color:var(--text3)">['+l.person+']</span> '+esc(l.desc.substring(0,60))}).join('<br>');html+='</div>'});if(variants.length>=2){html+='<div id="test-chart-'+num+'" style="margin-top:12px"><canvas id="tc-ax-'+num+'" style="max-height:250px"></canvas><canvas id="tc-fa-'+num+'" style="max-height:250px;margin-top:8px"></canvas></div>'}html+='</div>'});el.innerHTML=html;nums.forEach(function(num){var g=groups[num];var variants=Object.keys(g).sort();if(variants.length<2)return;['axel','fanny'].forEach(function(person,pi){var cid='tc-'+(pi===0?'ax':'fa')+'-'+num;var canvas=document.getElementById(cid);if(!canvas)return;var datasets=[];var colors=['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6'];variants.forEach(function(v,vi){var logs=g[v];logs.forEach(function(l,li){var start=luxon.DateTime.fromISO(l.date+'T'+l.time);var end=start.plus({hours:3});var data=getGlucose(person).filter(function(r){return r.t>=start.toISO()&&r.t<=end.toISO()});if(!data.length)return;var pts=data.map(function(r){var mins=luxon.DateTime.fromISO(r.t).diff(start,'minutes').minutes;return{x:Math.round(mins),y:r.v}});datasets.push({label:'#'+num+(v!=='_'?v:'')+' '+l.date,data:pts,borderColor:colors[vi%5],borderWidth:1.5,borderDash:li>0?[4,4]:[],pointRadius:0,tension:.3,fill:false})})});var ch=new Chart(canvas.getContext('2d'),{type:'line',data:{datasets:datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10}},position:'top'},title:{display:true,text:(pi===0?'Axel':'Fanny')+' - Test #'+num,font:{size:12}}},scales:{x:{type:'linear',min:0,max:180,title:{display:true,text:'min',font:{size:10}},ticks:{font:{size:10},stepSize:30},grid:{color:'rgba(0,0,0,0.04)'}},y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}}}}});_testCharts.push(ch)})})}
+function renderTestComparisons(){var el=document.getElementById('tests-comparisons');_testCharts.forEach(function(c){c.destroy()});_testCharts=[];var groups=getTestGroups();var nums=Object.keys(groups).sort(function(a,b){return parseInt(a)-parseInt(b)});if(!nums.length){el.innerHTML='<p style="font-size:12px;color:var(--text3)">No #tags found in logs yet. Add #1A, #1B etc. to log descriptions.</p>';return}var html='';nums.forEach(function(num){var g=groups[num];var variants=Object.keys(g).sort();html+='<div class="card" style="margin-bottom:16px"><h3>Test #'+esc(num)+'</h3>';variants.forEach(function(v){var logs=g[v];html+='<div style="margin:6px 0;font-size:12px"><strong style="color:var(--primary)">#'+esc(num)+esc(v!=='_'?v:'')+'</strong> ('+logs.length+' occurrence'+(logs.length>1?'s':'')+'): ';html+=logs.map(function(l){return l.date+' '+l.time+' <span style="color:var(--text3)">['+l.person+']</span> '+esc(l.desc.substring(0,60))}).join('<br>');html+='</div>'});if(variants.length>=2){html+='<div id="test-chart-'+num+'" style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap"><div style="flex:1;min-width:280px"><canvas id="tc-ax-'+num+'" style="max-height:220px"></canvas></div><div style="flex:1;min-width:280px"><canvas id="tc-fa-'+num+'" style="max-height:220px"></canvas></div></div>'}html+='</div>'});el.innerHTML=html;nums.forEach(function(num){var g=groups[num];var variants=Object.keys(g).sort();if(variants.length<2)return;['axel','fanny'].forEach(function(person,pi){var cid='tc-'+(pi===0?'ax':'fa')+'-'+num;var canvas=document.getElementById(cid);if(!canvas)return;var datasets=[];var colors=['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6'];variants.forEach(function(v,vi){var logs=g[v];logs.forEach(function(l,li){var start=luxon.DateTime.fromISO(l.date+'T'+l.time);var end=start.plus({hours:3});var data=getGlucose(person).filter(function(r){return r.t>=start.toISO()&&r.t<=end.toISO()});if(!data.length)return;var pts=data.map(function(r){var mins=luxon.DateTime.fromISO(r.t).diff(start,'minutes').minutes;return{x:Math.round(mins),y:r.v}});datasets.push({label:'#'+num+(v!=='_'?v:'')+' '+l.date,data:pts,borderColor:colors[vi%5],borderWidth:1.5,borderDash:li>0?[4,4]:[],pointRadius:0,tension:.3,fill:false})})});var ch=new Chart(canvas.getContext('2d'),{type:'line',data:{datasets:datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10}},position:'top'},title:{display:true,text:(pi===0?'Axel':'Fanny')+' - Test #'+num,font:{size:12}}},scales:{x:{type:'linear',min:0,max:180,title:{display:true,text:'min',font:{size:10}},ticks:{font:{size:10},stepSize:30},grid:{color:'rgba(0,0,0,0.04)'}},y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}}}}});_testCharts.push(ch)})})}
 var chartRel=null;
 function renderRelative(){var pick=document.getElementById('rel-pick');if(!pick.value)pick.valueAsDate=new Date();var day=pick.value;var ds=luxon.DateTime.fromISO(day).startOf('day'),de=ds.endOf('day');var nightEnd=ds.plus({hours:6});var axAll=getGlucose('axel').filter(function(r){return r.t>=ds.toISO()&&r.t<=de.toISO()});var faAll=getGlucose('fanny').filter(function(r){return r.t>=ds.toISO()&&r.t<=de.toISO()});var axNight=axAll.filter(function(r){return r.t<=nightEnd.toISO()}).map(function(r){return r.v});var faNight=faAll.filter(function(r){return r.t<=nightEnd.toISO()}).map(function(r){return r.v});var axBase=axNight.length?Math.round(axNight.reduce(function(s,v){return s+v},0)/axNight.length):null;var faBase=faNight.length?Math.round(faNight.reduce(function(s,v){return s+v},0)/faNight.length):null;var info=document.getElementById('rel-baseline-info');info.innerHTML='Baseline 00h-06h: '+(axBase?'<strong style="color:var(--axel)">Axel '+axBase+' mg/dL</strong>':'Axel: no data')+' | '+(faBase?'<strong style="color:var(--fanny)">Fanny '+faBase+' mg/dL</strong>':'Fanny: no data');if(chartRel)chartRel.destroy();var datasets=[];if(axBase&&axAll.length){datasets.push({label:'Axel (delta from '+axBase+')',data:axAll.map(function(r){return{x:new Date(r.t),y:r.v-axBase}}),borderColor:'#3b82f6',borderWidth:2,pointRadius:0,tension:.3,fill:false})}if(faBase&&faAll.length){datasets.push({label:'Fanny (delta from '+faBase+')',data:faAll.map(function(r){return{x:new Date(r.t),y:r.v-faBase}}),borderColor:'#e8437f',borderWidth:2,pointRadius:0,tension:.3,fill:false})}datasets.push({label:'Baseline',data:[{x:ds.toJSDate(),y:0},{x:de.toJSDate(),y:0}],borderColor:'#22c55e',borderWidth:1,borderDash:[6,3],pointRadius:0,fill:false});chartRel=new Chart(document.getElementById('chart-relative').getContext('2d'),{type:'line',data:{datasets:datasets},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'time',time:{unit:'hour',displayFormats:{hour:'HH:mm'}},min:ds.toJSDate(),max:de.toJSDate(),grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10}}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},callback:function(v){return(v>=0?'+':'')+v}}}},plugins:{legend:{labels:{font:{size:11}}},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+(ctx.parsed.y>=0?'+':'')+ctx.parsed.y+' mg/dL'}}}}}})}
 function shiftRelDay(d){var p=document.getElementById('rel-pick');p.value=luxon.DateTime.fromISO(p.value).plus({days:d}).toISODate();renderRelative()}
