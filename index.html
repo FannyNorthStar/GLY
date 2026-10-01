@@ -1,104 +1,341 @@
-<div class="view" id="v-archive"><div id="archive-out"></div></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLY v6 Glycemia Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.4.4/luxon.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-luxon/1.3.1/chartjs-adapter-luxon.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--font:'Inter',-apple-system,sans-serif;--bg:#f3f3ef;--surface:#fff;--surface-alt:#f8f8f5;--border:#e2e2db;--border-lt:#ededea;--text:#1c1c1c;--text2:#5a5a52;--text3:#8a8a80;--axel:#3b82f6;--axel-bg:#eff6ff;--fanny:#e8437f;--fanny-bg:#fdf2f8;--target:#22c55e;--primary:#2b6b4f;--primary-h:#1f5a40;--primary-lt:#e8f5ee;--radius:8px;--radius-lg:12px;--max-w:960px;--tr:150ms ease}
+html{font-size:14px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+.header{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.header-in{max-width:var(--max-w);margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.logo-mark{width:30px;height:30px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
+.logo-text{font-size:16px;font-weight:700;letter-spacing:-.02em}
+.logo-sub{font-size:10px;color:var(--text3);font-weight:400;margin-left:2px}
+.hdr-actions{display:flex;gap:6px;align-items:center}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#ccc;margin-right:4px;transition:background .3s}
+.sync-dot.ok{background:var(--target)}.sync-dot.err{background:#ef4444}.sync-dot.working{background:#f59e0b}
+.btn-ic{width:34px;height:34px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all var(--tr);position:relative}
+.dot{width:7px;height:7px;border-radius:50%;background:#c0392b;position:absolute;top:-2px;right:-2px}.dot.ok{background:var(--target)}
+.nav{max-width:var(--max-w);margin:0 auto;display:flex;gap:0;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;padding:0 20px}
+.nav button{padding:10px 14px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all var(--tr);white-space:nowrap;font-family:var(--font)}
+.nav button:hover{color:var(--text2)}.nav button.on{color:var(--primary);border-bottom-color:var(--primary)}
+main{max-width:var(--max-w);margin:0 auto;padding:20px}
+.view{display:none}.view.on{display:block}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;font-family:var(--font);font-size:12px;font-weight:600;border-radius:var(--radius);border:none;cursor:pointer;transition:all var(--tr)}
+.btn-p{background:var(--primary);color:#fff}.btn-p:hover{background:var(--primary-h)}.btn-p:disabled{opacity:.5;cursor:not-allowed}
+.btn-s{background:var(--surface);color:var(--text);border:1px solid var(--border)}.btn-s:hover{background:var(--surface-alt)}
+.btn-ax{background:var(--axel-bg);color:var(--axel);border:1px solid #bfdbfe}
+.btn-an{background:#2b6b4f;color:#fff;padding:8px 14px;border:none;border-radius:8px;cursor:pointer;font-family:var(--font);font-size:11px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.btn-an:hover{background:#1f5a40}.btn-an:disabled{opacity:.5}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.card h3{font-size:14px;font-weight:600;margin-bottom:8px}
+.chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px}
+.chart-wrap canvas{max-height:340px}
+.tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-lt);font-size:12.5px}
+.tl-time{width:70px;font-weight:600;color:var(--text2);flex-shrink:0;font-size:11px;line-height:1.4}
+.tl-person{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+.tl-person.ax{background:var(--axel)}.tl-person.fa{background:var(--fanny)}.tl-person.bo{background:var(--primary)}
+.tl-cat{padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600;flex-shrink:0}
+.cat-meal{background:#fef3c7;color:#92400e}.cat-sport{background:#dbeafe;color:#1e40af}.cat-note{background:#f3f4f6;color:#374151}.cat-period{background:var(--fanny-bg);color:var(--fanny)}
+.tl-desc{flex:1;color:var(--text)}
+.log-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.form-row input,.form-row textarea,.form-row select{width:100%;padding:9px 12px;font-family:var(--font);font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surface-alt);color:var(--text);outline:none}
+.form-row input:focus,.form-row textarea:focus,.form-row select:focus{border-color:var(--primary)}
+.form-row textarea{resize:vertical;min-height:60px}
+.person-toggle{display:flex;gap:8px;margin-bottom:14px}
+.person-toggle button{flex:1;padding:10px;border-radius:var(--radius);border:2px solid var(--border);background:var(--surface);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer}
+.person-toggle button.sel-ax{border-color:var(--axel);background:var(--axel-bg);color:var(--axel)}
+.person-toggle button.sel-fa{border-color:var(--fanny);background:var(--fanny-bg);color:var(--fanny)}
+.person-toggle button.sel-bo{border-color:var(--primary);background:var(--primary-lt);color:var(--primary)}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+.stat-card .label{font-size:10px;font-weight:600;color:var(--text3);margin-bottom:4px}
+.stat-card .value{font-size:22px;font-weight:700}
+.stat-card .sub{font-size:10px;color:var(--text3);margin-top:2px}
+.stat-card.ax .value{color:var(--axel)}.stat-card.fa .value{color:var(--fanny)}
+.ai-box{background:var(--primary-lt);border:1px solid #c5ddd0;border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:18px}
+.ai-box .ai-label{font-size:10px;font-weight:600;color:var(--primary);margin-bottom:8px}
+.ai-box p,.ai-box li{font-size:13px;line-height:1.6;color:var(--text)}.ai-box ul{padding-left:16px}.ai-box li{margin-bottom:4px}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:32px;text-align:center;cursor:pointer;margin-bottom:16px}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--primary);background:var(--primary-lt)}
+.upload-zone .icon{font-size:28px;margin-bottom:8px}.upload-zone p{font-size:12px;color:var(--text2)}.upload-zone input{display:none}
+.baseline-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px}
+.baseline-table th{text-align:left;padding:6px 10px;background:var(--surface-alt);font-weight:600;color:var(--text2);border-bottom:1px solid var(--border)}
+.baseline-table td{padding:6px 10px;border-bottom:1px solid var(--border-lt)}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-ov.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-lg);padding:24px;max-width:480px;width:100%;box-shadow:0 4px 12px rgba(0,0,0,.08);max-height:90vh;overflow-y:auto}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:4px}.modal .sub{font-size:12px;color:var(--text3);margin-bottom:20px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.arc-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.arc-item:hover{border-color:var(--primary)}
+.arc-item h3{font-size:13px;font-weight:600;margin-bottom:2px}
+.arc-item .arc-date{font-size:11px;color:var(--text3)}
+.arc-del{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px}
+.arc-del:hover{background:#fef2f2;color:#c0392b}
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}.empty .icon{font-size:36px;margin-bottom:12px}.empty p{font-size:12px;max-width:360px;margin:0 auto}
+.err{background:#fef2f2;border:1px solid #fecaca;color:#c0392b;padding:12px 16px;border-radius:var(--radius);font-size:12px;margin-bottom:14px}
+.spinner{width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.learn-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px}
+.learn-card h3{font-size:15px;font-weight:700;color:var(--primary);margin-bottom:10px}
+.learn-card p{font-size:12.5px;line-height:1.75;color:var(--text);margin-bottom:8px}
+.learn-card strong{color:var(--text)}
+@media(max-width:640px){main{padding:14px}.nav button{padding:8px 10px;font-size:11px}.stats-grid{grid-template-columns:1fr}.chart-wrap canvas{max-height:260px}}
+</style>
+</head>
+<body>
+<header class="header"><div class="header-in">
+<a href="#" class="logo"><div class="logo-mark">G</div><div><span class="logo-text">GLY</span><span class="logo-sub">Glycemia Tracker</span></div></a>
+<div class="hdr-actions"><div class="sync-dot" id="sync-dot"></div><button class="btn-ic" id="btn-settings">&#9881;<div class="dot" id="key-dot"></div></button></div>
+</div></header>
+<nav class="nav" role="tablist">
+<button class="on" data-v="daily">Daily</button><button data-v="weekly">Weekly</button><button data-v="tests">Tests</button><button data-v="log">Log Entry</button><button data-v="data">Data</button><button data-v="baseline">Baseline</button><button data-v="archive">Archive</button><button data-v="learn">Learn</button>
+</nav>
+<main>
+<!-- DAILY --><div class="view on" id="v-daily">
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+<button onclick="shiftDay(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">&lsaquo;</button>
+<input type="date" id="day-pick" onchange="renderDaily()" style="font-family:var(--font);font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface)">
+<button onclick="shiftDay(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">&rsaquo;</button>
+<button class="btn btn-s" onclick="document.getElementById('day-pick').valueAsDate=new Date();renderDaily()" style="font-size:11px">Today</button>
+<button class="btn-an" onclick="aiDailyInsight()">&#9654; Analyser cette journee</button></div>
+<div class="stats-grid" id="daily-stats"></div>
+<div class="chart-wrap"><canvas id="chart-daily"></canvas></div>
+<div id="daily-ai"></div>
+<h3 style="font-size:13px;font-weight:600;margin:16px 0 8px">Timeline</h3>
+<div id="daily-timeline"></div></div>
+<!-- WEEKLY --><div class="view" id="v-weekly">
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+<button onclick="shiftWeek(-1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">&lsaquo;</button>
+<span id="week-label" style="font-size:13px;font-weight:600"></span>
+<button onclick="shiftWeek(1)" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px">&rsaquo;</button>
+<button class="btn-an" onclick="aiWeeklyInsight()">&#9654; Analyser cette semaine</button></div>
+<div class="stats-grid" id="weekly-stats"></div>
+<div class="chart-wrap"><canvas id="chart-weekly"></canvas></div>
+<h3 style="font-size:13px;font-weight:600;margin:16px 0 8px;color:var(--fanny)">Fanny - Overlay par jour</h3>
+<div class="chart-wrap"><canvas id="chart-ov-fanny"></canvas></div>
+<h3 style="font-size:13px;font-weight:600;margin:16px 0 8px;color:var(--axel)">Axel - Overlay par jour</h3>
+<div class="chart-wrap"><canvas id="chart-ov-axel"></canvas></div>
+<div id="weekly-ai"></div></div>
+<!-- TESTS --><div class="view" id="v-tests">
+<div class="card" style="border-color:#c5ddd0;background:var(--primary-lt)">
+<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px"><div><h3>Discover Natural Experiments</h3><p style="font-size:12px;color:var(--text2);margin-top:4px">AI scans logs + glucose + past analyses.</p></div>
+<button class="btn btn-p" onclick="discoverPatterns()" id="btn-discover" style="white-space:nowrap;flex-shrink:0">Scan patterns</button></div>
+<div id="discover-output" style="margin-top:12px"></div></div>
+<h3 style="font-size:14px;font-weight:600;margin:16px 0 12px">Test Reference (AI context)</h3>
+<div id="tests-list"></div></div>
+<!-- LOG --><div class="view" id="v-log">
+<div class="log-form"><h3 style="margin-bottom:14px">Quick Log</h3>
+<div class="person-toggle" id="log-person"><button onclick="selPerson('axel',this)">Axel</button><button onclick="selPerson('fanny',this)">Fanny</button><button onclick="selPerson('both',this)">Both</button></div>
+<div class="form-row"><label>Date &amp; Time</label>
+<div style="display:flex;gap:8px;align-items:center"><input type="date" id="log-date" style="flex:1.2"><input type="time" id="log-time" style="flex:1">
+<button type="button" class="btn btn-s" onclick="document.getElementById('log-time').value=luxon.DateTime.now().toFormat('HH:mm')" style="padding:5px 10px;font-size:10px;flex-shrink:0">Now</button>
+<select id="log-duration" style="flex:0.8;padding:9px 8px;font-family:var(--font);font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--surface-alt)">
+<option value="">Dur.</option><option value="5">5m</option><option value="10">10m</option><option value="15">15m</option><option value="20">20m</option><option value="30">30m</option><option value="45">45m</option><option value="60">1h</option><option value="75">1h15</option><option value="90">1h30</option><option value="120">2h</option></select></div></div>
+<div class="form-row"><label>Category</label><select id="log-cat"><option value="meal">Meal</option><option value="sport">Sport</option><option value="note">Note</option><option value="period">Period (Fanny)</option></select></div>
+<div class="form-row"><label>Description</label><div id="fav-buttons"></div><textarea id="log-desc" placeholder="Describe what you ate, did, or observed."></textarea></div>
+<button class="btn btn-p" onclick="saveLog()">Save entry</button>
+<div id="log-msg" style="margin-top:10px;font-size:12px"></div></div>
+<h3 style="font-size:13px;font-weight:600;margin:24px 0 10px">Recent Entries</h3>
+<div id="log-recent"></div></div>
+<!-- DATA --><div class="view" id="v-data">
+<h3 style="font-size:13px;font-weight:600;margin-bottom:12px">Upload LibreView CSV</h3>
+<div class="upload-zone" id="upload-axel" onclick="this.querySelector('input').click()"><div class="icon">&#128193;</div><p><strong style="color:var(--axel)">Axel</strong> - Drop CSV or click</p><input type="file" accept=".csv" onchange="handleCSV('axel',event)"></div>
+<div class="upload-zone" id="upload-fanny" onclick="this.querySelector('input').click()"><div class="icon">&#128193;</div><p><strong style="color:var(--fanny)">Fanny</strong> - Drop CSV or click</p><input type="file" accept=".csv" onchange="handleCSV('fanny',event)"></div>
+<div id="upload-status"></div>
+<div class="card" style="margin-top:20px"><h3>Data Status</h3><div id="data-status" style="font-size:12px;color:var(--text2)"></div></div>
+<div class="card" style="margin-top:12px"><h3>Export</h3><button class="btn btn-s" onclick="exportAll()">Download JSON</button></div></div>
+<!-- BASELINE --><div class="view" id="v-baseline">
+<div class="card"><h3>Profiles</h3><table class="baseline-table"><tr><th></th><th style="color:var(--axel)">Axel</th><th style="color:var(--fanny)">Fanny</th></tr><tr><td>Born</td><td>1990 (36)</td><td>1987 (39)</td></tr><tr><td>Sex</td><td>Male</td><td>Female</td></tr><tr><td>CGM</td><td colspan="2">Freestyle Libre 2 Plus</td></tr></table></div>
+<div id="baseline-sections"></div>
+<div class="card" style="margin-top:16px"><h3>Cycle menstruel (Fanny)</h3>
+<p style="font-size:12px;color:var(--text2);margin-bottom:10px">Dates de J1 (premier jour des regles). Utilise pour calculer la phase du cycle.</p>
+<div id="period-dates-list"></div>
+<div style="display:flex;gap:8px;margin-top:10px"><input type="date" id="period-date-input" style="flex:1;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)"><button class="btn btn-p" onclick="addPeriodDate()">Add J1</button></div></div>
+<div class="card" style="margin-top:16px"><h3>Quick Favorites</h3>
+<p style="font-size:12px;color:var(--text2);margin-bottom:12px">One-tap shortcuts in Log Entry.</p>
+<div id="fav-meals-list"></div>
+<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+<select id="fav-cat" style="padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);background:var(--surface-alt)"><option value="meal">Meal</option><option value="sport">Sport</option><option value="note">Note</option></select>
+<input type="text" id="fav-name" placeholder="Label" style="flex:1;min-width:80px;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
+<input type="text" id="fav-desc" placeholder="Description" style="flex:2;min-width:140px;padding:8px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;font-family:var(--font)">
+<button class="btn btn-p" onclick="addFavMeal()" style="white-space:nowrap">Add</button></div></div></div>
+<!-- ARCHIVE --><div class="view" id="v-archive"><div id="archive-out"></div></div>
+<!-- LEARN --><div class="view" id="v-learn">
+<h2 style="font-size:18px;font-weight:700;margin-bottom:20px">Guide Pratique</h2>
+<div class="learn-card"><h3>Spikes : les regles</h3>
+<p><strong>2 petits pics a 110 > 1 gros pic a 160.</strong> La variabilite glycemique (amplitude des pics) est plus dommageable que la glycemie moyenne. Un pic a 160 genere du stress oxydatif, active NF-kB (inflammation), et declenche une reponse insulinique excessive qui peut causer une hypo reactionnelle.</p>
+<p><strong>Le delta compte plus que la valeur absolue.</strong> Passer de 85 a 140 (+55) est plus stressant metaboliquement que rester stable a 100. Le pancreas secrete une bolus d'insuline proportionnelle au delta.</p>
+<p><strong>Seuils :</strong> &lt;54 = hypo severe (danger). &lt;70 = hypo legere. 70-100 = optimal. 100-140 = normal post-repas. >140 = pic eleve. >160 = stress oxydatif. >180 = alerte rouge.</p></div>
 
-<!-- LEARN -->
-<div class="view" id="v-learn">
-<h2 style="font-size:18px;font-weight:700;margin-bottom:20px">Guide &amp; Background</h2>
+<div class="learn-card"><h3>Ordre du repas</h3>
+<p><strong>1. Legumes/fibres - 2. Proteines/graisses - 3. Glucides.</strong></p>
+<p>Etude Shukla (Weill Cornell, Diabetes Care 2015) : manger les glucides en dernier reduit l'aire sous la courbe glycemique de <strong>73%</strong> vs glucides en premier. A 60min : glycemie 126 vs 199 mg/dL. Confirme en 2025 : pics reduits de <strong>44%</strong> avec CGM. Etude japonaise : <strong>-39%</strong> chez des sujets sains.</p>
+<p>Mecanisme : les fibres creent un gel visqueux (ralentit vidange gastrique), proteines/graisses stimulent GLP-1 et GIP (incretines, preparent le pancreas). Quand les glucides arrivent, l'insuline est deja en circulation.</p>
+<p><strong>Vinaigre avant repas :</strong> 1cs vinaigre de cidre dans eau 15min avant. Inhibe l'amylase salivaire. Effet modere (~15-20% reduction), moins fort que l'ordre alimentaire.</p></div>
 
-<div class="card"><h3 style="color:var(--primary)">Spikes : les r&egrave;gles</h3>
-<p style="font-size:12.5px;line-height:1.7;color:var(--text)">
-<strong>2 petits pics &agrave; 110 &gt; 1 gros pic &agrave; 160.</strong> La variabilit&eacute; glyc&eacute;mique (amplitude des pics) est plus dommageable que la glyc&eacute;mie moyenne. Un pic &agrave; 160 g&eacute;n&egrave;re du stress oxydatif, active NF-kB (inflammation), et d&eacute;clenche une r&eacute;ponse insulinique excessive qui peut causer une hypo r&eacute;actionnelle. Deux repas &agrave; 110 maintiennent une charge m&eacute;tabolique stable.<br><br>
-<strong>Le delta compte plus que la valeur absolue.</strong> Passer de 85 &agrave; 140 (+55) est plus stressant m&eacute;taboliquement que rester stable &agrave; 100. Le pancr&eacute;as doit s&eacute;cr&eacute;ter une bolus d&#39;insuline proportionnelle au delta, pas &agrave; la valeur.<br><br>
-<strong>Seuils :</strong> &lt;70 = hypo l&eacute;g&egrave;re. &lt;54 = hypo s&eacute;v&egrave;re (danger). 70-100 = optimal. 100-140 = normal post-repas. &gt;140 = pic &eacute;lev&eacute;. &gt;160 = pic excessif (stress oxydatif). &gt;180 = alerte rouge.
-</p></div>
+<div class="learn-card"><h3>Fruits : seul vs apres repas</h3>
+<p><strong>Un fruit seul = spike rapide.</strong> Le fruit contient du glucose (entre directement en circulation) + du fructose (metabolise par le foie). Sans graisses/fibres externes pour ralentir, pic en 15-25min.</p>
+<p><strong>Un fruit apres un repas riche en fibres/proteines = spike amorti.</strong> La vidange gastrique est deja ralentie. MAIS si le repas etait deja riche en glucides (pain + feculents), le fruit s'ajoute a la charge = double vague possible.</p>
+<p><strong>Fruit seul + graisses/proteines</strong> (pomme + poignee de noix, poire + beurre de cacahuete) = bon compromis. Testable directement sur le CGM.</p>
+<p><strong>Varie selon le fruit :</strong> banane mure et raisin = spike rapide. Baies, pomme verte, poire = plus modere. Le CGM mesure VOTRE reponse individuelle.</p></div>
 
-<div class="card"><h3 style="color:var(--primary)">Ordre du repas</h3>
-<p style="font-size:12.5px;line-height:1.7;color:var(--text)">
-<strong>1. L&eacute;gumes/fibres &rarr; 2. Prot&eacute;ines/graisses &rarr; 3. Glucides.</strong><br>
-&Eacute;tude Shukla (Weill Cornell, <em>Diabetes Care</em> 2015) : manger les glucides en dernier r&eacute;duit l&#39;aire sous la courbe glyc&eacute;mique de <strong>73%</strong> vs glucides en premier (m&ecirc;me repas, m&ecirc;me quantit&eacute;). &Agrave; 60min : glyc&eacute;mie 126 vs 199 mg/dL. Confirm&eacute; en 2025 (<em>Diabetes Care</em>) : pics r&eacute;duits de <strong>44%</strong> avec CGM. &Eacute;tude japonaise : <strong>-39%</strong> chez des sujets sains. Effet confirm&eacute; aussi chez les personnes sans diab&egrave;te.<br><br>
-M&eacute;canisme : les fibres cr&eacute;ent un gel visqueux (ralentit vidange gastrique), prot&eacute;ines/graisses stimulent GLP-1 et GIP (incr&eacute;tines, pr&eacute;parent le pancr&eacute;as). Quand les glucides arrivent, l&#39;insuline est d&eacute;j&agrave; en circulation.<br><br>
-<strong>Vinaigre avant repas :</strong> 1cs vinaigre de cidre dans eau 15min avant &rarr; inhibe l&#39;amylase salivaire, ralentit digestion de l&#39;amidon. Effet mod&eacute;r&eacute; (~15-20% r&eacute;duction), moins fort que l&#39;ordre alimentaire.
-</p></div>
+<div class="learn-card"><h3>Mouvement post-repas</h3>
+<p><strong>Meta-analyse 2023 (Sports Medicine, 81 essais) :</strong> l'exercice post-repas reduit significativement le pic glycemique chez les personnes saines ET avec intolerance au glucose.</p>
+<p><strong>Chiffres cles :</strong> 10min de marche apres chaque repas = <strong>-12% glycemie moyenne</strong>, <strong>-22% post-diner</strong> (Reynolds 2016). Pic reduit de <strong>17-24% en moyenne</strong>, jusqu'a 50% dans certaines etudes. L'intensite compte moins que le timing.</p>
+<p>Mecanisme : contraction musculaire active les transporteurs GLUT4 qui absorbent le glucose <em>sans insuline</em>. Velo, jardinage, menage = meme effet.</p>
+<p><strong>Sport intense a jeun :</strong> peut temporairement AUGMENTER la glycemie de 10-30 mg/dL (adrenaline + cortisol = glycogenolyse hepatique). Normal, baisse ensuite.</p></div>
 
-<div class="card"><h3 style="color:var(--primary)">Fruits : seul vs apr&egrave;s repas</h3>
-<p style="font-size:12.5px;line-height:1.7;color:var(--text)">
-<strong>Un fruit seul = spike rapide.</strong> Le fruit contient du glucose (qui entre directement en circulation) + du fructose (m&eacute;tabolis&eacute; par le foie). Sans fibres/graisses externes pour ralentir, pic en 15-25min. La fibre du fruit lui-m&ecirc;me ralentit un peu, mais pas autant qu&#39;un repas complet.<br><br>
-<strong>Un fruit en fin de repas riche en fibres/prot&eacute;ines = spike amorti.</strong> La vidange gastrique est d&eacute;j&agrave; ralentie. MAIS : si le repas &eacute;tait d&eacute;j&agrave; riche en glucides (pain + f&eacute;culents), le fruit s&#39;ajoute &agrave; la charge totale = double vague possible.<br><br>
-<strong>Fruit seul + graisses/prot&eacute;ines</strong> (pomme + poign&eacute;e de noix, poire + beurre de cacahu&egrave;te) = bon compromis. Les graisses ralentissent l&#39;absorption sans la charge glucidique d&#39;un repas complet. Testable directement sur votre CGM.<br><br>
-<strong>Attention :</strong> la r&eacute;ponse varie &eacute;norm&eacute;ment selon le fruit. Banane m&ucirc;re et raisin = spike rapide. Baies, pomme verte, poire = plus mod&eacute;r&eacute;. Le CGM est l&agrave; pour mesurer VOTRE r&eacute;ponse individuelle.
-</p></div>
+<div class="learn-card"><h3>Eau froide / bain riviere</h3>
+<p><strong>Effet immediat :</strong> l'immersion en eau froide declenche une decharge de noradrenaline (x2-3 en 1 min). Peut temporairement elever la glycemie de 10-20 mg/dL via glycogenolyse hepatique.</p>
+<p><strong>Effet retarde (1-4h apres) :</strong> amelioration de la sensibilite insulinique. Activation du tissu adipeux brun (BAT) qui augmente la captation du glucose. Resultat net positif sur la journee.</p>
+<p><strong>Sur le CGM :</strong> petit bump pendant/juste apres la baignade, puis valeurs plus basses dans les heures suivantes. Bon candidat pour test : jour potager+riviere vs jour potager seul.</p></div>
 
-<div class="card"><h3 style="color:var(--primary)">Mouvement post-repas</h3>
-<p style="font-size:12.5px;line-height:1.7;color:var(--text)">
-<strong>M&eacute;ta-analyse 2023 (<em>Sports Medicine</em>, 81 essais) :</strong> l&#39;exercice post-repas r&eacute;duit significativement le pic glyc&eacute;mique chez les personnes saines ET avec intol&eacute;rance au glucose.<br><br>
-<strong>Chiffres cl&eacute;s :</strong> 10min de marche apr&egrave;s chaque repas = <strong>-12% glyc&eacute;mie moyenne</strong>, <strong>-22% post-d&icirc;ner</strong> (Reynolds 2016, T2D). Pic r&eacute;duit de <strong>17-24% en moyenne</strong>, jusqu&#39;&agrave; 50% dans certaines &eacute;tudes. L&#39;intensit&eacute; compte moins que le timing : 10min l&eacute;gères dans les 30min apr&egrave;s &gt; 30min intenses 2h apr&egrave;s.<br><br>
-M&eacute;canisme : la contraction musculaire active les transporteurs GLUT4 qui absorbent le glucose <em>sans insuline</em>. V&eacute;lo, jardinage, m&eacute;nage = m&ecirc;me effet que la marche.<br><br>
-<strong>Sport intense &agrave; jeun :</strong> peut temporairement AUGMENTER la glyc&eacute;mie de 10-30 mg/dL (adr&eacute;naline + cortisol = glycog&eacute;nolyse h&eacute;patique). Normal, pas inqui&eacute;tant, baisse ensuite.
-</p></div>
+<div class="learn-card"><h3>Espacement des repas</h3>
+<p><strong>4-5h entre repas = optimal.</strong> Assez pour que l'insuline redescende, pas assez pour epuiser le glycogene.</p>
+<p><strong>>6h sans manger :</strong> risque d'hypo, surtout pour Fanny (historique + sensibilite insulinique elevee). Le foie compense mais si reserves basses (post-exercice), la glycemie chute.</p>
+<p><strong>&lt;3h entre repas :</strong> l'insuline du repas precedent est encore active. Risque de pic cumule ou hypoglycemie reactionnelle retardee.</p></div>
 
-<div class="card"><h3 style="color:var(--primary)">Eau froide / bain rivi&egrave;re</h3>
-<p style="font-size:12.5px;line-height:1.7;color:var(--text)">
-<strong>Effet imm&eacute;diat :</strong> l&#39;immersion en eau froide d&eacute;clenche une d&eacute;charge de noradr&eacute;naline (x2-3 en 1 min). Cela peut temporairement &eacute;lever la glyc&eacute;mie de 10-20 mg/dL via glycog&eacute;nolyse h&eacute;patique (le foie lib&egrave;re du glucose pour &laquo;alimenter&raquo; la r&eacute;ponse au froid).<br><br>
-<strong>Effet retard&eacute; (1-4h apr&egrave;s) :</strong> am&eacute;lioration de la sensibilit&eacute; insulinique. L&#39;activation du tissu adipeux brun (BAT) augmente la captation du glucose par les cellules graisseuses brunes. R&eacute;sultat net positif sur la journ&eacute;e.<br><br>
-<strong>Sur le CGM :</strong> attendre un petit bump pendant/juste apr&egrave;s la baignade, puis des valeurs plus basses que d&#39;habitude dans les heures suivantes. Bon candidat pour un test naturel : jour potager+rivi&egrave;re vs jour potager seul.
-</p></div>
+<div class="learn-card"><h3>Pieges courants</h3>
+<p><strong>Les proteines declenchent aussi l'insuline.</strong> Un steak ne fait pas monter la glycemie sur le CGM, mais stimule l'insuline (via leucine/arginine). Pas "neutre" metaboliquement.</p>
+<p><strong>Les graisses causent un pic RETARDE.</strong> Un repas tres gras (pizza, friture, chocolat) peut causer une elevation 3-6h apres. Sur le CGM : pic "fantome" sans repas apparent. Les graisses ralentissent la vidange gastrique ET induisent une resistance insulinique transitoire via les acides gras libres.</p>
+<p><strong>Variation individuelle enorme.</strong> Etude PREDICT (ZOE, 1100 participants) : la genetique n'explique que ~30% de la reponse glycemique. Le microbiome, le sommeil, le stress comptent autant. Ce qui marche pour Axel peut ne pas marcher pour Fanny.</p>
+<p><strong>Le stress eleve la glycemie sans manger.</strong> Le cortisol stimule la neoglucogenese hepatique. Un stress aigu peut faire monter de 20-40 mg/dL. Spike inexplicable en apres-midi = probablement stress.</p></div>
 
-<div class="card"><h3 style="color:var(--primary)">Espacement des repas</h3>
-<p style="font-size:12.5px;line-height:1.7;color:var(--text)">
-<strong>4-5h entre repas = optimal.</strong> Assez pour que l&#39;insuline redescende (retour &agrave; la sensibilit&eacute; basale), pas assez pour &eacute;puiser le glycog&egrave;ne.<br><br>
-<strong>&gt;6h sans manger :</strong> risque d&#39;hypo, surtout pour Fanny (historique + sensibilit&eacute; insulinique &eacute;lev&eacute;e). Le foie compense en lib&eacute;rant du glycog&egrave;ne, mais si les r&eacute;serves sont basses (post-exercice), la glyc&eacute;mie chute.<br><br>
-<strong>&lt;3h entre repas :</strong> l&#39;insuline du repas pr&eacute;c&eacute;dent est encore active. Le nouveau repas s&#39;ajoute &rarr; pic cumul&eacute; ou hypoglyc&eacute;mie r&eacute;actionnelle retard&eacute;e.
-</p></div>
+<div class="learn-card"><h3>Sommeil et glycemie</h3>
+<p><strong>Mauvais sommeil = +15-25% de resistance insulinique le lendemain.</strong> Une seule nuit courte (&lt;6h) suffit. Le cortisol matinal est plus eleve, le dawn phenomenon plus marque.</p>
+<p><strong>Manger tard (&lt;2h avant coucher) :</strong> la digestion interfere avec le sommeil profond, et la glycemie reste elevee pendant les premieres heures de nuit.</p>
+<p><strong>Dawn phenomenon (montee 04h-07h) :</strong> normal. Le cortisol monte pour preparer le reveil. +10-20 mg/dL = typique. >30 mg/dL = flag.</p></div>
 
-<div class="card"><h3 style="color:var(--primary)">Pi&egrave;ges courants</h3>
-<p style="font-size:12.5px;line-height:1.7;color:var(--text)">
-<strong>Les prot&eacute;ines d&eacute;clenchent aussi l&#39;insuline.</strong> Un steak pur ne fait pas monter la glyc&eacute;mie, mais il stimule l&#39;insuline (via les acides amin&eacute;s leucine/arginine). Ce n&#39;est pas visible sur le CGM mais &ccedil;a compte pour la sensibilit&eacute; insulinique globale. Un repas prot&eacute;in&eacute; n&#39;est donc pas &laquo;neutre&raquo; m&eacute;taboliquement.<br><br>
-<strong>Les graisses causent un pic RETARD&Eacute;.</strong> Un repas tr&egrave;s gras (pizza, friture, chocolat) peut causer une &eacute;l&eacute;vation glyc&eacute;mique 3-6h apr&egrave;s — pas de spike imm&eacute;diat, mais une mont&eacute;e lente et prolong&eacute;e. Sur le CGM : pic &laquo;fant&ocirc;me&raquo; sans repas apparent. M&eacute;canisme : les graisses ralentissent la vidange gastrique ET induisent une r&eacute;sistance insulinique transitoire via les acides gras libres.<br><br>
-<strong>Variation individuelle &eacute;norme.</strong> L&#39;&eacute;tude PREDICT (ZOE, 1100 participants) montre que la g&eacute;n&eacute;tique n&#39;explique que ~30% de la r&eacute;ponse glyc&eacute;mique. Le microbiome, le sommeil, le stress, l&#39;activit&eacute; r&eacute;cente comptent autant ou plus. Ce qui marche pour Axel peut ne pas marcher pour Fanny — et inversement. C&#39;est tout l&#39;int&eacute;r&ecirc;t du CGM : mesurer SA propre r&eacute;ponse au lieu de suivre des r&egrave;gles g&eacute;n&eacute;rales.<br><br>
-<strong>Le stress &eacute;l&egrave;ve la glyc&eacute;mie sans manger.</strong> Le cortisol stimule la n&eacute;oglucogen&egrave;se h&eacute;patique. Un stress aigu peut faire monter la glyc&eacute;mie de 20-40 mg/dL. Sur le CGM : spike inexplicable en milieu d&#39;apr&egrave;s-midi = probablement stress, pas nourriture.
-</p></div>
+<h2 style="font-size:18px;font-weight:700;margin:30px 0 20px">Consequences des niveaux de glucose</h2>
 
-<div class="card"><h3 style="color:var(--primary)">Sommeil &amp; glyc&eacute;mie</h3>
-<p style="font-size:12.5px;line-height:1.7;color:var(--text)">
-<strong>Mauvais sommeil = +15-25% de r&eacute;sistance insulinique le lendemain.</strong> Une seule nuit courte (&lt;6h) suffit. Le cortisol matinal est plus &eacute;lev&eacute;, le dawn phenomenon plus marqu&eacute;.<br><br>
-<strong>Manger tard (&lt;2h avant coucher) :</strong> la digestion interfere avec le sommeil profond, et la glyc&eacute;mie reste &eacute;lev&eacute;e pendant les premi&egrave;res heures de nuit (quand elle devrait baisser).<br><br>
-<strong>Dawn phenomenon (mont&eacute;e 04h-07h) :</strong> normal. Le cortisol monte pour pr&eacute;parer le r&eacute;veil, stimule le foie &agrave; lib&eacute;rer du glucose. +10-20 mg/dL est typique. &gt;30 mg/dL de hausse = flag.
-</p></div>
+<div class="learn-card" style="border-left:4px solid #f59e0b"><h3>Court terme (heures)</h3>
+<p><strong>Pic >140 :</strong> fatigue post-prandiale ("food coma"), difficulte de concentration, envie de sucre 2-3h apres (hypo reactionnelle).</p>
+<p><strong>Pic >180 :</strong> stress oxydatif aigu, inflammation vasculaire temporaire, glycation acceleree des proteines.</p>
+<p><strong>Hypo &lt;70 :</strong> tremblements, confusion, irritabilite, faim intense. Le cerveau n'a presque pas de reserves de glucose.</p>
+<p><strong>Hypo &lt;54 :</strong> risque de perte de conscience, convulsions. Urgence medicale si prolongee.</p></div>
 
-<h2 style="font-size:18px;font-weight:700;margin:30px 0 20px">Cons&eacute;quences des niveaux de glucose</h2>
+<div class="learn-card" style="border-left:4px solid #f59e0b"><h3>Moyen terme (semaines a mois)</h3>
+<p><strong>Variabilite glycemique chronique :</strong> inflammation de bas grade (CRP elevee), resistance insulinique progressive, prise de poids viscerale.</p>
+<p><strong>Pics repetes >140 :</strong> les cellules beta du pancreas s'usent (glucotoxicite). La phase 1 de secretion insulinique (rapide) se deteriore en premier.</p>
+<p><strong>Hypos repetees :</strong> le corps s'habitue ("hypoglycemia unawareness") et ne declenche plus les symptomes d'alerte.</p></div>
 
-<div class="card" style="border-left:4px solid #f59e0b"><h3>Court terme (heures)</h3>
-<p style="font-size:12.5px;line-height:1.7;color:var(--text)">
-<strong>Pic &gt;140 :</strong> fatigue post-prandiale (&laquo;food coma&raquo;), difficult&eacute; de concentration, envie de sucre 2-3h apr&egrave;s (hypo r&eacute;actionnelle).<br>
-<strong>Pic &gt;180 :</strong> stress oxydatif aigu, inflammation vasculaire temporaire, glycation acc&eacute;l&eacute;r&eacute;e des prot&eacute;ines.<br>
-<strong>Hypo &lt;70 :</strong> tremblements, confusion, irritabilit&eacute;, faim intense. Le cerveau n&#39;a presque pas de r&eacute;serves de glucose.<br>
-<strong>Hypo &lt;54 :</strong> risque de perte de conscience, convulsions. Urgence m&eacute;dicale si prolong&eacute;e.
-</p></div>
+<div class="learn-card" style="border-left:4px solid #ef4444"><h3>Long terme (annees)</h3>
+<p><strong>Pre-diabete puis diabete type 2 :</strong> quand les cellules beta ne compensent plus. Glycemie a jeun >100 de facon repetee = premier signe. HbA1c >5.7% = pre-diabete.</p>
+<p><strong>Maladies cardiovasculaires :</strong> la glycation endommage l'endothelium vasculaire. Risque x2-4 chez les diabetiques.</p>
+<p><strong>Neuropathie :</strong> glucose eleve endommage les petits nerfs (pieds, mains, digestion). Picotements, engourdissements.</p>
+<p><strong>Retinopathie et nephropathie :</strong> micro-vaisseaux retiniens et glomerules renaux parmi les premiers touches.</p>
+<p><strong>La bonne nouvelle :</strong> tout ceci est evitable. Maintenir TIR >85%, pics &lt;140, variabilite faible reduit le risque massivement. C'est ce que le CGM permet de piloter.</p></div>
 
-<div class="card" style="border-left:4px solid #f59e0b"><h3>Moyen terme (semaines &agrave; mois)</h3>
-<p style="font-size:12.5px;line-height:1.7;color:var(--text)">
-<strong>Variabilit&eacute; glyc&eacute;mique chronique :</strong> inflammation de bas grade (CRP &eacute;lev&eacute;), r&eacute;sistance insulinique progressive, prise de poids visc&eacute;rale (le cortisol r&eacute;p&eacute;t&eacute; stocke la graisse abdominale).<br>
-<strong>Pics r&eacute;p&eacute;t&eacute;s &gt;140 :</strong> les cellules b&ecirc;ta du pancr&eacute;as s&#39;usent progressivement (glucotoxicit&eacute;). La phase 1 de s&eacute;cr&eacute;tion insulinique (rapide, dans les 10 premi&egrave;res minutes) se d&eacute;t&eacute;riore en premier.<br>
-<strong>Hypos r&eacute;p&eacute;t&eacute;es :</strong> le corps s&#39;habitue (&laquo;hypoglycemia unawareness&raquo;) et ne d&eacute;clenche plus les sympt&ocirc;mes d&#39;alerte. Les &eacute;pisodes deviennent plus s&eacute;v&egrave;res sans pr&eacute;venir.
-</p></div>
-
-<div class="card" style="border-left:4px solid #ef4444"><h3>Long terme (ann&eacute;es)</h3>
-<p style="font-size:12.5px;line-height:1.7;color:var(--text)">
-<strong>Pr&eacute;-diab&egrave;te &rarr; diab&egrave;te type 2 :</strong> quand les cellules b&ecirc;ta ne compensent plus. Glyc&eacute;mie &agrave; jeun &gt;100 de fa&ccedil;on r&eacute;p&eacute;t&eacute;e = premier signe. HbA1c &gt;5.7% = pr&eacute;-diab&egrave;te.<br>
-<strong>Maladies cardiovasculaires :</strong> la glycation endommage l&#39;endoth&eacute;lium vasculaire. Les pics r&eacute;p&eacute;t&eacute;s acc&eacute;l&egrave;rent l&#39;ath&eacute;roscl&eacute;rose. Risque x2-4 chez les diab&eacute;tiques.<br>
-<strong>Neuropathie :</strong> le glucose &eacute;lev&eacute; endommage les petits nerfs (pieds, mains, digestion). Sympt&ocirc;mes : picotements, engourdissements, gastropar&eacute;sie.<br>
-<strong>R&eacute;tinopathie :</strong> les micro-vaisseaux r&eacute;tiniens sont parmi les premiers touch&eacute;s. Perte de vision progressive.<br>
-<strong>N&eacute;phropathie :</strong> les reins filtrent l&#39;exc&egrave;s de glucose &rarr; dommages aux glom&eacute;rules &rarr; insuffisance r&eacute;nale progressive.<br><br>
-<strong>La bonne nouvelle :</strong> tout ceci est &eacute;vitable. Maintenir un TIR &gt;85%, des pics &lt;140, et une variabilit&eacute; faible r&eacute;duit le risque de fa&ccedil;on massive. C&#39;est exactement ce que le CGM permet de piloter.
-</p></div>
-
-<div class="card" style="border-left:4px solid var(--primary)"><h3>R&eacute;sum&eacute; : les cibles</h3>
-<p style="font-size:12.5px;line-height:1.7;color:var(--text)">
-<strong>Glyc&eacute;mie &agrave; jeun :</strong> 75-95 mg/dL (optimal), &lt;100 (acceptable).<br>
-<strong>Pic post-repas :</strong> &lt;120 (excellent), &lt;140 (bon), &gt;140 (am&eacute;liorable), &gt;160 (&agrave; corriger).<br>
-<strong>Delta post-repas :</strong> &lt;30 (excellent), &lt;50 (normal), &gt;50 (&eacute;lev&eacute;).<br>
-<strong>Retour baseline :</strong> &lt;2h (bon), &gt;3h (r&eacute;sistance insulinique possible).<br>
-<strong>Nuit (22h-06h) :</strong> 70-90 mg/dL stable, SD &lt;10.<br>
-<strong>TIR (70-140) :</strong> &gt;90% (excellent), &gt;80% (bon), &lt;70% (&agrave; am&eacute;liorer).<br>
-<strong>Dawn phenomenon :</strong> &lt;+15 mg/dL (normal), &gt;+30 (flag).
-</p></div>
+<div class="learn-card" style="border-left:4px solid var(--primary)"><h3>Cibles de reference</h3>
+<p><strong>Glycemie a jeun :</strong> 75-95 (optimal), &lt;100 (acceptable).</p>
+<p><strong>Pic post-repas :</strong> &lt;120 (excellent), &lt;140 (bon), >140 (ameliorable), >160 (a corriger).</p>
+<p><strong>Delta post-repas :</strong> &lt;30 (excellent), &lt;50 (normal), >50 (eleve).</p>
+<p><strong>Retour baseline :</strong> &lt;2h (bon), >3h (resistance insulinique possible).</p>
+<p><strong>Nuit (22h-06h) :</strong> 70-90 mg/dL stable, SD &lt;10.</p>
+<p><strong>TIR (70-140) :</strong> >90% (excellent), >80% (bon), &lt;70% (a ameliorer).</p>
+<p><strong>Dawn phenomenon :</strong> &lt;+15 mg/dL (normal), >+30 (flag).</p></div>
 </div>
+</main>
+<!-- SETTINGS --><div class="modal-ov" id="modal-settings"><div class="modal">
+<h2>Settings</h2><p class="sub">Stored in browser only.</p>
+<div class="form-row"><label>OpenAI API Key</label><input type="password" id="s-openai" placeholder="sk-..."></div>
+<div class="form-row"><label>Model</label><select id="s-model" style="width:100%;padding:9px 12px;font-family:var(--font);font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surface-alt)"><option value="gpt-4o-mini">gpt-4o-mini</option><option value="gpt-4o">gpt-4o</option></select></div>
+<div class="form-row"><label>LibreLinkUp Email</label><input type="email" id="s-llu-email"></div>
+<div class="form-row"><label>LibreLinkUp Password</label><input type="password" id="s-llu-pass"></div>
+<div class="form-row"><label>Sync PIN</label><input type="text" id="s-sync-pin" placeholder="min 4 chars"></div>
+<div class="form-row"><label>Target Range (mg/dL)</label><div style="display:flex;gap:8px"><input type="number" id="s-gly-low" placeholder="70" style="flex:1"><input type="number" id="s-gly-high" placeholder="140" style="flex:1"></div></div>
+<div class="modal-actions"><button class="btn btn-s" onclick="closeModal()">Cancel</button><button class="btn btn-p" onclick="saveSettings()">Save</button></div>
+</div></div>
+<script>
+var S=function(k){return localStorage.getItem('gly_'+k)||''};
+var SS=function(k,v){localStorage.setItem('gly_'+k,v)};
+var SJ=function(k){try{return JSON.parse(localStorage.getItem('gly_'+k)||'[]')}catch(e){return[]}};
+var SSJ=function(k,v){localStorage.setItem('gly_'+k,JSON.stringify(v))};
+function getGlucose(p){return SJ('glucose_'+p)}function setGlucose(p,d){SSJ('glucose_'+p,d)}
+function getLogs(){return SJ('logs')}function setLogs(d){SSJ('logs',d)}
+function getArchive(){return SJ('archive')}function setArchive(d){SSJ('archive',d)}
+function getTargetLow(){return parseInt(S('gly_low'))||70}function getTargetHigh(){return parseInt(S('gly_high'))||140}
+var PROXY='https://gly-proxy.fanny-broissand.workers.dev';
+function setSyncDot(s){document.getElementById('sync-dot').className='sync-dot'+(s?' '+s:'')}
+function syncPush(){var pin=S('sync_pin');if(!pin||pin.length<4){setSyncDot('');return Promise.resolve()}setSyncDot('working');return fetch(PROXY+'/sync/push',{method:'POST',headers:{'Content-Type':'application/json','X-Sync-Pin':pin},body:JSON.stringify({data:JSON.stringify({ts:new Date().toISOString(),glucose_axel:getGlucose('axel'),glucose_fanny:getGlucose('fanny'),logs:getLogs(),archive:getArchive(),tests_meta:SJ('tests_meta'),baseline:getBaseline(),fav_meals:getFavMeals(),period_dates:SJ('period_dates'),settings:{gly_low:S('gly_low'),gly_high:S('gly_high')}})})}).then(function(r){setSyncDot(r.ok?'ok':'err')}).catch(function(){setSyncDot('err')})}
+function syncPull(){var pin=S('sync_pin');if(!pin||pin.length<4){setSyncDot('');return Promise.resolve()}setSyncDot('working');return fetch(PROXY+'/sync/pull',{headers:{'X-Sync-Pin':pin}}).then(function(r){return r.json()}).then(function(d){if(!d.data&&!d.glucose_axel){setSyncDot('ok');return}var raw=typeof d.data==='string'?d.data:JSON.stringify(d);var data=JSON.parse(raw);['axel','fanny'].forEach(function(p){var remote=data['glucose_'+p]||[];var local=getGlucose(p);var merged=[].concat(local,remote);var seen={};var unique=merged.filter(function(r){if(seen[r.t])return false;seen[r.t]=1;return true});unique.sort(function(a,b){return a.t<b.t?-1:1});setGlucose(p,unique)});var rl=data.logs||[];var ll=getLogs();var ids={};ll.forEach(function(l){ids[l.id]=1});var tomb={};SJ('deleted_ids').forEach(function(id){tomb[id]=1});rl.forEach(function(l){if(!ids[l.id]&&!tomb[l.id])ll.push(l)});setLogs(ll);if(data.archive&&data.archive.length){var at={};SJ('deleted_arc_ids').forEach(function(id){at[id]=1});setArchive(data.archive.filter(function(a){return!at[a.id]}))}if(data.tests_meta)SSJ('tests_meta',data.tests_meta);if(data.baseline&&data.baseline.length)setBaseline(data.baseline);if(data.fav_meals&&data.fav_meals.length)setFavMeals(data.fav_meals);if(data.period_dates&&data.period_dates.length)SSJ('period_dates',data.period_dates);if(data.settings){if(data.settings.gly_low)SS('gly_low',data.settings.gly_low);if(data.settings.gly_high)SS('gly_high',data.settings.gly_high)}setSyncDot('ok')}).catch(function(){setSyncDot('err')})}
+var _st=null;function schedulePush(){clearTimeout(_st);_st=setTimeout(syncPush,2000)}
+document.querySelectorAll('.nav button').forEach(function(b){b.onclick=function(){document.querySelectorAll('.nav button').forEach(function(t){t.classList.remove('on')});document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on')});b.classList.add('on');document.getElementById('v-'+b.dataset.v).classList.add('on');var v=b.dataset.v;if(v==='daily')renderDaily();if(v==='weekly')renderWeekly();if(v==='tests')renderTests();if(v==='log'){renderRecentLogs();renderFavButtons()}if(v==='data')renderDataStatus();if(v==='baseline')renderBaseline();if(v==='archive')renderArchive()}});
+document.getElementById('btn-settings').onclick=function(){document.getElementById('s-openai').value=S('openai');document.getElementById('s-model').value=S('model')||'gpt-4o-mini';document.getElementById('s-llu-email').value=S('llu_email');document.getElementById('s-llu-pass').value=S('llu_pass');document.getElementById('s-sync-pin').value=S('sync_pin');document.getElementById('s-gly-low').value=S('gly_low')||'70';document.getElementById('s-gly-high').value=S('gly_high')||'140';document.getElementById('modal-settings').classList.add('open')};
+function closeModal(){document.getElementById('modal-settings').classList.remove('open')}
+document.getElementById('modal-settings').onclick=function(e){if(e.target===e.currentTarget)closeModal()};
+function saveSettings(){SS('openai',document.getElementById('s-openai').value.trim());SS('model',document.getElementById('s-model').value);SS('llu_email',document.getElementById('s-llu-email').value.trim());SS('llu_pass',document.getElementById('s-llu-pass').value.trim());SS('sync_pin',document.getElementById('s-sync-pin').value.trim());SS('gly_low',document.getElementById('s-gly-low').value.trim());SS('gly_high',document.getElementById('s-gly-high').value.trim());updateDot();closeModal();schedulePush()}
+function updateDot(){document.getElementById('key-dot').className='dot'+(S('openai')?' ok':'')}
+function parseLibreCSV(text){var lines=text.split('\n'),readings=[],hi=-1;for(var i=0;i<Math.min(lines.length,10);i++){var low=lines[i].toLowerCase();if(low.indexOf('timestamp')>=0||low.indexOf('horodatage')>=0||low.indexOf('zeitstempel')>=0){hi=i;break}}if(hi===-1)for(var i=0;i<Math.min(lines.length,10);i++){if((lines[i].match(/,/g)||[]).length>=5){hi=i;break}}if(hi===-1)return readings;var hdrs=lines[hi].split(',').map(function(h){return h.trim().toLowerCase().replace(/"/g,'')});var tc=hdrs.findIndex(function(h){return h.indexOf('timestamp')>=0||h.indexOf('horodatage')>=0||h.indexOf('zeitstempel')>=0});var hc=hdrs.findIndex(function(h){return h.indexOf('historic glucose')>=0||h.indexOf('historique')>=0||h.indexOf('glukosewert')>=0});var sc=hdrs.findIndex(function(h){return h.indexOf('scan glucose')>=0});for(var i=hi+1;i<lines.length;i++){var cols=lines[i].split(',').map(function(c){return c.trim().replace(/"/g,'')});if(cols.length<=Math.max(tc,hc,sc))continue;var ts=cols[tc];if(!ts)continue;var val=parseFloat(cols[hc]);if(isNaN(val)&&sc>=0)val=parseFloat(cols[sc]);if(isNaN(val))continue;var fmts=['dd-MM-yyyy HH:mm','MM-dd-yyyy HH:mm','yyyy-MM-dd HH:mm','dd/MM/yyyy HH:mm','MM/dd/yyyy HH:mm'];var dt=null;for(var f=0;f<fmts.length;f++){dt=luxon.DateTime.fromFormat(ts,fmts[f]);if(dt.isValid)break}if(!dt||!dt.isValid)dt=luxon.DateTime.fromISO(ts);if(!dt||!dt.isValid)continue;readings.push({t:dt.toISO(),v:val})}return readings.sort(function(a,b){return a.t<b.t?-1:1})}
+function handleCSV(person,event){var file=event.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){var readings=parseLibreCSV(e.target.result);if(!readings.length){document.getElementById('upload-status').innerHTML='<div class="err">Could not parse.</div>';return}var existing=getGlucose(person);var merged=[].concat(existing,readings);var seen={};var unique=merged.filter(function(r){if(seen[r.t])return false;seen[r.t]=1;return true});unique.sort(function(a,b){return a.t<b.t?-1:1});setGlucose(person,unique);document.getElementById('upload-status').innerHTML='<div class="ai-box"><p>Imported '+readings.length+' readings. Total: '+unique.length+'.</p></div>';renderDataStatus();schedulePush()};reader.readAsText(file)}
+['upload-axel','upload-fanny'].forEach(function(id){var el=document.getElementById(id);var person=id.indexOf('axel')>=0?'axel':'fanny';el.ondragover=function(e){e.preventDefault();el.classList.add('drag')};el.ondragleave=function(){el.classList.remove('drag')};el.ondrop=function(e){e.preventDefault();el.classList.remove('drag');var file=e.dataTransfer.files[0];if(file)handleCSV(person,{target:{files:[file]}})}});
+function esc(s){var e=document.createElement('span');e.textContent=s;return e.innerHTML}
+function fmtDur(a,b){if(!a||!b)return'';var p=a.split(':').map(Number),q=b.split(':').map(Number),m=(q[0]*60+q[1])-(p[0]*60+p[1]);if(m<=0)return'';return m<60?m+'min':Math.floor(m/60)+'h'+(m%60?String(m%60).padStart(2,'0'):'')}
+function addMin(t,m){var p=t.split(':').map(Number),tot=p[0]*60+p[1]+m;return String(Math.floor(tot/60)%24).padStart(2,'0')+':'+String(tot%60).padStart(2,'0')}
+function pColor(p){return p==='axel'?'#3b82f6':p==='fanny'?'#e8437f':'#8b5cf6'}
+function evIcon(emoji,color){var sz=26,c=document.createElement('canvas');c.width=sz;c.height=sz;var x=c.getContext('2d');x.beginPath();x.arc(sz/2,sz/2,sz/2-1,0,Math.PI*2);x.fillStyle=color+'25';x.fill();x.strokeStyle=color;x.lineWidth=2;x.stroke();x.font=(sz-10)+'px serif';x.textAlign='center';x.textBaseline='middle';x.fillText(emoji,sz/2,sz/2+1);var img=new Image();img.src=c.toDataURL();return img}
+function catLabel(c){return{meal:'Meal',sport:'Sport',note:'Note',period:'Period'}[c]||c}
+var TESTS=[{id:'alcohol_type',name:'Alcohol type',desc:'Beer vs vodka vs wine.'},{id:'alcohol_timing',name:'Alcohol timing',desc:'Drink alone vs after meal.'},{id:'bread_type',name:'Levain vs regular bread',desc:'Sourdough vs white bread.'},{id:'coffee_timing',name:'Coffee timing',desc:'Coffee alone vs after meal.'},{id:'carb_order',name:'Carb order',desc:'Carbs first vs last.'},{id:'sport_type',name:'Sport type',desc:'Compare activities.'},{id:'sport_timing',name:'Sport timing',desc:'Fasted vs after meal.'},{id:'fermented',name:'Fermented foods',desc:'With vs without fermented elements.'},{id:'meal_duration',name:'Meal duration',desc:'Quick vs slow.'},{id:'dessert_timing',name:'Dessert timing',desc:'Dessert with meal vs after.'},{id:'meal_spacing',name:'Meal spacing',desc:'4h vs 6h+ gap.'},{id:'recovery_day',name:'Recovery day',desc:'Glucose after intense activity.'},{id:'legume_type',name:'Legume type',desc:'Compare legumes.'},{id:'ingredient_timing',name:'Same food different time',desc:'Morning vs evening.'},{id:'cycle_phase',name:'Cycle menstruel',desc:'Glucose across menstrual phases.'},{id:'cold_water',name:'Cold water immersion',desc:'Glucose response to cold water/river.'}];
+function renderTests(){document.getElementById('tests-list').innerHTML=TESTS.map(function(t){return'<div class="card" style="padding:14px;margin-bottom:8px"><strong style="font-size:13px">'+esc(t.name)+'</strong> <span style="font-size:12px;color:var(--text2)">'+esc(t.desc)+'</span></div>'}).join('')}
+var chartDaily=null,chartWeekly=null,chartOvF=null,chartOvA=null;
+var DAY_COLORS=['#ef4444','#f59e0b','#22c55e','#3b82f6','#8b5cf6','#ec4899','#6366f1'];
+var DAY_DASHES=[[],[6,3],[2,2],[8,4,2,4],[4,4],[10,5],[2,6]];
+function renderDaily(){var pick=document.getElementById('day-pick');if(!pick.value)pick.valueAsDate=new Date();var day=pick.value;var ds=luxon.DateTime.fromISO(day).startOf('day'),de=ds.endOf('day');var axD=getGlucose('axel').filter(function(r){return r.t>=ds.toISO()&&r.t<=de.toISO()});var faD=getGlucose('fanny').filter(function(r){return r.t>=ds.toISO()&&r.t<=de.toISO()});var logs=getLogs().filter(function(l){return l.date===day}).sort(function(a,b){return a.time<b.time?-1:1});var axV=axD.map(function(r){return r.v}),faV=faD.map(function(r){return r.v});var lo=getTargetLow(),hi=getTargetHigh();var tir=function(v){return v.length?Math.round(v.filter(function(x){return x>=lo&&x<=hi}).length/v.length*100):'-'};var avg=function(v){return v.length?Math.round(v.reduce(function(s,x){return s+x},0)/v.length):'-'};var pk=function(v){return v.length?Math.max.apply(null,v):'-'};document.getElementById('daily-stats').innerHTML='<div class="stat-card ax"><div class="label">Axel avg</div><div class="value">'+avg(axV)+'</div><div class="sub">mg/dL - TIR '+tir(axV)+'%</div></div><div class="stat-card fa"><div class="label">Fanny avg</div><div class="value">'+avg(faV)+'</div><div class="sub">mg/dL - TIR '+tir(faV)+'%</div></div><div class="stat-card ax"><div class="label">Axel peak</div><div class="value">'+pk(axV)+'</div><div class="sub">mg/dL</div></div><div class="stat-card fa"><div class="label">Fanny peak</div><div class="value">'+pk(faV)+'</div><div class="sub">mg/dL</div></div>';if(chartDaily)chartDaily.destroy();var ctx=document.getElementById('chart-daily').getContext('2d');var evts=logs.filter(function(l){return l.cat==='meal'||l.cat==='sport'}).map(function(l){return{x:luxon.DateTime.fromISO(day+'T'+l.time).toJSDate(),cat:l.cat,person:l.person,desc:l.desc}});chartDaily=new Chart(ctx,{type:'line',data:{datasets:[{label:'Target',data:[{x:ds.toJSDate(),y:hi},{x:de.toJSDate(),y:hi}],borderColor:'transparent',backgroundColor:'rgba(34,197,94,0.07)',fill:{target:{value:lo},above:'rgba(34,197,94,0.07)'},pointRadius:0,tension:0},{label:'Axel',data:axD.map(function(r){return{x:new Date(r.t),y:r.v}}),borderColor:'#3b82f6',borderWidth:2,pointRadius:0,pointHitRadius:8,tension:.3,fill:false},{label:'Fanny',data:faD.map(function(r){return{x:new Date(r.t),y:r.v}}),borderColor:'#e8437f',borderWidth:2,pointRadius:0,pointHitRadius:8,tension:.3,fill:false},{label:'Events',data:evts.map(function(m){return{x:m.x,y:hi+5}}),pointStyle:evts.map(function(m){return evIcon(m.cat==='meal'?'\u{1F374}':'\u{1F3C3}',pColor(m.person))}),pointRadius:13,showLine:false,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{x:{type:'time',time:{unit:'hour',displayFormats:{hour:'HH:mm'}},min:ds.toJSDate(),max:de.toJSDate(),grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10}}},y:{min:30,max:220,grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10}}}},plugins:{legend:{labels:{usePointStyle:true,pointStyle:'line',font:{size:11},filter:function(i){return i.text!=='Target'&&i.text!=='Events'}}},tooltip:{callbacks:{label:function(ctx){if(ctx.dataset.label==='Events'){var m=evts[ctx.dataIndex];return m?m.desc:''}return ctx.dataset.label+': '+ctx.parsed.y}}}}}});var tlEl=document.getElementById('daily-timeline');if(!logs.length){tlEl.innerHTML='<div class="empty"><p>No logs for this day.</p></div>'}else{tlEl.innerHTML=logs.map(function(l){var pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';var pL=l.person==='both'?'AB':l.person==='axel'?'A':'F';var dur=fmtDur(l.time,l.time_end);var tH=l.time+(l.time_end?'<br><span style="font-weight:400;color:var(--text3)">'+l.time_end+(dur?' ('+dur+')':'')+'</span>':'');return'<div class="tl-item"><div class="tl-time">'+tH+'</div><div class="tl-person '+pCls+'">'+pL+'</div><span class="tl-cat cat-'+l.cat+'">'+catLabel(l.cat)+'</span><div class="tl-desc">'+esc(l.desc)+'</div></div>'}).join('')}}
+function renderWeekly(){if(!window._ws)window._ws=luxon.DateTime.now().startOf('week');var ws=window._ws,we=ws.plus({days:6});document.getElementById('week-label').textContent=ws.toFormat('LLL d')+' - '+we.toFormat('LLL d, yyyy');var days=[],axAvg=[],faAvg=[],labels=[];for(var i=0;i<7;i++)days.push(ws.plus({days:i}));days.forEach(function(d){var s=d.startOf('day').toISO(),e=d.endOf('day').toISO();var ax=getGlucose('axel').filter(function(r){return r.t>=s&&r.t<=e}).map(function(r){return r.v});var fa=getGlucose('fanny').filter(function(r){return r.t>=s&&r.t<=e}).map(function(r){return r.v});labels.push(d.toFormat('ccc d'));axAvg.push(ax.length?Math.round(ax.reduce(function(s,v){return s+v},0)/ax.length):null);faAvg.push(fa.length?Math.round(fa.reduce(function(s,v){return s+v},0)/fa.length):null)});var allAx=getGlucose('axel').filter(function(r){return r.t>=ws.toISO()&&r.t<=we.endOf('day').toISO()}).map(function(r){return r.v});var allFa=getGlucose('fanny').filter(function(r){return r.t>=ws.toISO()&&r.t<=we.endOf('day').toISO()}).map(function(r){return r.v});var lo=getTargetLow(),hi=getTargetHigh();var tir=function(v){return v.length?Math.round(v.filter(function(x){return x>=lo&&x<=hi}).length/v.length*100):'-'};var avg=function(v){return v.length?Math.round(v.reduce(function(s,x){return s+x},0)/v.length):'-'};document.getElementById('weekly-stats').innerHTML='<div class="stat-card ax"><div class="label">Axel weekly avg</div><div class="value">'+avg(allAx)+'</div><div class="sub">TIR '+tir(allAx)+'%</div></div><div class="stat-card fa"><div class="label">Fanny weekly avg</div><div class="value">'+avg(allFa)+'</div><div class="sub">TIR '+tir(allFa)+'%</div></div>';if(chartWeekly)chartWeekly.destroy();chartWeekly=new Chart(document.getElementById('chart-weekly').getContext('2d'),{type:'bar',data:{labels:labels,datasets:[{label:'Axel',data:axAvg,backgroundColor:'#3b82f690',borderRadius:4},{label:'Fanny',data:faAvg,backgroundColor:'#e8437f90',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:60,max:180,ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},x:{ticks:{font:{size:10}}}},plugins:{legend:{labels:{font:{size:11}}}}}});renderOverlay('fanny',days);renderOverlay('axel',days)}
+function renderOverlay(person,days){var cid=person==='fanny'?'chart-ov-fanny':'chart-ov-axel';var ref=person==='fanny'?'chartOvF':'chartOvA';if(window[ref])window[ref].destroy();var lo=getTargetLow(),dHi=160,aV=[];var sets=[];days.forEach(function(d,i){var s=d.startOf('day').toISO(),e=d.endOf('day').toISO();var data=getGlucose(person).filter(function(r){return r.t>=s&&r.t<=e});if(!data.length)return;var pts=data.map(function(r){var dt=luxon.DateTime.fromISO(r.t);aV.push(r.v);return{x:dt.hour+dt.minute/60,y:r.v}});sets.push({label:d.toFormat('ccc d'),data:pts,borderColor:DAY_COLORS[i%7],borderWidth:1.5,borderDash:DAY_DASHES[i%7],pointRadius:0,pointHitRadius:6,tension:.3,fill:false})});var yn=aV.length?Math.min.apply(null,aV)-5:30,yx=aV.length?Math.max.apply(null,aV)+5:180;if(yn>lo-5)yn=lo-5;if(yx<dHi+5)yx=dHi+5;var z=[{label:'_hypo',data:[{x:0,y:lo},{x:24,y:lo}],fill:'origin',backgroundColor:'rgba(239,68,68,0.08)',borderColor:'rgba(239,68,68,0.3)',borderWidth:1,borderDash:[4,4],pointRadius:0,order:99},{label:'_high',data:[{x:0,y:dHi},{x:24,y:dHi}],fill:'end',backgroundColor:'rgba(239,68,68,0.08)',borderColor:'rgba(239,68,68,0.3)',borderWidth:1,borderDash:[4,4],pointRadius:0,order:99}];window[ref]=new Chart(document.getElementById(cid).getContext('2d'),{type:'line',data:{datasets:z.concat(sets)},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',min:0,max:24,ticks:{font:{size:10},stepSize:2,callback:function(v){return v+'h'}},grid:{color:'rgba(0,0,0,0.04)'}},y:{min:yn,max:yx,ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}}},plugins:{legend:{labels:{font:{size:10},boxWidth:12,filter:function(it){return it.text.charAt(0)!=='_'}}},tooltip:{callbacks:{label:function(ct){if(ct.dataset.label.charAt(0)==='_')return'';return ct.dataset.label+': '+ct.parsed.y+' mg/dL'}}}}}})}
+function shiftDay(d){var p=document.getElementById('day-pick');p.value=luxon.DateTime.fromISO(p.value).plus({days:d}).toISODate();renderDaily()}
+function shiftWeek(d){window._ws=(window._ws||luxon.DateTime.now().startOf('week')).plus({weeks:d});renderWeekly()}
+function discoverPatterns(){var el=document.getElementById('discover-output');var btn=document.getElementById('btn-discover');btn.disabled=true;if(!S('openai')){el.innerHTML='<div class="err">OpenAI API key required.</div>';btn.disabled=false;return}var logs=getLogs().sort(function(a,b){return(a.date+a.time)<(b.date+b.time)?-1:1});if(logs.length<4){el.innerHTML='<div class="err">Need more log entries.</div>';btn.disabled=false;return}el.innerHTML='<div style="text-align:center;padding:16px"><div class="spinner"></div></div>';var allDays=Array.from(new Set(logs.map(function(l){return l.date}))).sort();var dayData=allDays.map(function(day){var dl=logs.filter(function(l){return l.date===day});var s=luxon.DateTime.fromISO(day).startOf('day').toISO(),e=luxon.DateTime.fromISO(day).endOf('day').toISO();var axG=getGlucose('axel').filter(function(r){return r.t>=s&&r.t<=e});var faG=getGlucose('fanny').filter(function(r){return r.t>=s&&r.t<=e});var events=dl.filter(function(l){return l.cat==='meal'||l.cat==='sport'||l.cat==='period'}).map(function(l){var et=luxon.DateTime.fromISO(day+'T'+l.time);var w1=et.minus({minutes:10}).toISO(),w2=et.plus({minutes:120}).toISO();var aw=axG.filter(function(r){return r.t>=w1&&r.t<=w2}).map(function(r){return r.v});var fw=faG.filter(function(r){return r.t>=w1&&r.t<=w2}).map(function(r){return r.v});return l.time+(l.time_end?'>'+l.time_end:'')+' ['+l.person+'] '+l.cat+': '+l.desc+' | Ax peak='+(aw.length?Math.max.apply(null,aw):'?')+' min='+(aw.length?Math.min.apply(null,aw):'?')+' | Fa peak='+(fw.length?Math.max.apply(null,fw):'?')+' min='+(fw.length?Math.min.apply(null,fw):'?')});return day+':\n  '+events.join('\n  ')}).join('\n\n');callAI(getAIContext()+'\nYou are a glycemia expert hunting for natural experiments. Output HTML with ai-box/ai-label classes.\nFor each pattern: Observation A vs B with exact numbers and dates, Delta, Mechanism (functional medicine), Confidence (low/med/high), Next step to confirm.\nCorrelate sport within 2h of meals with glucose response. NEVER invent data not provided. Use actual min/max values.','Events:\n\n'+dayData).then(function(html){el.innerHTML=html;saveToArchive('Patterns - '+luxon.DateTime.now().toISODate(),html);schedulePush()}).catch(function(err){el.innerHTML='<div class="err">'+esc(err.message)+'</div>'}).finally(function(){btn.disabled=false})}
+var logPerson='both';
+function selPerson(p,btn){logPerson=p;document.querySelectorAll('#log-person button').forEach(function(b){b.className=''});btn.className=p==='axel'?'sel-ax':p==='fanny'?'sel-fa':'sel-bo'}
+function saveLog(){var date=document.getElementById('log-date').value,time=document.getElementById('log-time').value;var durMin=parseInt(document.getElementById('log-duration').value)||0;var time_end=durMin?addMin(time,durMin):null;var cat=document.getElementById('log-cat').value,desc=document.getElementById('log-desc').value.trim();if(!date||!time||!desc){document.getElementById('log-msg').innerHTML='<span style="color:#c0392b">Fill all fields.</span>';return}var logs=getLogs();logs.push({id:Date.now(),person:logPerson,date:date,time:time,time_end:time_end,cat:cat,desc:desc});setLogs(logs);document.getElementById('log-desc').value='';document.getElementById('log-duration').value='';var msg='<span style="color:var(--primary)">Saved</span>';if(time_end)msg+=' <span style="color:var(--text2)">'+fmtDur(time,time_end)+'</span>';document.getElementById('log-msg').innerHTML=msg;setTimeout(function(){document.getElementById('log-msg').innerHTML=''},4000);renderRecentLogs();schedulePush()}
+function renderRecentLogs(){var logs=getLogs().sort(function(a,b){return(b.date+b.time)<(a.date+a.time)?-1:1}).slice(0,20);var el=document.getElementById('log-recent');if(!logs.length){el.innerHTML='<div class="empty"><p>No entries yet.</p></div>';return}el.innerHTML=logs.map(function(l){var pCls=l.person==='both'?'bo':l.person==='axel'?'ax':'fa';var pL=l.person==='both'?'AB':l.person==='axel'?'A':'F';var dur=fmtDur(l.time,l.time_end);var ts=l.time+(l.time_end?'\u2192'+l.time_end:'')+(dur?' ('+dur+')':'');return'<div class="tl-item"><div class="tl-time" style="width:110px">'+l.date+'<br>'+ts+'</div><div class="tl-person '+pCls+'">'+pL+'</div><span class="tl-cat cat-'+l.cat+'">'+catLabel(l.cat)+'</span><div class="tl-desc">'+esc(l.desc)+'</div><button class="arc-del" onclick="editLog('+l.id+')" title="Edit" style="margin-right:4px">&#9998;</button><button class="arc-del" onclick="deleteLog('+l.id+')" title="Delete">\u2715</button></div>'}).join('')}
+function deleteLog(id){var deleted=SJ('deleted_ids');deleted.push(id);SSJ('deleted_ids',deleted);setLogs(getLogs().filter(function(l){return l.id!==id}));renderRecentLogs();schedulePush()}
+function editLog(id){var logs=getLogs();var l=logs.find(function(x){return x.id===id});if(!l)return;var d=prompt('Description:',l.desc);if(d===null||!d.trim())return;l.desc=d.trim();var t=prompt('Start time (HH:MM):',l.time);if(t&&t.match(/^\d{2}:\d{2}$/))l.time=t;var dur=prompt('Duration (minutes, empty=none):',l.time_end?String(Math.round((new Date('2000-01-01T'+l.time_end)-new Date('2000-01-01T'+l.time))/60000)):'');if(dur&&parseInt(dur))l.time_end=addMin(l.time,parseInt(dur));else if(dur==='')l.time_end=null;setLogs(logs);renderRecentLogs();var ab=document.querySelector('.nav button.on');if(ab&&ab.dataset.v==='daily')renderDaily();schedulePush()}
+function renderDataStatus(){var ax=getGlucose('axel'),fa=getGlucose('fanny');var el=document.getElementById('data-status');var rng=function(d){if(!d.length)return'No data';return d.length+' pts: '+luxon.DateTime.fromISO(d[0].t).toFormat('LLL d HH:mm')+' > '+luxon.DateTime.fromISO(d[d.length-1].t).toFormat('LLL d HH:mm')};el.innerHTML='<p style="margin-bottom:6px"><strong style="color:#3b82f6">Axel:</strong> '+rng(ax)+'</p><p><strong style="color:#e8437f">Fanny:</strong> '+rng(fa)+'</p>'}
+function callAI(sys,usr){var key=S('openai');if(!key)return Promise.reject(new Error('OpenAI API key not set.'));return fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:S('model')||'gpt-4o-mini',temperature:.3,max_tokens:4000,messages:[{role:'system',content:sys},{role:'user',content:usr}]})}).then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error&&e.error.message||'API error')});return r.json()}).then(function(d){var c=d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content||'';return c.replace(/^```(?:html)?\s*\n?/i,'').replace(/\n?```\s*$/i,'')})}
+function getAIContext(){var bl=getBaseline().map(function(s){return s.title+': '+s.content}).join('\n');var favs=getFavMeals();var favStr=favs.length?'\nFavorites: '+favs.map(function(f){return f.name+'='+f.desc}).join('; '):'';var testRef='\nTests to look for: '+TESTS.map(function(t){return t.name}).join(', ');var arc=getArchive().slice(0,5);var arcStr=arc.length?'\n\nPrevious analyses:\n'+arc.map(function(a){return'['+a.title+'] '+(a.html||'').replace(/<[^>]+>/g,' ').substring(0,300)}).join('\n'):'';return'Profiles: Axel (M,36,Flanders) Fanny (F,39,Spain/Algeria/Morocco). CGM Libre 2 Plus. Target: '+getTargetLow()+'-'+getTargetHigh()+'.\n'+getCycleInfo()+'\n'+bl+favStr+testRef+arcStr}
+var AI_STYLE='Styling rules:\n- Each section: <div class="ai-box" style="margin-bottom:12px"><div class="ai-label">TITLE</div>content</div>\n- Status badges: Good=<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;font-size:12px">text</span> Watch=<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:12px">text</span> Concern=<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:4px;font-size:12px">text</span>\n- NEVER bright red/green backgrounds. Light pastel + dark text only.\n- <strong> for numbers. <br> between items. Concise.\n- NEVER invent data or reference previous days/weeks unless archive context contains them. If first analysis, say so.\n';
+function aiDailyInsight(){var el=document.getElementById('daily-ai');var day=document.getElementById('day-pick').value;el.innerHTML='<div style="text-align:center;padding:20px"><div class="spinner"></div></div>';var s=luxon.DateTime.fromISO(day).startOf('day').toISO(),e=luxon.DateTime.fromISO(day).endOf('day').toISO();var ax=getGlucose('axel').filter(function(r){return r.t>=s&&r.t<=e});var fa=getGlucose('fanny').filter(function(r){return r.t>=s&&r.t<=e});var logs=getLogs().filter(function(l){return l.date===day}).sort(function(a,b){return a.time<b.time?-1:1});var axV=ax.map(function(r){return r.v}),faV=fa.map(function(r){return r.v});var st=function(v,n){if(!v.length)return n+': no data';var avg=Math.round(v.reduce(function(s,x){return s+x},0)/v.length);var mn=Math.min.apply(null,v);var mx=Math.max.apply(null,v);var mean=v.reduce(function(s,x){return s+x},0)/v.length;var sd=Math.round(Math.sqrt(v.reduce(function(s,x){return s+(x-mean)*(x-mean)},0)/v.length));return n+': avg='+avg+' min='+mn+' max='+mx+' SD='+sd+' ('+v.length+' readings)'};var dataStr='Date: '+day+'\n'+st(axV,'Axel')+'\n'+st(faV,'Fanny')+'\n\nAll logs:\n'+(logs.map(function(l){return l.time+(l.time_end?'>'+l.time_end:'')+' ['+l.person+'] '+l.cat+': '+l.desc}).join('\n')||'None')+'\n\nIMPORTANT: For each meal, check if sport/movement was logged within 2h before or after. Correlate sport with glucose response. Use ACTUAL min/max from data above.';callAI(getAIContext()+'\nYou are a glycemia expert and functional medicine practitioner.\n'+AI_STYLE+'\nStructure:\n1. "Resume" - 2-3 sentences. Score /10 with badge.\n2. "Reponses post-prandiales" - For EACH meal: Baseline (avg 15min pre-meal) > Peak > Delta > Time-to-rise (first +10mg) > Time-to-peak > Return-to-baseline > Shape (spike/plateau/double-wave/gentle-rise). Which ingredient likely drove the peak. What WORKED. Compare Axel vs Fanny. Correlate with any sport within 2h.\n3. "Signaux Fanny" - Use ACTUAL data min/max. Reference BN recovery context if relevant. Use cycle phase from context (do NOT guess). Compare nocturnal pattern with previous days if archive has them.\n4. "Signaux Axel" - Peaks >140, delayed responses, dawn phenomenon.\n5. "Nuit (22h-06h)" - Avg/Min/Max/SD per person from actual data.\n6. "Metabolisme fonctionnel" - For EVERY observation, explain the MECHANISM. Cold water > norepinephrine > glycogenolysis + later insulin sensitivity. Fruit after fiber > slowed gastric emptying. Post-meal walk > GLUT4. Be specific about pathways.\n7. "Actions demain" - 3 SPECIFIC changes. Each: what to change > why (cite data + mechanism) > expected result in mg/dL. NEVER generic advice. Question your own suggestions: would the alternative actually be better?',dataStr).then(function(html){el.innerHTML=html;saveToArchive('Daily - '+day,html);schedulePush()}).catch(function(err){el.innerHTML='<div class="err">'+esc(err.message)+'</div>'})}
+function aiWeeklyInsight(){var el=document.getElementById('weekly-ai');el.innerHTML='<div style="text-align:center;padding:20px"><div class="spinner"></div></div>';var ws=window._ws||luxon.DateTime.now().startOf('week');var we=ws.plus({days:6}).endOf('day');var logs=getLogs().filter(function(l){return l.date>=ws.toISODate()&&l.date<=we.toISODate()}).sort(function(a,b){return(a.date+a.time)<(b.date+b.time)?-1:1});var dataStr='Week: '+ws.toISODate()+' to '+we.toISODate()+'\nLogs:\n'+(logs.map(function(l){return l.date+' '+l.time+' ['+l.person+'] '+l.cat+': '+l.desc}).join('\n')||'None');callAI(getAIContext()+'\nYou are a glycemia expert.\n'+AI_STYLE+'\nStructure:\n1. "Bilan semaine" - Score /10 with badge. Compare with previous ONLY if archive has data. If first week, say so.\n2. "Comparaison Axel vs Fanny" - Who had better control, key differences.\n3. "Patterns" - Recurring signals. Correlate sport with post-meal responses.\n4. "Tests naturels detectes" - From test list.\n5. "Metabolisme fonctionnel" - Explain mechanisms.\n6. "Plan semaine suivante" - 3 SPECIFIC experiments with expected outcomes. NEVER generic.',dataStr).then(function(html){el.innerHTML=html;saveToArchive('Weekly - '+ws.toISODate(),html);schedulePush()}).catch(function(err){el.innerHTML='<div class="err">'+esc(err.message)+'</div>'})}
+var DEFAULT_BASELINE=[{id:'sugar_codes',title:'Sugar Conventions',content:'FM=Fait maison. LS=Low sugar. NS=No added sugar. PB=always sugar-free.'},{id:'kitchen',title:'Kitchen Defaults',content:'Olive oil for all cooking and raw use.'},{id:'porridge',title:'Magnus Porridge',content:'2 parts whole rye : 1 pearl barley : 1 flaxseed : 1 sunflower seeds : 1 pumpkin seeds.'},{id:'movement',title:'Default Movement',content:'15-20min walk + 15-20min yoga at wake-up.'},{id:'sleep',title:'Sleep Default',content:'Bed 21:00-21:30, wake 06:00 / 07:00-07:30 weekends.'},{id:'food_order',title:'Food Order',content:'Listed in real consumption order.'},{id:'norms',title:'Reference Norms',content:'Sugar ~7.9g/day, Fiber ~38.5g/day, Protein ~53g/day.'}];
+function getBaseline(){var s=SJ('baseline');return s.length?s:DEFAULT_BASELINE}
+function setBaseline(d){SSJ('baseline',d)}function getFavMeals(){return SJ('fav_meals')}function setFavMeals(d){SSJ('fav_meals',d)}
+function renderBaseline(){var bl=getBaseline();document.getElementById('baseline-sections').innerHTML=bl.map(function(s){return'<div class="card" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><h3 style="font-size:13px">'+esc(s.title)+'</h3><button class="btn btn-s" style="font-size:10px;padding:4px 10px" onclick="editBaseline(\''+s.id+'\')">Edit</button></div><p style="font-size:12px;color:var(--text2);margin-top:6px">'+esc(s.content)+'</p></div>'}).join('')+'<button class="btn btn-s" onclick="addBaselineSection()" style="margin-top:8px">+ Add section</button>';renderFavMeals();renderPeriodDates()}
+function editBaseline(id){var bl=getBaseline();var s=bl.find(function(x){return x.id===id});if(!s)return;var t=prompt('Title:',s.title);if(!t)return;var c=prompt('Content:',s.content);if(!c)return;s.title=t;s.content=c;setBaseline(bl);renderBaseline();schedulePush()}
+function addBaselineSection(){var t=prompt('Title:');if(!t)return;var c=prompt('Content:');if(!c)return;var bl=getBaseline();bl.push({id:'c_'+Date.now(),title:t,content:c});setBaseline(bl);renderBaseline();schedulePush()}
+function addFavMeal(){var n=document.getElementById('fav-name').value.trim(),d=document.getElementById('fav-desc').value.trim(),c=document.getElementById('fav-cat').value;if(!n||!d)return;var f=getFavMeals();f.push({id:Date.now(),name:n,desc:d,cat:c});setFavMeals(f);document.getElementById('fav-name').value='';document.getElementById('fav-desc').value='';renderFavMeals();renderFavButtons();schedulePush()}
+function deleteFavMeal(id){setFavMeals(getFavMeals().filter(function(f){return f.id!==id}));renderFavMeals();renderFavButtons();schedulePush()}
+function renderFavMeals(){var f=getFavMeals(),el=document.getElementById('fav-meals-list');if(!f.length){el.innerHTML='<p style="font-size:12px;color:var(--text3)">No favorites.</p>';return}el.innerHTML=f.map(function(v){return'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-lt);font-size:12px"><strong style="min-width:80px">'+esc(v.name)+'</strong><span style="flex:1;color:var(--text2)">'+esc(v.desc)+'</span><button class="arc-del" onclick="deleteFavMeal('+v.id+')">\u2715</button></div>'}).join('')}
+function renderFavButtons(){var c=document.getElementById('fav-buttons');if(!c)return;var f=getFavMeals();if(!f.length){c.innerHTML='';return}c.innerHTML='<div style="margin-bottom:8px">'+f.map(function(v){return'<button class="btn '+(v.cat==='sport'?'btn-ax':'btn-s')+'" style="font-size:11px;margin:0 4px 6px 0" onclick="useFav('+v.id+')">'+esc(v.name)+'</button>'}).join('')+'</div>'}
+function useFav(id){var f=getFavMeals().find(function(x){return x.id===id});if(!f)return;document.getElementById('log-desc').value=f.desc;document.getElementById('log-cat').value=f.cat||'meal'}
+function getPeriodDates(){return SJ('period_dates')}function setPeriodDates(d){SSJ('period_dates',d)}
+function addPeriodDate(){var inp=document.getElementById('period-date-input');if(!inp.value)return;var dates=getPeriodDates();if(dates.indexOf(inp.value)===-1)dates.push(inp.value);dates.sort();setPeriodDates(dates);inp.value='';renderPeriodDates();schedulePush()}
+function removePeriodDate(d){setPeriodDates(getPeriodDates().filter(function(x){return x!==d}));renderPeriodDates();schedulePush()}
+function renderPeriodDates(){var el=document.getElementById('period-dates-list');if(!el)return;var dates=getPeriodDates().sort().reverse();if(!dates.length){el.innerHTML='<p style="font-size:12px;color:var(--text3)">No dates yet.</p>';return}el.innerHTML=dates.map(function(d){return'<div style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;margin:2px 4px 2px 0;background:var(--fanny-bg);border-radius:12px;font-size:11px;color:var(--fanny)"><span>'+d+'</span><button onclick="removePeriodDate(\''+d+'\')" style="background:none;border:none;color:var(--fanny);cursor:pointer;font-size:10px;padding:0 2px">\u2715</button></div>'}).join('')}
+function getCycleInfo(){var dates=getPeriodDates().sort().reverse();if(!dates.length)return'Fanny cycle: No period data logged. Do NOT guess or assume cycle phase.';var last=luxon.DateTime.fromISO(dates[0]);var today=luxon.DateTime.now().startOf('day');var day=Math.round(today.diff(last,'days').days)+1;var avgCycle=28;if(dates.length>=2){var diffs=[];for(var i=0;i<dates.length-1;i++){diffs.push(Math.round(luxon.DateTime.fromISO(dates[i]).diff(luxon.DateTime.fromISO(dates[i+1]),'days').days))}avgCycle=Math.round(diffs.reduce(function(s,v){return s+v},0)/diffs.length)}var phase='';if(day<=5)phase='menstruation (J'+day+')';else if(day<=13)phase='follicular (J'+day+', estrogen rising, higher insulin sensitivity, hypo risk)';else if(day<=16)phase='peri-ovulatory (J'+day+')';else if(day<=25)phase='luteal (J'+day+', progesterone rising, insulin resistance increasing)';else phase='late luteal/pre-menstrual (J'+day+', peak insulin resistance, expect higher glucose)';return'Fanny cycle: J'+day+'/'+avgCycle+'. Phase: '+phase+'. Last periods J1: '+dates.slice(0,6).join(', ')+'.'}
+function saveToArchive(title,html){var a=getArchive();a.unshift({id:Date.now(),title:title,date:new Date().toISOString(),html:html});if(a.length>50)a=a.slice(0,50);setArchive(a);schedulePush()}
+function renderArchive(){var a=getArchive(),el=document.getElementById('archive-out');if(!a.length){el.innerHTML='<div class="empty"><div class="icon">&#128194;</div><p>AI analyses are auto-saved here.</p></div>';return}el.innerHTML=a.map(function(v){var d=new Date(v.date);return'<div class="arc-item" onclick="viewArc('+v.id+')"><div style="flex:1"><h3>'+esc(v.title)+'</h3><div class="arc-date">'+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</div></div><button class="arc-del" onclick="event.stopPropagation();delArc('+v.id+')">\u2715</button></div>'}).join('')}
+function viewArc(id){var item=getArchive().find(function(a){return a.id===id});if(!item)return;document.getElementById('archive-out').innerHTML='<button class="btn btn-s" onclick="renderArchive()" style="margin-bottom:16px">\u2190 Back</button><h2 style="font-size:16px;font-weight:700;margin-bottom:16px">'+esc(item.title)+'</h2>'+item.html}
+function delArc(id){if(!confirm('Delete?'))return;var del=SJ('deleted_arc_ids');del.push(id);SSJ('deleted_arc_ids',del);setArchive(getArchive().filter(function(a){return a.id!==id}));renderArchive();schedulePush()}
+function exportAll(){var d={exported:new Date().toISOString(),baseline:getBaseline(),favoriteMeals:getFavMeals(),periodDates:getPeriodDates(),glucose:{axel:getGlucose('axel'),fanny:getGlucose('fanny')},logs:getLogs(),archive:getArchive(),settings:{targetLow:getTargetLow(),targetHigh:getTargetHigh()}};var b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download='gly-export-'+luxon.DateTime.now().toISODate()+'.json';a.click();URL.revokeObjectURL(u)}
+(function(){if(S('migrated_v6')==='1')return;var logs=getLogs();logs.forEach(function(l){if(l.id===1790603103868)l.time_end='16:40';if(l.id===1790668122675)l.time_end='09:15';delete l.tests});var ids={};logs.forEach(function(l){ids[l.id]=1});[{id:20260929062001,person:'both',date:'2026-09-29',time:'06:20',time_end:'06:30',cat:'sport',desc:'Yoga 10min'},{id:20260929064501,person:'both',date:'2026-09-29',time:'06:45',time_end:'07:00',cat:'sport',desc:'Marche matinale 15min'},{id:20260928190001,person:'both',date:'2026-09-28',time:'19:00',time_end:'20:30',cat:'sport',desc:'Potager : 4km velo, jardinage doux, 4km velo retour'},{id:20260930063001,person:'both',date:'2026-09-30',time:'06:30',time_end:'06:50',cat:'sport',desc:'Marche du matin 20min'},{id:20260930080001,person:'both',date:'2026-09-30',time:'08:00',time_end:'08:30',cat:'meal',desc:'Petit dejeuner : salade poireau courgettes vinaigrette, 1 bol pappa al pomodoro, 2 oeufs sur le plat, 50g porridge magnus + 1cs beurre de cacahuete, 2 figues cuites'}].forEach(function(l){if(!ids[l.id])logs.push(l)});setLogs(logs);var favs=getFavMeals();var fn={};favs.forEach(function(f){fn[f.name]=1});[{id:20260929100001,name:'Potager',desc:'4km velo, jardinage doux, 4km velo retour',cat:'sport'},{id:20260929100002,name:'Potager + riviere',desc:'4km velo, jardinage, baignade 15min eau froide, 4km velo retour',cat:'sport'},{id:20260929100003,name:'Yoga',desc:'Yoga 15-20min',cat:'sport'},{id:20260929100004,name:'Marche',desc:'Marche 15-20min',cat:'sport'},{id:20260929100005,name:'Jogging + marche',desc:'Jogging tranquille 10-12min puis marche 30min',cat:'sport'}].forEach(function(f){if(!fn[f.name])favs.push(f)});setFavMeals(favs);SS('migrated_v6','1')})();
+updateDot();document.getElementById('day-pick').valueAsDate=new Date();document.getElementById('log-date').value=luxon.DateTime.now().toISODate();document.getElementById('log-time').value=luxon.DateTime.now().toFormat('HH:mm');syncPull().then(function(){renderDaily()});setInterval(function(){syncPull().then(function(){var a=document.querySelector('.nav button.on');if(a&&a.dataset.v==='daily')renderDaily()})},60000);
+</script>
+</body>
+</html>
